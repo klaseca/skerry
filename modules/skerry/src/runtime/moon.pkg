@@ -1,0 +1,16 @@
+import {
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/internal/environment",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/value",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "klaseca/skerry/view",
+  "moonbitlang/core/bench",
+  "moonbitlang/core/double",
+}
+
+import {
+  "klaseca/skerry/controls",
+} for "test"

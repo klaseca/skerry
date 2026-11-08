@@ -1,0 +1,4 @@
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/style",
+}

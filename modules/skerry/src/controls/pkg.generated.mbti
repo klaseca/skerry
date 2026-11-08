@@ -1,0 +1,147 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/controls"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/reactive/value",
+  "klaseca/skerry/style",
+  "klaseca/skerry/view",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn button(&@value.StringValue, on_click? : () -> Unit, style? : ButtonStyle, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
+
+pub fn checkbox(checked? : @reactive.Signal[Bool], label? : &@value.StringValue, style? : CheckboxStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
+
+pub fn radio(selected? : @reactive.Signal[Bool], label? : &@value.StringValue, style? : RadioStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
+
+pub fn[T : Eq, L : @value.StringValue] radio_group(@reactive.Signal[T], Array[T], label~ : (T) -> L, style? : @view.FlexStyle, item_style? : RadioStyle, item_disabled? : (T) -> Bool, on_change? : (@foundation.ChangeEvent[T]) -> Unit, disabled? : &@value.BoolValue) -> @view.View
+
+pub fn text_input(value? : @reactive.Signal[String], placeholder? : &@value.StringValue, style? : TextInputStyle, on_change? : (@foundation.ChangeEvent[String]) -> Unit, on_submit? : (String) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
+
+// Errors
+
+// Types and methods
+#derive(Default, Eq, @debug.Debug)
+pub struct ButtonStyle {
+  surface : @style.BoxStyle
+  label : @view.TextStyle
+  // private fields
+}
+pub fn ButtonStyle::ButtonStyle() -> Self
+pub fn ButtonStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn ButtonStyle::computed(() -> Self) -> Self
+pub fn ButtonStyle::disabled(Self, @style.Appearance) -> Self
+pub fn ButtonStyle::equal(Self, Self) -> Bool
+pub fn ButtonStyle::focused(Self, @style.Appearance) -> Self
+pub fn ButtonStyle::hovered(Self, @style.Appearance) -> Self
+pub fn ButtonStyle::label(Self, @view.TextStyle) -> Self
+pub fn ButtonStyle::merge(Self, Self) -> Self
+pub fn ButtonStyle::metrics(Self) -> @style.StyleMetrics
+pub fn ButtonStyle::not_equal(Self, Self) -> Bool
+pub fn ButtonStyle::pressed(Self, @style.Appearance) -> Self
+pub fn ButtonStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] ButtonStyle::select(Self, (Self) -> T) -> T
+pub fn ButtonStyle::surface(Self, @style.BoxStyle) -> Self
+pub fn ButtonStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for ButtonStyle
+pub impl @style.StyleSpec for ButtonStyle
+
+#derive(Default, Eq, @debug.Debug)
+pub struct CheckboxStyle {
+  frame : @style.BoxStyle
+  label : @view.TextStyle
+  indicator : @style.BoxStyle
+  gap : Double?
+  marker_color : @style.StyleColor?
+  // private fields
+}
+pub fn CheckboxStyle::CheckboxStyle() -> Self
+pub fn CheckboxStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn CheckboxStyle::computed(() -> Self) -> Self
+pub fn CheckboxStyle::disabled(Self, @style.Appearance) -> Self
+pub fn CheckboxStyle::equal(Self, Self) -> Bool
+pub fn CheckboxStyle::focused(Self, @style.Appearance) -> Self
+pub fn CheckboxStyle::frame(Self, @style.BoxStyle) -> Self
+pub fn CheckboxStyle::gap(Self, Double) -> Self
+pub fn CheckboxStyle::hovered(Self, @style.Appearance) -> Self
+pub fn CheckboxStyle::indicator(Self, @style.BoxStyle) -> Self
+pub fn CheckboxStyle::label(Self, @view.TextStyle) -> Self
+pub fn CheckboxStyle::marker_color(Self, &@style.ColorValue) -> Self
+pub fn CheckboxStyle::merge(Self, Self) -> Self
+pub fn CheckboxStyle::metrics(Self) -> @style.StyleMetrics
+pub fn CheckboxStyle::not_equal(Self, Self) -> Bool
+pub fn CheckboxStyle::pressed(Self, @style.Appearance) -> Self
+pub fn CheckboxStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] CheckboxStyle::select(Self, (Self) -> T) -> T
+pub fn CheckboxStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for CheckboxStyle
+pub impl @style.StyleSpec for CheckboxStyle
+
+#derive(Default, Eq, @debug.Debug)
+pub struct RadioStyle {
+  frame : @style.BoxStyle
+  label : @view.TextStyle
+  indicator : @style.BoxStyle
+  gap : Double?
+  marker_color : @style.StyleColor?
+  // private fields
+}
+pub fn RadioStyle::RadioStyle() -> Self
+pub fn RadioStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn RadioStyle::computed(() -> Self) -> Self
+pub fn RadioStyle::disabled(Self, @style.Appearance) -> Self
+pub fn RadioStyle::equal(Self, Self) -> Bool
+pub fn RadioStyle::focused(Self, @style.Appearance) -> Self
+pub fn RadioStyle::frame(Self, @style.BoxStyle) -> Self
+pub fn RadioStyle::gap(Self, Double) -> Self
+pub fn RadioStyle::hovered(Self, @style.Appearance) -> Self
+pub fn RadioStyle::indicator(Self, @style.BoxStyle) -> Self
+pub fn RadioStyle::label(Self, @view.TextStyle) -> Self
+pub fn RadioStyle::marker_color(Self, &@style.ColorValue) -> Self
+pub fn RadioStyle::merge(Self, Self) -> Self
+pub fn RadioStyle::metrics(Self) -> @style.StyleMetrics
+pub fn RadioStyle::not_equal(Self, Self) -> Bool
+pub fn RadioStyle::pressed(Self, @style.Appearance) -> Self
+pub fn RadioStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] RadioStyle::select(Self, (Self) -> T) -> T
+pub fn RadioStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for RadioStyle
+pub impl @style.StyleSpec for RadioStyle
+
+#derive(Default, Eq, @debug.Debug)
+pub struct TextInputStyle {
+  surface : @style.BoxStyle
+  text : @view.TextStyle
+  placeholder : @view.TextStyle
+  caret_color : @style.StyleColor?
+  selection_color : @style.StyleColor?
+  // private fields
+}
+pub fn TextInputStyle::TextInputStyle() -> Self
+pub fn TextInputStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn TextInputStyle::caret_color(Self, &@style.ColorValue) -> Self
+pub fn TextInputStyle::computed(() -> Self) -> Self
+pub fn TextInputStyle::disabled(Self, @style.Appearance) -> Self
+pub fn TextInputStyle::equal(Self, Self) -> Bool
+pub fn TextInputStyle::focused(Self, @style.Appearance) -> Self
+pub fn TextInputStyle::hovered(Self, @style.Appearance) -> Self
+pub fn TextInputStyle::merge(Self, Self) -> Self
+pub fn TextInputStyle::metrics(Self) -> @style.StyleMetrics
+pub fn TextInputStyle::not_equal(Self, Self) -> Bool
+pub fn TextInputStyle::placeholder(Self, @view.TextStyle) -> Self
+pub fn TextInputStyle::pressed(Self, @style.Appearance) -> Self
+pub fn TextInputStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] TextInputStyle::select(Self, (Self) -> T) -> T
+pub fn TextInputStyle::selection_color(Self, &@style.ColorValue) -> Self
+pub fn TextInputStyle::surface(Self, @style.BoxStyle) -> Self
+pub fn TextInputStyle::text(Self, @view.TextStyle) -> Self
+pub fn TextInputStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for TextInputStyle
+pub impl @style.StyleSpec for TextInputStyle
+
+// Type aliases
+
+// Traits

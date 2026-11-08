@@ -1,0 +1,47 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/reactive/value"
+
+import {
+  "klaseca/skerry/reactive",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+pub(open) trait BoolValue {
+  fn to_binding(Self) -> @reactive.Binding[Bool]
+}
+pub impl BoolValue for Bool
+pub impl BoolValue for @reactive.Binding[Bool]
+pub impl BoolValue for @reactive.Computed[Bool]
+pub impl BoolValue for @reactive.Signal[Bool]
+
+pub(open) trait DoubleValue {
+  fn to_binding(Self) -> @reactive.Binding[Double]
+}
+pub impl DoubleValue for Double
+pub impl DoubleValue for @reactive.Binding[Double]
+pub impl DoubleValue for @reactive.Computed[Double]
+pub impl DoubleValue for @reactive.Signal[Double]
+
+pub(open) trait IntValue {
+  fn to_binding(Self) -> @reactive.Binding[Int32]
+}
+pub impl IntValue for Int32
+pub impl IntValue for @reactive.Binding[Int32]
+pub impl IntValue for @reactive.Computed[Int32]
+pub impl IntValue for @reactive.Signal[Int32]
+
+pub(open) trait StringValue {
+  fn to_binding(Self) -> @reactive.Binding[String]
+}
+pub impl StringValue for String
+pub impl StringValue for @reactive.Binding[String]
+pub impl StringValue for @reactive.Computed[String]
+pub impl StringValue for @reactive.Signal[String]

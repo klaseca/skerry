@@ -1,0 +1,55 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/backend"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/text",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+#derive(Eq, @debug.Debug)
+pub(all) suberror RasterTargetError {
+  InvalidRasterScale(scale~ : Double)
+  InvalidRasterTarget(width~ : Int32, height~ : Int32, row_bytes~ : Int32)
+}
+pub fn RasterTargetError::equal(Self, Self) -> Bool
+pub fn RasterTargetError::not_equal(Self, Self) -> Bool
+pub fn RasterTargetError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) enum RasterFormat {
+  Bgra8888Premultiplied
+}
+pub fn RasterFormat::equal(Self, Self) -> Bool
+pub fn RasterFormat::not_equal(Self, Self) -> Bool
+pub fn RasterFormat::to_repr(Self) -> @debug.Repr
+
+#external
+pub type RasterMemory
+
+pub struct RasterTarget {
+  memory : RasterMemory
+  width : Int32
+  height : Int32
+  row_bytes : Int32
+  format : RasterFormat
+  scale : Double
+}
+pub fn RasterTarget::RasterTarget(memory~ : RasterMemory, width~ : Int32, height~ : Int32, row_bytes~ : Int32, format~ : RasterFormat, scale? : Double) -> Self raise RasterTargetError
+pub fn RasterTarget::logical_size(Self) -> @foundation.Size
+
+// Type aliases
+pub type AppBackend = (@runtime.App, &Renderer) -> Unit raise
+
+pub type RendererProvider = ((&Renderer) -> Unit raise) -> Unit raise
+
+// Traits
+pub(open) trait Renderer {
+  fn text_layout_system(Self) -> @text.TextLayoutSystem
+  fn render(Self, @runtime.UiRoot, RasterTarget, @foundation.Color) -> Unit raise
+}

@@ -1,0 +1,75 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/internal/environment"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn control_binding() -> @reactive.ContextBinding
+
+pub fn current_color_scheme() -> @style.ColorScheme
+
+pub fn current_theme() -> @style.Theme
+
+pub fn current_theme_environment() -> ThemeEnvironment
+
+pub fn current_theme_provider() -> ThemeProvider?
+
+pub fn image_values() -> Map[Int32, @foundation.Image]?
+
+pub fn mark_values_materialized(Int32) -> Unit
+
+pub fn prepare_change(Int32) -> () -> Bool
+
+pub fn register_change_target(Int32, (Int32) -> Bool) -> () -> Unit
+
+pub fn text_values() -> Map[Int32, String]?
+
+pub fn theme_binding(@reactive.Signal[ThemeEnvironment]) -> @reactive.ContextBinding
+
+pub fn values_are_materialized(Int32) -> Bool
+
+pub fn values_binding() -> @reactive.ContextBinding
+
+pub fn[T] with_cut_writer(((String) -> Bool)?, () -> T) -> T
+
+pub fn[T] with_style_theme(ThemeProvider?, () -> T) -> T
+
+pub fn write_cut_clipboard(String) -> Bool
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct ThemeContext {
+  color_scheme : @style.ColorScheme
+  theme : @style.Theme
+}
+pub fn ThemeContext::equal(Self, Self) -> Bool
+pub fn ThemeContext::not_equal(Self, Self) -> Bool
+pub fn ThemeContext::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ThemeEnvironment {
+  base : @style.Theme
+  styles : @style.Styles
+  context : ThemeContext
+}
+pub fn ThemeEnvironment::ThemeEnvironment(@style.Theme, color_scheme? : @style.ColorScheme, styles? : @style.Styles) -> Self
+pub fn ThemeEnvironment::equal(Self, Self) -> Bool
+pub fn ThemeEnvironment::not_equal(Self, Self) -> Bool
+pub fn ThemeEnvironment::to_repr(Self) -> @debug.Repr
+
+pub struct ThemeProvider {
+  value : @reactive.Signal[ThemeEnvironment]
+  sheet : @style.StyleSheet
+}
+pub fn ThemeProvider::sheet(Self) -> @style.StyleSheet
+
+// Type aliases
+
+// Traits

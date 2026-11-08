@@ -1,0 +1,40 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/value"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @klaseca/skerry/reactive/value {trait BoolValue}
+
+pub using @klaseca/skerry/reactive/value {trait DoubleValue}
+
+pub using @klaseca/skerry/reactive/value {trait IntValue}
+
+pub using @klaseca/skerry/reactive/value {trait StringValue}
+
+// Traits
+pub(open) trait ImageValue {
+  fn to_binding(Self) -> @reactive.Binding[@foundation.Image]
+}
+pub impl ImageValue for @foundation.Image
+pub impl ImageValue for @reactive.Binding[@foundation.Image]
+pub impl ImageValue for @reactive.Computed[@foundation.Image]
+pub impl ImageValue for @reactive.Signal[@foundation.Image]
+
+pub(open) trait ThemeSource {
+  fn to_binding(Self) -> @reactive.Binding[@style.Theme]
+}
+pub impl ThemeSource for @reactive.Binding[@style.Theme]
+pub impl ThemeSource for @reactive.Computed[@style.Theme]
+pub impl ThemeSource for @reactive.Signal[@style.Theme]
+pub impl ThemeSource for @style.Theme

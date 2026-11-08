@@ -1,0 +1,88 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/reactive"
+
+// Values
+pub fn after_update(() -> Unit) -> Unit
+
+pub fn[T] batch(() -> T) -> T
+
+pub fn batch_end() -> Unit
+
+pub fn batch_start() -> Unit
+
+pub fn[T] bind(() -> T) -> Binding[T]
+
+pub fn[T] computed(() -> T) -> Computed[T]
+
+pub fn[T] during_update(() -> T) -> T
+
+pub fn effect(() -> Unit) -> () -> Unit
+
+pub fn is_updating() -> Bool
+
+pub fn on_cleanup(() -> Unit) -> Unit
+
+pub fn[T] provide(Array[ContextBinding], () -> T) -> T
+
+pub fn render_effect(() -> Unit) -> () -> Unit
+
+pub fn[T] signal(T) -> Signal[T]
+
+pub fn[T] untracked(() -> T) -> T
+
+pub fn[T] val(T) -> Binding[T]
+
+pub fn[T : Eq] watch(() -> T, (T, T) -> Unit) -> () -> Unit
+
+// Errors
+
+// Types and methods
+pub struct Binding[T] {
+  // private fields
+}
+pub fn[T] Binding::constant_value(Self[T]) -> T?
+pub fn[T] Binding::get(Self[T]) -> T
+pub fn[T : Eq] Binding::subscribe(Self[T], (T) -> Unit) -> () -> Unit
+
+pub struct Computed[T] {
+  // private fields
+}
+pub fn[T] Computed::bind(Self[T]) -> Binding[T]
+pub fn[T] Computed::get(Self[T]) -> T
+
+pub struct Context[T] {
+  // private fields
+}
+pub fn[T] Context::Context(T) -> Self[T]
+pub fn[T] Context::get(Self[T]) -> T
+pub fn[T] Context::provide(Self[T], T) -> ContextBinding
+
+pub struct ContextBinding {
+  // private fields
+}
+
+pub struct Scope {
+  // private fields
+}
+pub fn Scope::child(Self) -> Self
+pub fn Scope::current() -> Self?
+pub fn Scope::dispose(Self) -> Unit
+pub fn Scope::is_disposed(Self) -> Bool
+pub fn Scope::new() -> Self
+pub fn Scope::root() -> Self
+pub fn[T] Scope::run(Self, () -> T) -> T
+pub fn[T] Scope::run_with(Self, Array[ContextBinding], () -> T) -> T
+pub fn[T] Scope::track(Self, () -> T) -> T
+
+pub struct Signal[T] {
+  // private fields
+}
+pub fn[T] Signal::bind(Self[T]) -> Binding[T]
+pub fn[T] Signal::get(Self[T]) -> T
+pub fn[T] Signal::peek(Self[T]) -> T
+pub fn[T] Signal::set(Self[T], T) -> Unit
+pub fn[T] Signal::update(Self[T], (T) -> T) -> Unit
+
+// Type aliases
+
+// Traits

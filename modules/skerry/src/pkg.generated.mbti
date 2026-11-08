@@ -1,0 +1,343 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry"
+
+import {
+  "klaseca/skerry/backend",
+  "klaseca/skerry/controls",
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "klaseca/skerry/view",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub let accent_token : @style.ThemeToken[@foundation.Color]
+
+pub fn apply_active_control_styles(@diagnostics.ComputedStyle, @style.ControlStyles, @foundation.ControlState, theme~ : @style.Theme) -> @diagnostics.ComputedStyle
+
+pub fn apply_appearance(@diagnostics.ComputedStyle, @style.Appearance?, theme~ : @style.Theme) -> @diagnostics.ComputedStyle
+
+pub fn[T] batch(() -> T) -> T
+
+pub fn[T] bind(() -> T) -> @reactive.Binding[T]
+
+pub let border_token : @style.ThemeToken[@foundation.Color]
+
+pub fn box(style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn button(&@klaseca/skerry/reactive/value.StringValue, on_click? : () -> Unit, style? : @controls.ButtonStyle, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn checkbox(checked? : @reactive.Signal[Bool], label? : &@klaseca/skerry/reactive/value.StringValue, style? : @controls.CheckboxStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn column(style? : @view.FlexStyle, Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn[T] computed(() -> T) -> @reactive.Computed[T]
+
+pub let control_surface_token : @style.ThemeToken[@foundation.Color]
+
+pub fn current_app() -> @runtime.App
+
+pub fn current_color_scheme() -> @style.ColorScheme
+
+pub fn current_theme() -> @style.Theme
+
+pub fn decode_image(Bytes) -> @foundation.Image raise @foundation.ImageError
+
+pub fn[T] dispatch_change(Int32, T, ((@foundation.ChangeEvent[T]) -> Unit)?, () -> Unit, is_current? : () -> Bool) -> Bool
+
+pub fn effect(() -> Unit) -> () -> Unit
+
+pub fn[S : @style.StyleSpec] element(style~ : S, measure? : (@view.MeasureContext) -> (Double, Double) -> @foundation.IntrinsicSize, painter~ : @view.Painter, events? : @view.ElementEvents, reactivity? : @view.Reactivity, padding? : @foundation.Insets, component_name? : String) -> @view.View
+
+pub fn empty() -> @view.View
+
+pub fn fill_box(Double, style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn[T, K : Eq] for_each(() -> Array[T], (T) -> K, (() -> T) -> @view.View, key_label? : (K) -> String, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn fragment(Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn image(&@klaseca/skerry/value.ImageValue, style? : @view.ImageStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn interactive(on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, @view.View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn load_image(String) -> @foundation.Image raise @foundation.ImageError
+
+pub fn[T : @style.SourceStyle] merge_sources(T, T, (T, T) -> T) -> T
+
+pub fn mount(() -> @view.View, text_layout_system~ : @text.TextLayoutSystem, theme? : @style.Theme, color_scheme? : @style.ColorScheme, providers? : Array[@reactive.ContextBinding], clock? : () -> Double) -> @runtime.UiRoot
+
+pub let muted_text_token : @style.ThemeToken[@foundation.Color]
+
+pub let on_accent_token : @style.ThemeToken[@foundation.Color]
+
+pub fn on_cleanup(() -> Unit) -> Unit
+
+pub fn[T] provide(Array[@reactive.ContextBinding], () -> T) -> T
+
+pub fn radio(selected? : @reactive.Signal[Bool], label? : &@klaseca/skerry/reactive/value.StringValue, style? : @controls.RadioStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn[T : Eq, L : @klaseca/skerry/reactive/value.StringValue] radio_group(@reactive.Signal[T], Array[T], label~ : (T) -> L, style? : @view.FlexStyle, item_style? : @controls.RadioStyle, item_disabled? : (T) -> Bool, on_change? : (@foundation.ChangeEvent[T]) -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn row(style? : @view.FlexStyle, Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn run(@runtime.App, backend? : (@runtime.App, &@backend.Renderer) -> Unit raise, renderer? : ((&@backend.Renderer) -> Unit raise) -> Unit raise) -> Unit raise
+
+pub fn scroll_view(@view.View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle) -> @view.View
+
+pub let scrollbar_thumb_token : @style.ThemeToken[@foundation.Color]
+
+pub let scrollbar_track_token : @style.ThemeToken[@foundation.Color]
+
+pub let selection_token : @style.ThemeToken[@foundation.Color]
+
+pub fn show(() -> Bool, () -> @view.View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn[T] signal(T) -> @reactive.Signal[T]
+
+pub fn stack(Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn style_scope(light_theme? : &@klaseca/skerry/value.ThemeSource, dark_theme? : &@klaseca/skerry/value.ThemeSource, styles? : @style.Styles, inherit_styles? : Bool, () -> @view.View) -> @view.View
+
+pub let surface_token : @style.ThemeToken[@foundation.Color]
+
+pub fn text(&@klaseca/skerry/reactive/value.StringValue, style? : @view.TextStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn text_input(value? : @reactive.Signal[String], placeholder? : &@klaseca/skerry/reactive/value.StringValue, style? : @controls.TextInputStyle, on_change? : (@foundation.ChangeEvent[String]) -> Unit, on_submit? : (String) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub fn text_measure(String, @foundation.FontSpec, @text.TextLayoutSystem) -> (Double, Double) -> @foundation.IntrinsicSize
+
+pub fn[T : Show] text_of(@reactive.Signal[T], style? : @view.TextStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
+
+pub let text_token : @style.ThemeToken[@foundation.Color]
+
+pub fn[T] untracked(() -> T) -> T
+
+pub fn[T] val(T) -> @reactive.Binding[T]
+
+pub fn[T : Eq] watch(() -> T, (T, T) -> Unit) -> () -> Unit
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+pub using @style {type AlignItems}
+
+pub using @style {type AlignSelf}
+
+pub using @runtime {type App}
+
+pub using @style {type Appearance}
+
+pub using @foundation {type Axis}
+
+pub using @reactive {type Binding}
+
+pub using @style {type BoxStyle}
+
+pub using @foundation {type Brush}
+
+pub using @controls {type ButtonStyle}
+
+pub using @foundation {type ChangeEvent}
+
+pub using @controls {type CheckboxStyle}
+
+pub using @foundation {type Color}
+
+pub using @style {type ColorScheme}
+
+pub using @diagnostics {type ComponentSnapshot}
+
+pub using @reactive {type Computed}
+
+pub using @diagnostics {type ComputedStyle}
+
+pub using @view {type ComputedStyleContext}
+
+pub using @foundation {type Constraints}
+
+pub using @reactive {type Context}
+
+pub using @reactive {type ContextBinding}
+
+pub using @foundation {type ControlState}
+
+pub using @style {type ControlStyles}
+
+pub using @runtime {type DirtyState}
+
+pub using @view {type ElementEvents}
+
+pub using @style {type FlexItemStyle}
+
+pub using @view {type FlexStyle}
+
+pub using @foundation {type FontSpec}
+
+pub using @runtime {type FrameEvent}
+
+pub using @runtime {type FrameStats}
+
+pub using @foundation {type Image}
+
+pub using @foundation {type ImageAlignment}
+
+pub using @foundation {type ImageError}
+
+pub using @foundation {type ImageFit}
+
+pub using @foundation {type ImagePlacement}
+
+pub using @diagnostics {type ImageSnapshot}
+
+pub using @view {type ImageStyle}
+
+pub using @foundation {type Insets}
+
+pub using @foundation {type IntrinsicSize}
+
+pub using @style {type JustifyContent}
+
+pub using @foundation {type Key}
+
+pub using @foundation {type KeyEvent}
+
+pub using @view {type KeyHandling}
+
+pub using @foundation {type KeyModifiers}
+
+pub type Measure = (Double, Double) -> @foundation.IntrinsicSize
+
+pub using @view {type MeasureContext}
+
+pub using @view {type MountContext}
+
+pub using @diagnostics {type NodeSnapshot}
+
+pub using @view {type PaintContext}
+
+pub using @diagnostics {type PaintStats}
+
+pub using @view {type Painter}
+
+pub using @style {type Palette}
+
+pub using @foundation {type Point}
+
+pub using @view {type PointerContext}
+
+pub using @foundation {type PointerEvent}
+
+pub using @foundation {type PointerPhase}
+
+pub using @controls {type RadioStyle}
+
+pub using @view {type Reactivity}
+
+pub using @foundation {type Rect}
+
+pub using @foundation {type RoundedRect}
+
+pub using @diagnostics {type ScrollSnapshot}
+
+pub using @diagnostics {type ScrollbarSnapshot}
+
+pub using @style {type ScrollbarStyle}
+
+pub using @reactive {type Signal}
+
+pub using @foundation {type Size}
+
+pub using @diagnostics {type SourceLocation}
+
+pub using @style {type StyleColor}
+
+pub using @style {type StyleDeclaration}
+
+pub using @style {type StyleMetrics}
+
+pub using @style {type StyleSource}
+
+pub using @style {type Styles}
+
+pub using @foundation {type TextAlign}
+
+pub using @view {type TextAppearance}
+
+pub using @text {type TextCacheStats}
+
+pub using @view {type TextContent}
+
+pub using @foundation {type TextEditCommand}
+
+pub using @foundation {type TextEditResult}
+
+pub using @foundation {type TextEditShortcut}
+
+pub using @controls {type TextInputStyle}
+
+pub using @text {type TextLayoutInput}
+
+pub using @text {type TextLayoutLine}
+
+pub using @text {type TextLayoutResult}
+
+pub using @text {type TextLayoutSystem}
+
+pub using @text {type TextMeasureInput}
+
+pub using @text {type TextMetrics}
+
+pub using @text {type TextMetricsProvider}
+
+pub using @foundation {type TextRun}
+
+pub using @view {type TextStyle}
+
+pub using @style {type Theme}
+
+pub using @runtime {type ThemeMode}
+
+pub using @style {type ThemeToken}
+
+pub using @style {type TokenValues}
+
+pub using @diagnostics {type TreeSnapshot}
+
+pub using @runtime {type UiRoot}
+
+pub using @runtime {type UiSnapshot}
+
+pub using @view {type View}
+
+pub using @runtime {type WindowOptions}
+
+pub using @klaseca/skerry/reactive/value {trait BoolValue}
+
+pub using @style {trait ColorValue}
+
+pub using @klaseca/skerry/reactive/value {trait DoubleValue}
+
+pub using @klaseca/skerry/value {trait ImageValue}
+
+pub using @klaseca/skerry/reactive/value {trait IntValue}
+
+pub using @foundation {trait SceneRenderer}
+
+pub using @style {trait SourceStyle}
+
+pub using @klaseca/skerry/reactive/value {trait StringValue}
+
+pub using @style {trait StyleSpec}
+
+pub using @klaseca/skerry/value {trait ThemeSource}
+
+pub using @style {trait ThemeValue}
+
+// Traits

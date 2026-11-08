@@ -1,0 +1,145 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/runtime"
+
+import {
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "klaseca/skerry/value",
+  "klaseca/skerry/view",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn current_app() -> App
+
+pub fn mount(() -> @view.View, text_layout_system~ : @text.TextLayoutSystem, theme? : @style.Theme, color_scheme? : @style.ColorScheme, providers? : Array[@reactive.ContextBinding], clock? : () -> Double) -> UiRoot
+
+// Errors
+
+// Types and methods
+pub struct App {
+  // private fields
+}
+pub fn App::App(title? : String, width? : Int32, height? : Int32, clear? : @foundation.Color, theme_mode? : ThemeMode, light_theme? : &@value.ThemeSource, dark_theme? : &@value.ThemeSource, providers? : Array[@reactive.ContextBinding], content~ : () -> @view.View, on_mount? : (UiRoot) -> Unit) -> Self
+pub fn App::mount(Self, text_layout_system~ : @text.TextLayoutSystem, system_theme? : @style.ColorScheme, clock? : () -> Double) -> UiRoot
+pub fn App::options(Self) -> WindowOptions
+pub fn App::set_theme_mode(Self, ThemeMode) -> Unit
+pub fn App::theme_mode(Self) -> ThemeMode
+
+#derive(Eq, @debug.Debug)
+pub(all) enum DirtyState {
+  Clean
+  NeedsPaint
+  NeedsLayout
+}
+pub fn DirtyState::equal(Self, Self) -> Bool
+pub fn DirtyState::not_equal(Self, Self) -> Bool
+pub fn DirtyState::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum FrameEvent {
+  Invalidated(DirtyState)
+  Painted(FrameStats)
+  Presented(FrameStats)
+}
+pub fn FrameEvent::equal(Self, Self) -> Bool
+pub fn FrameEvent::not_equal(Self, Self) -> Bool
+pub fn FrameEvent::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct FrameStats {
+  layout_count : Int32
+  layout_pass_count : Int32
+  text_measure_count : Int32
+  text_cache : @text.TextCacheStats
+  paint_count : Int32
+  present_count : Int32
+  presented_frame : Int32
+  last_paint : @diagnostics.PaintStats?
+}
+pub fn FrameStats::equal(Self, Self) -> Bool
+pub fn FrameStats::not_equal(Self, Self) -> Bool
+pub fn FrameStats::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum ThemeMode {
+  Light
+  Dark
+  System
+}
+pub fn ThemeMode::equal(Self, Self) -> Bool
+pub fn ThemeMode::not_equal(Self, Self) -> Bool
+pub fn ThemeMode::to_repr(Self) -> @debug.Repr
+
+pub struct UiRoot {
+  // private fields
+}
+pub fn UiRoot::after_present(Self, () -> Unit) -> () -> Unit
+pub fn UiRoot::click_at(Self, size~ : @foundation.Size, point~ : @foundation.Point) -> Bool
+pub fn UiRoot::color_scheme(Self) -> @style.ColorScheme
+pub fn UiRoot::copy_text(Self) -> String?
+pub fn UiRoot::cut_text(Self, write? : (String) -> Bool) -> String?
+pub fn UiRoot::dirty(Self) -> DirtyState
+pub fn UiRoot::dispose(Self) -> Unit
+pub fn UiRoot::drain_actions(Self) -> Unit
+pub fn UiRoot::focus_lost(Self) -> Unit
+pub fn UiRoot::frame_stats(Self) -> FrameStats
+pub fn UiRoot::has_pending_actions(Self) -> Bool
+pub fn UiRoot::invalidate_text(Self) -> Unit
+pub fn UiRoot::is_disposed(Self) -> Bool
+pub fn UiRoot::key_down(Self, @foundation.KeyEvent, size? : @foundation.Size) -> Bool
+pub fn UiRoot::key_up(Self, @foundation.KeyEvent) -> Bool
+pub fn UiRoot::mark_layout_dirty(Self) -> Unit
+pub fn UiRoot::mark_paint_dirty(Self) -> Unit
+pub fn UiRoot::needs_frame(Self) -> Bool
+pub fn UiRoot::next_action_delay(Self) -> Int32?
+pub fn UiRoot::observe_frames(Self, (FrameEvent) -> Unit, timings? : Bool) -> () -> Unit
+pub fn UiRoot::observe_snapshots(Self, (UiSnapshot) -> Unit) -> () -> Unit
+pub fn UiRoot::paint(Self, &@foundation.SceneRenderer, size~ : @foundation.Size, clear? : @foundation.Color) -> Unit
+pub fn UiRoot::paint_revision(Self) -> Int32
+pub fn UiRoot::paste_text(Self, String) -> Bool
+pub fn UiRoot::pointer_cancel(Self) -> Bool
+pub fn UiRoot::pointer_down(Self, size~ : @foundation.Size, point~ : @foundation.Point) -> Bool
+pub fn UiRoot::pointer_leave(Self) -> Unit
+pub fn UiRoot::pointer_move(Self, size~ : @foundation.Size, point~ : @foundation.Point) -> Bool
+pub fn UiRoot::pointer_up(Self, size~ : @foundation.Size, point~ : @foundation.Point) -> Bool
+pub fn UiRoot::post(Self, () -> Unit) -> () -> Unit
+pub fn UiRoot::post_delayed(Self, Int32, () -> Unit) -> () -> Unit
+pub fn UiRoot::record_present(Self, Int32) -> Unit
+pub fn UiRoot::scroll_at(Self, size~ : @foundation.Size, point~ : @foundation.Point, delta~ : @foundation.Point) -> Bool
+pub fn UiRoot::set_system_theme(Self, @style.ColorScheme?) -> Unit
+pub fn UiRoot::set_theme(Self, @style.Theme, color_scheme? : @style.ColorScheme) -> Unit
+pub fn UiRoot::set_wakeup(Self, () -> Unit) -> Unit
+pub fn UiRoot::snapshot(Self) -> UiSnapshot?
+pub fn UiRoot::text_input(Self, String) -> Bool
+pub fn UiRoot::theme(Self) -> @style.Theme
+pub fn UiRoot::view(Self) -> @view.View
+
+#derive(Eq, @debug.Debug)
+pub(all) struct UiSnapshot {
+  root_id : Int32
+  frame : FrameStats
+  theme : @style.Theme
+  tree : @diagnostics.TreeSnapshot
+  focused_node_id : Int32?
+  captured_node_id : Int32?
+}
+pub fn UiSnapshot::equal(Self, Self) -> Bool
+pub fn UiSnapshot::not_equal(Self, Self) -> Bool
+pub fn UiSnapshot::to_repr(Self) -> @debug.Repr
+
+pub(all) struct WindowOptions {
+  title : String
+  width : Int32
+  height : Int32
+  clear : @foundation.Color?
+}
+pub fn WindowOptions::WindowOptions(title? : String, width? : Int32, height? : Int32, clear? : @foundation.Color) -> Self
+
+// Type aliases
+pub using @style {type ColorScheme}
+
+// Traits

@@ -1,0 +1,381 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/style"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/reactive/value",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/ref",
+}
+
+// Values
+pub let accent_token : ThemeToken[@foundation.Color]
+
+pub fn[P : SourceStyle, T : StyleSpec] apply_style_field(P, T, (P, T) -> P) -> P
+
+pub fn[P : SourceStyle, T] apply_style_value(P, @reactive.Binding[T], (P, T) -> P) -> P
+
+pub let border_token : ThemeToken[@foundation.Color]
+
+pub let control_surface_token : ThemeToken[@foundation.Color]
+
+pub fn[T : SourceStyle] freeze_style(T, StyleSheet) -> T
+
+pub fn[T : SourceStyle] merge_sources(T, T, (T, T) -> T) -> T
+
+pub let muted_text_token : ThemeToken[@foundation.Color]
+
+pub let on_accent_token : ThemeToken[@foundation.Color]
+
+pub let scrollbar_thumb_token : ThemeToken[@foundation.Color]
+
+pub let scrollbar_track_token : ThemeToken[@foundation.Color]
+
+pub let selection_token : ThemeToken[@foundation.Color]
+
+pub fn[T : StyleSpec] style_layers(T) -> ReadOnlyArray[T]
+
+pub fn[T : StyleSpec] style_value(T) -> T
+
+pub let surface_token : ThemeToken[@foundation.Color]
+
+pub let text_token : ThemeToken[@foundation.Color]
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) enum AlignItems {
+  Start
+  Center
+  End
+  Stretch
+}
+pub fn AlignItems::equal(Self, Self) -> Bool
+pub fn AlignItems::not_equal(Self, Self) -> Bool
+pub fn AlignItems::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum AlignSelf {
+  Auto
+  Start
+  Center
+  End
+  Stretch
+}
+pub fn AlignSelf::equal(Self, Self) -> Bool
+pub fn AlignSelf::not_equal(Self, Self) -> Bool
+pub fn AlignSelf::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct Appearance {
+  background : StyleColor?
+  color : StyleColor?
+  radius : Double?
+  stroke_color : StyleColor?
+  stroke_width : Double?
+}
+pub fn Appearance::Appearance() -> Self
+pub fn Appearance::background(Self, &ColorValue) -> Self
+pub fn Appearance::color(Self, &ColorValue) -> Self
+pub fn Appearance::equal(Self, Self) -> Bool
+pub fn Appearance::merge(Self, Self) -> Self
+pub fn Appearance::not_equal(Self, Self) -> Bool
+pub fn Appearance::radius(Self, Double) -> Self
+pub fn Appearance::stroke(Self, &ColorValue, width? : Double) -> Self
+pub fn Appearance::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct BoxStyle {
+  layout : LayoutStyle
+  paint : Appearance
+  text : TextProperties
+  flex : FlexItemStyle
+  controls : ControlStyles
+  // private fields
+}
+pub fn BoxStyle::BoxStyle() -> Self
+pub fn BoxStyle::align(Self, @foundation.TextAlign) -> Self
+pub fn BoxStyle::align_self(Self, AlignSelf) -> Self
+pub fn BoxStyle::appearance(Self, Appearance) -> Self
+pub fn BoxStyle::background(Self, &ColorValue) -> Self
+pub fn BoxStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn BoxStyle::color(Self, &ColorValue) -> Self
+pub fn BoxStyle::computed(() -> Self) -> Self
+pub fn BoxStyle::disabled(Self, Appearance) -> Self
+pub fn BoxStyle::equal(Self, Self) -> Bool
+pub fn BoxStyle::focused(Self, Appearance) -> Self
+pub fn BoxStyle::font(Self, @foundation.FontSpec) -> Self
+pub fn BoxStyle::grow(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::height(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::hovered(Self, Appearance) -> Self
+pub fn BoxStyle::max_height(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::max_width(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::merge(Self, Self) -> Self
+pub fn BoxStyle::metrics(Self) -> StyleMetrics
+pub fn BoxStyle::min_height(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::min_width(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::not_equal(Self, Self) -> Bool
+pub fn BoxStyle::padding(Self, @foundation.Insets) -> Self
+pub fn BoxStyle::pressed(Self, Appearance) -> Self
+pub fn BoxStyle::radius(Self, Double) -> Self
+pub fn BoxStyle::root_style(Self) -> Self
+pub fn[T : SourceStyle] BoxStyle::select(Self, (Self) -> T) -> T
+pub fn BoxStyle::shrink(Self, &@value.DoubleValue) -> Self
+pub fn BoxStyle::stroke(Self, &ColorValue, width? : Double) -> Self
+pub fn BoxStyle::to_repr(Self) -> @debug.Repr
+pub fn BoxStyle::width(Self, &@value.DoubleValue) -> Self
+pub impl SourceStyle for BoxStyle
+pub impl StyleSpec for BoxStyle
+
+#derive(Eq, @debug.Debug)
+pub(all) enum ColorScheme {
+  Light
+  Dark
+}
+pub fn ColorScheme::equal(Self, Self) -> Bool
+pub fn ColorScheme::not_equal(Self, Self) -> Bool
+pub fn ColorScheme::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct ControlStyles {
+  hovered : Appearance?
+  pressed : Appearance?
+  focused : Appearance?
+  disabled : Appearance?
+}
+pub fn ControlStyles::equal(Self, Self) -> Bool
+pub fn ControlStyles::not_equal(Self, Self) -> Bool
+pub fn ControlStyles::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct FlexItemStyle {
+  grow : Double?
+  shrink : Double?
+  align_self : AlignSelf?
+}
+pub fn FlexItemStyle::equal(Self, Self) -> Bool
+pub fn FlexItemStyle::not_equal(Self, Self) -> Bool
+pub fn FlexItemStyle::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum JustifyContent {
+  Start
+  Center
+  End
+  SpaceBetween
+  SpaceAround
+  SpaceEvenly
+}
+pub fn JustifyContent::equal(Self, Self) -> Bool
+pub fn JustifyContent::not_equal(Self, Self) -> Bool
+pub fn JustifyContent::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct LayoutStyle {
+  width : Double?
+  height : Double?
+  min_width : Double?
+  max_width : Double?
+  min_height : Double?
+  max_height : Double?
+  padding : @foundation.Insets?
+}
+pub fn LayoutStyle::equal(Self, Self) -> Bool
+pub fn LayoutStyle::not_equal(Self, Self) -> Bool
+pub fn LayoutStyle::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Palette {
+  surface : @foundation.Color
+  control_surface : @foundation.Color
+  text : @foundation.Color
+  muted_text : @foundation.Color
+  accent : @foundation.Color
+  on_accent : @foundation.Color
+  border : @foundation.Color
+  selection : @foundation.Color
+  scrollbar_track : @foundation.Color
+  scrollbar_thumb : @foundation.Color
+}
+pub fn Palette::Palette(surface? : @foundation.Color, control_surface? : @foundation.Color, text? : @foundation.Color, muted_text? : @foundation.Color, accent? : @foundation.Color, on_accent? : @foundation.Color, border? : @foundation.Color, selection? : @foundation.Color, scrollbar_track? : @foundation.Color, scrollbar_thumb? : @foundation.Color) -> Self
+pub fn Palette::dark() -> Self
+pub fn Palette::equal(Self, Self) -> Bool
+pub fn Palette::not_equal(Self, Self) -> Bool
+pub fn Palette::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub struct ScrollbarStyle {
+  thickness : Double
+  track_color : StyleColor
+  track_radius : Double
+  thumb_color : StyleColor
+  thumb_radius : Double
+  thumb_inset : Double
+}
+pub fn ScrollbarStyle::ScrollbarStyle() -> Self
+pub fn ScrollbarStyle::equal(Self, Self) -> Bool
+pub fn ScrollbarStyle::not_equal(Self, Self) -> Bool
+pub fn ScrollbarStyle::thickness(Self, Double) -> Self
+pub fn ScrollbarStyle::thumb_color(Self, &ColorValue) -> Self
+pub fn ScrollbarStyle::thumb_inset(Self, Double) -> Self
+pub fn ScrollbarStyle::thumb_radius(Self, Double) -> Self
+pub fn ScrollbarStyle::to_repr(Self) -> @debug.Repr
+pub fn ScrollbarStyle::track_color(Self, &ColorValue) -> Self
+pub fn ScrollbarStyle::track_radius(Self, Double) -> Self
+pub impl Default for ScrollbarStyle
+
+#derive(Eq, @debug.Debug)
+pub(all) enum StyleColor {
+  Literal(@foundation.Color)
+  Token(ThemeToken[@foundation.Color])
+}
+pub fn StyleColor::equal(Self, Self) -> Bool
+pub fn StyleColor::not_equal(Self, Self) -> Bool
+pub fn StyleColor::resolve(Self, Theme) -> @foundation.Color
+pub fn StyleColor::to_repr(Self) -> @debug.Repr
+pub fn StyleColor::to_style_color(Self) -> Self
+pub impl ColorValue for StyleColor
+
+pub struct StyleDeclaration {
+  name : String
+  layout : BoxStyle
+  metrics : StyleMetrics
+  roots : ReadOnlyArray[BoxStyle]
+  // private fields
+}
+pub fn[T : StyleSpec] StyleDeclaration::StyleDeclaration(T) -> Self
+pub fn StyleDeclaration::equal(Self, Self) -> Bool
+pub fn[T] StyleDeclaration::get(Self) -> T?
+pub fn StyleDeclaration::not_equal(Self, Self) -> Bool
+pub fn StyleDeclaration::observe(Self, StyleSheet, (Bool) -> Unit) -> () -> Unit
+pub fn StyleDeclaration::resolve(Self, StyleSheet) -> ReadOnlyArray[Self]
+pub fn StyleDeclaration::same_type(Self, Self) -> Bool
+pub fn StyleDeclaration::snapshot(Self, ReadOnlyArray[Self]) -> Self?
+pub fn StyleDeclaration::to_repr(Self) -> @debug.Repr
+pub impl Eq for StyleDeclaration
+pub impl @debug.Debug for StyleDeclaration
+
+#derive(Eq, @debug.Debug)
+pub struct StyleMetrics {
+  dimensions : ReadOnlyArray[Double?]
+  fonts : ReadOnlyArray[@foundation.FontSpec?]
+  flags : ReadOnlyArray[Int32?]
+}
+pub fn StyleMetrics::StyleMetrics(dimensions? : ArrayView[Double?], fonts? : ArrayView[@foundation.FontSpec?], flags? : ArrayView[Int32?]) -> Self
+pub fn StyleMetrics::equal(Self, Self) -> Bool
+pub fn StyleMetrics::merge(Self, Self) -> Self
+pub fn StyleMetrics::not_equal(Self, Self) -> Bool
+pub fn StyleMetrics::to_repr(Self) -> @debug.Repr
+
+pub struct StyleSheet {
+  // private fields
+}
+pub fn StyleSheet::StyleSheet(Styles) -> Self
+pub fn[T : StyleSpec] StyleSheet::get(Self) -> ReadOnlyArray[T]
+pub fn[T : StyleSpec] StyleSheet::observe(Self, () -> @ref.Ref[T], (Bool) -> Unit) -> () -> Unit
+pub fn StyleSheet::set(Self, Styles) -> Unit
+
+pub struct StyleSource[T] {
+  // private fields
+}
+pub fn[T] StyleSource::equal(Self[T], Self[T]) -> Bool
+pub fn[T] StyleSource::not_equal(Self[T], Self[T]) -> Bool
+pub fn[T] StyleSource::to_repr(Self[T]) -> @debug.Repr
+pub impl[T] Eq for StyleSource[T]
+pub impl[T] @debug.Debug for StyleSource[T]
+
+pub struct Styles {
+  // private fields
+}
+pub fn Styles::Styles() -> Self
+pub fn[T : StyleSpec] Styles::add(Self, T) -> Self
+pub fn Styles::equal(Self, Self) -> Bool
+pub fn[T] Styles::get(Self) -> ReadOnlyArray[T]
+pub fn Styles::iter(Self) -> Iter[StyleDeclaration]
+pub fn Styles::merge(Self, Self) -> Self
+pub fn Styles::not_equal(Self, Self) -> Bool
+pub fn Styles::snapshot(Self) -> Self
+pub fn Styles::to_repr(Self) -> @debug.Repr
+pub impl Eq for Styles
+pub impl @debug.Debug for Styles
+
+#derive(Default, Eq, @debug.Debug)
+pub struct TextProperties {
+  font : @foundation.FontSpec?
+  align : @foundation.TextAlign?
+}
+pub fn TextProperties::equal(Self, Self) -> Bool
+pub fn TextProperties::not_equal(Self, Self) -> Bool
+pub fn TextProperties::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Theme {
+  font : @foundation.FontSpec
+  tokens : TokenValues
+  styles : Styles
+}
+pub fn Theme::Theme(font? : @foundation.FontSpec, palette? : Palette, styles? : Styles, tokens? : TokenValues) -> Self
+pub fn Theme::equal(Self, Self) -> Bool
+pub fn Theme::inherit_tokens(Self, Self) -> Self
+pub fn Theme::not_equal(Self, Self) -> Bool
+pub fn Theme::palette(Self, Palette) -> Self
+pub fn[T : ThemeValue] Theme::resolve(Self, ThemeToken[T]) -> T
+pub fn Theme::snapshot(Self) -> Self
+pub fn Theme::to_repr(Self) -> @debug.Repr
+pub fn[T : ThemeValue] Theme::token(Self, ThemeToken[T], T) -> Self
+
+pub struct ThemeToken[T] {
+  // private fields
+}
+pub fn[T] ThemeToken::ThemeToken(String, fallback~ : T) -> Self[T]
+pub fn[T] ThemeToken::equal(Self[T], Self[T]) -> Bool
+pub fn[T] ThemeToken::hash(Self[T]) -> Int32
+pub fn[T] ThemeToken::hash_combine(Self[T], Hasher) -> Unit
+pub fn[T] ThemeToken::not_equal(Self[T], Self[T]) -> Bool
+pub fn[T] ThemeToken::to_repr(Self[T]) -> @debug.Repr
+pub fn ThemeToken::to_style_color(Self[@foundation.Color]) -> StyleColor
+pub impl ColorValue for ThemeToken[@foundation.Color]
+pub impl[T] Eq for ThemeToken[T]
+pub impl[T] Hash for ThemeToken[T]
+pub impl[T] @debug.Debug for ThemeToken[T]
+
+#derive(Eq, @debug.Debug)
+pub struct TokenValues {
+  // private fields
+}
+pub fn TokenValues::TokenValues() -> Self
+pub fn TokenValues::equal(Self, Self) -> Bool
+pub fn TokenValues::not_equal(Self, Self) -> Bool
+pub fn TokenValues::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
+pub(open) trait ColorValue {
+  fn to_style_color(Self) -> StyleColor
+}
+pub impl ColorValue for @foundation.Color
+
+pub(open) trait SourceStyle : StyleSpec + Default {
+  fn with_source(Self, StyleSource[Self]?) -> Self
+  fn computed(() -> Self) -> Self = _
+  fn bind(@reactive.Binding[Self]) -> Self = _
+}
+
+pub(open) trait StyleSpec : Eq + @debug.Debug {
+  fn merge(Self, Self) -> Self
+  fn split_source(Self) -> (Self, StyleSource[Self]?) = _
+  fn[T : SourceStyle] select(Self, (Self) -> T) -> T = _
+  fn freeze_fields(Self, StyleSheet) -> Self = _
+  fn has_source(Self) -> Bool = _
+  fn root_style(Self) -> BoxStyle = _
+  fn metrics(Self) -> StyleMetrics = _
+}
+
+pub trait ThemeValue {
+  fn put_token(ThemeToken[Self], Self, TokenValues) -> TokenValues
+  fn find_token(ThemeToken[Self], Theme) -> Self?
+}
+pub impl ThemeValue for @foundation.Color

@@ -1,0 +1,20 @@
+///|
+test "flex containers compose a surface without mixing container and item fields" {
+  let surface = @style.BoxStyle()
+    .padding(@foundation.Insets::all(12.0))
+    .grow(2.0)
+    .align_self(End)
+  let first = @view.FlexStyle()
+    .surface(surface)
+    .spacing(8.0)
+    .justify_content(SpaceBetween)
+    .align_items(Center)
+  let next = first.merge(@view.FlexStyle().spacing(0.0).height(40.0))
+  assert_eq(next.surface.layout.padding, Some(@foundation.Insets::all(12.0)))
+  assert_eq(next.surface.flex.grow, Some(2.0))
+  assert_eq(next.surface.flex.align_self, Some(End))
+  assert_eq(next.spacing, Some(0.0))
+  assert_eq(next.justify_content, Some(SpaceBetween))
+  assert_eq(next.align_items, Some(Center))
+  assert_eq(first.surface.layout.height, None)
+}

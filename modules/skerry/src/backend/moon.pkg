@@ -1,0 +1,9 @@
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/text",
+  "moonbitlang/core/int",
+  "moonbitlang/core/double",
+}
+
+supported_targets = "native"

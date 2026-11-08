@@ -1,0 +1,6 @@
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive/value" @primitive,
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+}

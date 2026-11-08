@@ -1,0 +1,32 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/backend/skia"
+
+import {
+  "klaseca/skerry/backend",
+  "klaseca/skerry/foundation",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn decode_image(Bytes) -> @foundation.Image raise @foundation.ImageError
+
+pub fn load_image(String) -> @foundation.Image raise @foundation.ImageError
+
+pub fn with_renderer((&@backend.Renderer) -> Unit raise) -> Unit raise
+
+// Errors
+#derive(Eq, @debug.Debug)
+pub(all) suberror SkiaRendererError {
+  SurfacePropsCreateFailed
+  CanvasCreateFailed(width~ : Int32, height~ : Int32)
+  ImageCreateFailed(width~ : Int32, height~ : Int32)
+}
+pub fn SkiaRendererError::equal(Self, Self) -> Bool
+pub fn SkiaRendererError::not_equal(Self, Self) -> Bool
+pub fn SkiaRendererError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+
+// Type aliases
+
+// Traits

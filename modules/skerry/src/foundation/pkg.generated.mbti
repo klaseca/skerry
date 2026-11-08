@@ -1,0 +1,364 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/foundation"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+#derive(Eq, @debug.Debug)
+pub(all) suberror ImageError {
+  InvalidImageSize(width~ : Int32, height~ : Int32)
+  InvalidImageData
+  ImageFileReadFailed(String)
+}
+pub fn ImageError::equal(Self, Self) -> Bool
+pub fn ImageError::not_equal(Self, Self) -> Bool
+pub fn ImageError::to_repr(Self) -> @debug.Repr
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) enum Axis {
+  Horizontal
+  Vertical
+}
+pub fn Axis::equal(Self, Self) -> Bool
+pub fn Axis::not_equal(Self, Self) -> Bool
+pub fn Axis::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Brush {
+  Solid(Color)
+}
+pub fn Brush::equal(Self, Self) -> Bool
+pub fn Brush::not_equal(Self, Self) -> Bool
+pub fn Brush::to_repr(Self) -> @debug.Repr
+
+pub struct ChangeEvent[T] {
+  value : T
+  // private fields
+}
+pub fn[T] ChangeEvent::ChangeEvent(T) -> Self[T]
+pub fn[T] ChangeEvent::default_prevented(Self[T]) -> Bool
+pub fn[T] ChangeEvent::prevent_default(Self[T]) -> Unit
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Color {
+  r : Double
+  g : Double
+  b : Double
+  a : Double
+}
+pub fn Color::accent() -> Self
+pub fn Color::black() -> Self
+pub fn Color::equal(Self, Self) -> Bool
+pub fn Color::not_equal(Self, Self) -> Bool
+pub fn Color::rgb(r~ : Int32, g~ : Int32, b~ : Int32) -> Self
+pub fn Color::rgba(r~ : Int32, g~ : Int32, b~ : Int32, a? : Int32) -> Self
+pub fn Color::surface() -> Self
+pub fn Color::to_repr(Self) -> @debug.Repr
+pub fn Color::transparent() -> Self
+pub fn Color::white() -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Constraints {
+  min : Size
+  max : Size
+}
+pub fn Constraints::constrain(Self, Size) -> Size
+pub fn Constraints::deflate(Self, Insets) -> Self
+pub fn Constraints::equal(Self, Self) -> Bool
+pub fn Constraints::loose(Size) -> Self
+pub fn Constraints::not_equal(Self, Self) -> Bool
+pub fn Constraints::tight(Size) -> Self
+pub fn Constraints::to_repr(Self) -> @debug.Repr
+pub fn Constraints::unbounded() -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ControlState {
+  hovered : Bool
+  pressed : Bool
+  focused : Bool
+  disabled : Bool
+}
+pub fn ControlState::ControlState(hovered? : Bool, pressed? : Bool, focused? : Bool, disabled? : Bool) -> Self
+pub fn ControlState::equal(Self, Self) -> Bool
+pub fn ControlState::not_equal(Self, Self) -> Bool
+pub fn ControlState::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub struct FontSpec {
+  // private fields
+}
+pub fn FontSpec::default() -> Self
+pub fn FontSpec::equal(Self, Self) -> Bool
+pub fn FontSpec::not_equal(Self, Self) -> Bool
+pub fn FontSpec::point_size(Self) -> Double
+pub fn FontSpec::size(Self, Double) -> Self
+pub fn FontSpec::to_repr(Self) -> @debug.Repr
+
+pub struct Image {
+  width : Int32
+  height : Int32
+  row_bytes : Int32
+  // private fields
+}
+pub fn Image::Image(width~ : Int32, height~ : Int32, Bytes) -> Self raise ImageError
+pub fn Image::equal(Self, Self) -> Bool
+pub fn Image::hash(Self) -> Int32
+pub fn Image::hash_combine(Self, Hasher) -> Unit
+pub fn Image::not_equal(Self, Self) -> Bool
+pub fn Image::pixels(Self) -> Bytes
+pub fn Image::placement(Self, Rect, fit? : ImageFit, alignment? : ImageAlignment) -> ImagePlacement?
+pub fn Image::size(Self) -> Size
+pub fn Image::to_repr(Self) -> @debug.Repr
+pub impl Eq for Image
+pub impl Hash for Image
+pub impl @debug.Debug for Image
+
+#derive(Eq, @debug.Debug)
+pub(all) enum ImageAlignment {
+  TopLeft
+  TopCenter
+  TopRight
+  CenterLeft
+  Center
+  CenterRight
+  BottomLeft
+  BottomCenter
+  BottomRight
+}
+pub fn ImageAlignment::equal(Self, Self) -> Bool
+pub fn ImageAlignment::not_equal(Self, Self) -> Bool
+pub fn ImageAlignment::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum ImageFit {
+  Contain
+  Cover
+  Fill
+}
+pub fn ImageFit::equal(Self, Self) -> Bool
+pub fn ImageFit::not_equal(Self, Self) -> Bool
+pub fn ImageFit::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ImagePlacement {
+  source : Rect
+  destination : Rect
+}
+pub fn ImagePlacement::equal(Self, Self) -> Bool
+pub fn ImagePlacement::not_equal(Self, Self) -> Bool
+pub fn ImagePlacement::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Insets {
+  top : Double
+  right : Double
+  bottom : Double
+  left : Double
+}
+pub fn Insets::all(Double) -> Self
+pub fn Insets::equal(Self, Self) -> Bool
+pub fn Insets::not_equal(Self, Self) -> Bool
+pub fn Insets::symmetric(horizontal? : Double, vertical? : Double) -> Self
+pub fn Insets::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct IntrinsicSize {
+  min_width : Double
+  max_width : Double
+  min_height : Double
+  max_height : Double
+}
+pub fn IntrinsicSize::equal(Self, Self) -> Bool
+pub fn IntrinsicSize::not_equal(Self, Self) -> Bool
+pub fn IntrinsicSize::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum Key {
+  KeyBackspace
+  KeyDelete
+  KeyEscape
+  KeyTab
+  KeyEnter
+  KeySpace
+  KeyHome
+  KeyEnd
+  KeyArrowRight
+  KeyArrowLeft
+  KeyArrowUp
+  KeyArrowDown
+  KeyPageUp
+  KeyPageDown
+  KeyA
+  KeyC
+  KeyV
+  KeyX
+  KeyUnknown
+}
+pub fn Key::equal(Self, Self) -> Bool
+pub fn Key::not_equal(Self, Self) -> Bool
+pub fn Key::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct KeyEvent {
+  key : Key
+  modifiers : KeyModifiers
+  repeat : Bool
+}
+pub fn KeyEvent::KeyEvent(key~ : Key, modifiers? : KeyModifiers, repeat? : Bool) -> Self
+pub fn KeyEvent::equal(Self, Self) -> Bool
+pub fn KeyEvent::not_equal(Self, Self) -> Bool
+pub fn KeyEvent::text_edit_shortcut(Self) -> TextEditShortcut?
+pub fn KeyEvent::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct KeyModifiers {
+  shift : Bool
+  control : Bool
+  alt : Bool
+  meta : Bool
+}
+pub fn KeyModifiers::KeyModifiers(shift? : Bool, control? : Bool, alt? : Bool, meta? : Bool) -> Self
+pub fn KeyModifiers::equal(Self, Self) -> Bool
+pub fn KeyModifiers::none() -> Self
+pub fn KeyModifiers::not_equal(Self, Self) -> Bool
+pub fn KeyModifiers::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Point {
+  x : Double
+  y : Double
+}
+pub fn Point::Point(x~ : Double, y~ : Double) -> Self
+pub fn Point::equal(Self, Self) -> Bool
+pub fn Point::not_equal(Self, Self) -> Bool
+pub fn Point::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PointerEvent {
+  position : Point
+  phase : PointerPhase
+}
+pub fn PointerEvent::PointerEvent(position~ : Point, phase~ : PointerPhase) -> Self
+pub fn PointerEvent::equal(Self, Self) -> Bool
+pub fn PointerEvent::not_equal(Self, Self) -> Bool
+pub fn PointerEvent::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum PointerPhase {
+  PointerDown
+  PointerMove
+  PointerUp
+}
+pub fn PointerPhase::equal(Self, Self) -> Bool
+pub fn PointerPhase::not_equal(Self, Self) -> Bool
+pub fn PointerPhase::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Rect {
+  origin : Point
+  size : Size
+}
+pub fn Rect::Rect(x~ : Double, y~ : Double, width~ : Double, height~ : Double) -> Self
+pub fn Rect::contains(Self, Point) -> Bool
+pub fn Rect::equal(Self, Self) -> Bool
+pub fn Rect::from_size(Size) -> Self
+pub fn Rect::inset(Self, Insets) -> Self
+pub fn Rect::intersect(Self, Self) -> Self
+pub fn Rect::is_empty(Self) -> Bool
+pub fn Rect::not_equal(Self, Self) -> Bool
+pub fn Rect::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct RoundedRect {
+  rect : Rect
+  radius : Double
+}
+pub fn RoundedRect::RoundedRect(rect~ : Rect, radius~ : Double) -> Self
+pub fn RoundedRect::equal(Self, Self) -> Bool
+pub fn RoundedRect::not_equal(Self, Self) -> Bool
+pub fn RoundedRect::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct Size {
+  width : Double
+  height : Double
+}
+pub fn Size::Size(width~ : Double, height~ : Double) -> Self
+pub fn Size::equal(Self, Self) -> Bool
+pub fn Size::inflate(Self, Insets) -> Self
+pub fn Size::not_equal(Self, Self) -> Bool
+pub fn Size::to_repr(Self) -> @debug.Repr
+pub fn Size::zero() -> Self
+
+#derive(Eq, @debug.Debug)
+pub(all) enum TextAlign {
+  TextStart
+  TextCenter
+  TextEnd
+}
+pub fn TextAlign::equal(Self, Self) -> Bool
+pub fn TextAlign::not_equal(Self, Self) -> Bool
+pub fn TextAlign::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum TextEditCommand {
+  CopyText
+  CutText
+  PasteText(String)
+}
+pub fn TextEditCommand::equal(Self, Self) -> Bool
+pub fn TextEditCommand::not_equal(Self, Self) -> Bool
+pub fn TextEditCommand::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum TextEditResult {
+  TextEditIgnored
+  TextEditHandled
+  TextEditText(String)
+}
+pub fn TextEditResult::equal(Self, Self) -> Bool
+pub fn TextEditResult::not_equal(Self, Self) -> Bool
+pub fn TextEditResult::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum TextEditShortcut {
+  CopyShortcut
+  CutShortcut
+  PasteShortcut
+}
+pub fn TextEditShortcut::equal(Self, Self) -> Bool
+pub fn TextEditShortcut::not_equal(Self, Self) -> Bool
+pub fn TextEditShortcut::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TextRun {
+  text : String
+  frame : Rect
+  baseline : Double
+  font : FontSpec
+  color : Color
+  align : TextAlign
+}
+pub fn TextRun::equal(Self, Self) -> Bool
+pub fn TextRun::not_equal(Self, Self) -> Bool
+pub fn TextRun::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits
+pub(open) trait SceneRenderer {
+  fn clear(Self, Color) -> Unit
+  fn fill_rect(Self, Rect, Color) -> Unit
+  fn stroke_rect(Self, Rect, Color, Double) -> Unit
+  fn fill_rounded_rect(Self, RoundedRect, Color) -> Unit
+  fn stroke_rounded_rect(Self, RoundedRect, Color, Double) -> Unit
+  fn draw_text(Self, TextRun) -> Unit
+  fn draw_image(Self, Image, ImagePlacement) -> Unit
+  fn push_clip(Self, Rect) -> Unit
+  fn pop_clip(Self) -> Unit
+}

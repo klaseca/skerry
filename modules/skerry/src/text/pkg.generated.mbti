@@ -1,0 +1,83 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/text"
+
+import {
+  "klaseca/skerry/foundation",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct TextCacheStats {
+  enabled : Bool
+  measure_hits : Int32
+  layout_hits : Int32
+  measure_entries : Int32
+  layout_entries : Int32
+  payload_bytes : Int32
+  evictions : Int32
+}
+pub fn TextCacheStats::equal(Self, Self) -> Bool
+pub fn TextCacheStats::not_equal(Self, Self) -> Bool
+pub fn TextCacheStats::to_repr(Self) -> @debug.Repr
+
+pub(all) struct TextLayoutInput {
+  text : String
+  font : @foundation.FontSpec
+  max_width : Double?
+}
+pub fn TextLayoutInput::TextLayoutInput(text~ : String, font? : @foundation.FontSpec, max_width? : Double?) -> Self
+
+pub(all) struct TextLayoutLine {
+  text : String
+  x : Double
+  y : Double
+  width : Double
+  height : Double
+  baseline : Double
+}
+
+pub(all) struct TextLayoutResult {
+  lines : Array[TextLayoutLine]
+  size : @foundation.Size
+  baseline : Double
+  caret_positions : Array[Double]
+}
+
+pub struct TextLayoutSystem {
+  // private fields
+}
+pub fn TextLayoutSystem::cache_stats(Self) -> TextCacheStats
+pub fn TextLayoutSystem::clear_cache(Self) -> Unit
+pub fn TextLayoutSystem::from_metrics(TextMetricsProvider, cache? : Bool) -> Self
+pub fn TextLayoutSystem::layout(Self, TextLayoutInput) -> TextLayoutResult
+pub fn TextLayoutSystem::measure_count(Self) -> Int32
+pub fn TextLayoutSystem::new_session(Self) -> Self
+pub fn TextLayoutSystem::set_cache_enabled(Self, Bool) -> Unit
+
+pub(all) struct TextMeasureInput {
+  text : String
+  font : @foundation.FontSpec
+}
+pub fn TextMeasureInput::TextMeasureInput(text~ : String, font? : @foundation.FontSpec) -> Self
+
+pub(all) struct TextMetrics {
+  width : Double
+  line_height : Double
+  baseline : Double
+  caret_positions : Array[Double]
+}
+pub fn TextMetrics::TextMetrics(width~ : Double, line_height~ : Double, baseline~ : Double, caret_positions~ : Array[Double]) -> Self
+
+pub struct TextMetricsProvider {
+  // private fields
+}
+pub fn TextMetricsProvider::TextMetricsProvider(measure~ : (TextMeasureInput) -> TextMetrics) -> Self
+
+// Type aliases
+
+// Traits

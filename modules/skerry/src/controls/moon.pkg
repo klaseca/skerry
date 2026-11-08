@@ -1,0 +1,14 @@
+import {
+  "klaseca/skerry/internal/environment",
+  "klaseca/skerry/view",
+  "klaseca/skerry/value",
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+}
+
+import {
+  "klaseca/skerry/runtime",
+} for "test"

@@ -1,0 +1,17 @@
+import {
+  "klaseca/skerry/value",
+  "klaseca/skerry/internal/environment",
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "klaseca/skerry/view",
+  "klaseca/skerry/controls",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/backend",
+  "klaseca/skerry/backend/sdl" @sdl_backend,
+  "klaseca/skerry/backend/skia" @skia_backend,
+}
+
+supported_targets = "native"

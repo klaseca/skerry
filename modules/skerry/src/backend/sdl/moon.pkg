@@ -1,0 +1,29 @@
+import {
+  "klaseca/skerry/backend",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/style",
+  "klaseca/sdl" @sdl_lib,
+  "klaseca/sdl-sys" @sdl_sys,
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/int",
+}
+
+supported_targets = "native"
+
+import {
+  "klaseca/skerry/backend/skia" @skia_backend,
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/view",
+  "klaseca/skerry/controls",
+  "moonbitlang/core/env",
+} for "test"
+
+import {
+  "klaseca/skerry/backend/skia" @skia_backend,
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/text",
+  "klaseca/skerry/view",
+  "klaseca/skerry/controls",
+  "moonbitlang/core/env",
+} for "wbtest"

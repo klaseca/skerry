@@ -1,0 +1,22 @@
+import {
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/int",
+  "klaseca/skerry/backend",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/text",
+  "klaseca/skia" @skia_lib,
+  "klaseca/skia-sys" @skia_sys,
+}
+
+supported_targets = "native"
+
+import {
+  "moonbitlang/core/bench",
+  "klaseca/skerry/view",
+  "klaseca/skerry/style",
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/reactive",
+  "moonbitlang/core/json",
+  "moonbitlang/core/double",
+  "moonbitlang/x/fs",
+} for "wbtest"

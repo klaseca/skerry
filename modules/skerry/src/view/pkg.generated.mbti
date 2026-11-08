@@ -1,0 +1,349 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/view"
+
+import {
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "mizchi/crater-core",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn apply_active_control_styles(@diagnostics.ComputedStyle, @style.ControlStyles, @foundation.ControlState, theme~ : @style.Theme) -> @diagnostics.ComputedStyle
+
+pub fn apply_appearance(@diagnostics.ComputedStyle, @style.Appearance?, theme~ : @style.Theme) -> @diagnostics.ComputedStyle
+
+pub fn box(style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn column(style? : FlexStyle, Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn[T] dispatch_change(Int32, T, ((@foundation.ChangeEvent[T]) -> Unit)?, () -> Unit, is_current? : () -> Bool) -> Bool
+
+pub fn[S : @style.StyleSpec] element(style~ : S, measure? : (MeasureContext) -> (Double, Double) -> @foundation.IntrinsicSize, painter~ : Painter, events? : ElementEvents, reactivity? : Reactivity, padding? : @foundation.Insets, component_name? : String) -> View
+
+pub fn empty() -> View
+
+pub fn fill_box(Double, style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn[T, K : Eq] for_each(() -> Array[T], (T) -> K, (() -> T) -> View, key_label? : (K) -> String, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn fragment(Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn image(&@klaseca/skerry/value.ImageValue, style? : ImageStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn interactive(on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn row(style? : FlexStyle, Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn scroll_view(View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle) -> View
+
+pub fn show(() -> Bool, () -> View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn stack(Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn style_scope(light_theme? : &@klaseca/skerry/value.ThemeSource, dark_theme? : &@klaseca/skerry/value.ThemeSource, styles? : @style.Styles, inherit_styles? : Bool, () -> View) -> View
+
+pub fn text(&@klaseca/skerry/reactive/value.StringValue, style? : TextStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+pub fn text_measure(String, @foundation.FontSpec, @text.TextLayoutSystem) -> (Double, Double) -> @foundation.IntrinsicSize
+
+pub fn[T : Show] text_of(@reactive.Signal[T], style? : TextStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
+
+// Errors
+
+// Types and methods
+pub struct ComputedStyleContext {
+  frame : @foundation.Rect
+  content : @foundation.Rect
+  state : @foundation.ControlState
+  theme : @style.Theme
+  font : @foundation.FontSpec
+  styles : ReadOnlyArray[@style.StyleDeclaration]
+}
+
+pub struct ElementEvents {
+  // private fields
+}
+pub fn ElementEvents::ElementEvents(focusable? : Bool, editable? : Bool, hit_testable? : Bool, disabled? : &@klaseca/skerry/reactive/value.BoolValue, focus_entry? : () -> Int32?, on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, handle_key_down? : (@foundation.KeyEvent) -> KeyHandling, handle_text_input? : (String) -> Bool, handle_text_edit? : (@foundation.TextEditCommand) -> @foundation.TextEditResult, handle_pointer_down? : (PointerContext) -> Unit, handle_pointer_move? : (PointerContext) -> Unit, handle_pointer_up? : (PointerContext) -> Unit, handle_pointer_cancel? : () -> Unit) -> Self
+
+#derive(Default, Eq, @debug.Debug)
+pub struct FlexStyle {
+  surface : @style.BoxStyle
+  spacing : Double?
+  justify_content : @style.JustifyContent?
+  align_items : @style.AlignItems?
+  // private fields
+}
+pub fn FlexStyle::FlexStyle() -> Self
+pub fn FlexStyle::align(Self, @foundation.TextAlign) -> Self
+pub fn FlexStyle::align_items(Self, @style.AlignItems) -> Self
+pub fn FlexStyle::align_self(Self, @style.AlignSelf) -> Self
+pub fn FlexStyle::background(Self, &@style.ColorValue) -> Self
+pub fn FlexStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn FlexStyle::color(Self, &@style.ColorValue) -> Self
+pub fn FlexStyle::computed(() -> Self) -> Self
+pub fn FlexStyle::disabled(Self, @style.Appearance) -> Self
+pub fn FlexStyle::equal(Self, Self) -> Bool
+pub fn FlexStyle::focused(Self, @style.Appearance) -> Self
+pub fn FlexStyle::font(Self, @foundation.FontSpec) -> Self
+pub fn FlexStyle::grow(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::hovered(Self, @style.Appearance) -> Self
+pub fn FlexStyle::justify_content(Self, @style.JustifyContent) -> Self
+pub fn FlexStyle::max_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::max_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::merge(Self, Self) -> Self
+pub fn FlexStyle::metrics(Self) -> @style.StyleMetrics
+pub fn FlexStyle::min_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::min_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::not_equal(Self, Self) -> Bool
+pub fn FlexStyle::padding(Self, @foundation.Insets) -> Self
+pub fn FlexStyle::pressed(Self, @style.Appearance) -> Self
+pub fn FlexStyle::radius(Self, Double) -> Self
+pub fn FlexStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] FlexStyle::select(Self, (Self) -> T) -> T
+pub fn FlexStyle::shrink(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::spacing(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn FlexStyle::stroke(Self, &@style.ColorValue, width? : Double) -> Self
+pub fn FlexStyle::surface(Self, @style.BoxStyle) -> Self
+pub fn FlexStyle::to_repr(Self) -> @debug.Repr
+pub fn FlexStyle::width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub impl @style.SourceStyle for FlexStyle
+pub impl @style.StyleSpec for FlexStyle
+
+pub(all) struct HitTarget {
+  path : Array[Int32]
+  node_id : Int32
+  focusable : Bool
+  on_click : (() -> Unit)?
+  scrollbar : Bool
+}
+
+#derive(Default, Eq, @debug.Debug)
+pub struct ImageStyle {
+  frame : @style.BoxStyle
+  fit : @foundation.ImageFit?
+  alignment : @foundation.ImageAlignment?
+  // private fields
+}
+pub fn ImageStyle::ImageStyle() -> Self
+pub fn ImageStyle::align(Self, @foundation.ImageAlignment) -> Self
+pub fn ImageStyle::align_self(Self, @style.AlignSelf) -> Self
+pub fn ImageStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn ImageStyle::computed(() -> Self) -> Self
+pub fn ImageStyle::equal(Self, Self) -> Bool
+pub fn ImageStyle::fit(Self, @foundation.ImageFit) -> Self
+pub fn ImageStyle::frame(Self, @style.BoxStyle) -> Self
+pub fn ImageStyle::grow(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::max_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::max_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::merge(Self, Self) -> Self
+pub fn ImageStyle::metrics(Self) -> @style.StyleMetrics
+pub fn ImageStyle::min_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::min_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::not_equal(Self, Self) -> Bool
+pub fn ImageStyle::padding(Self, @foundation.Insets) -> Self
+pub fn ImageStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] ImageStyle::select(Self, (Self) -> T) -> T
+pub fn ImageStyle::shrink(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn ImageStyle::to_repr(Self) -> @debug.Repr
+pub fn ImageStyle::width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub impl @style.SourceStyle for ImageStyle
+pub impl @style.StyleSpec for ImageStyle
+
+#derive(Eq)
+pub(all) enum KeyHandling {
+  KeyIgnored
+  KeyHandled
+  KeyActivated
+}
+pub fn KeyHandling::equal(Self, Self) -> Bool
+pub fn KeyHandling::not_equal(Self, Self) -> Bool
+
+pub struct LayoutState {
+  // private fields
+}
+pub fn LayoutState::LayoutState(text_layout_system~ : @text.TextLayoutSystem, theme? : @style.Theme) -> Self
+pub fn LayoutState::clear_text_cache(Self) -> Unit
+pub fn LayoutState::click_at(Self, View, size~ : @foundation.Size, point~ : @foundation.Point) -> Bool
+pub fn LayoutState::dispose(Self) -> Unit
+pub fn LayoutState::hit_test(Self, View, size~ : @foundation.Size, point~ : @foundation.Point) -> HitTarget?
+pub fn LayoutState::hovered_node_id(Self) -> Int32?
+pub fn LayoutState::invalidate(Self) -> Unit
+pub fn LayoutState::last_paint_stats(Self) -> @diagnostics.PaintStats?
+pub fn LayoutState::layout(Self, View, size~ : @foundation.Size) -> @crater-core.Layout
+pub fn LayoutState::layout_count(Self) -> Int32
+pub fn LayoutState::layout_pass_count(Self) -> Int32
+pub fn LayoutState::needs_layout(Self) -> Bool
+pub fn LayoutState::paint(Self, View, size~ : @foundation.Size, &@foundation.SceneRenderer, focused_path~ : Array[Int32]?, pointer? : @foundation.Point, captured_node_id? : Int32, keyboard_pressed_node_id? : Int32, clear? : @foundation.Color) -> Unit
+pub fn LayoutState::pointer_cancel(Self) -> Unit
+pub fn LayoutState::pointer_down_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
+pub fn LayoutState::pointer_move_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
+pub fn LayoutState::pointer_up_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
+pub fn LayoutState::reveal_node(Self, View, Int32, size~ : @foundation.Size, is_current? : () -> Bool) -> Bool
+pub fn LayoutState::scroll_at(Self, View, size~ : @foundation.Size, point~ : @foundation.Point, delta~ : @foundation.Point) -> Bool
+pub fn LayoutState::scroll_key(Self, View, Int32?, @foundation.KeyEvent, size~ : @foundation.Size) -> Bool
+pub fn LayoutState::set_profile_clock(Self, (() -> Double)?) -> Unit
+pub fn LayoutState::set_theme(Self, @style.Theme) -> Bool
+pub fn LayoutState::set_theme_override(Self, Int32, @style.Theme?) -> Bool
+pub fn LayoutState::snapshot(Self, View) -> @diagnostics.TreeSnapshot?
+pub fn LayoutState::style_sheet(Self) -> @style.StyleSheet
+pub fn LayoutState::text_cache_stats(Self) -> @text.TextCacheStats
+pub fn LayoutState::text_measure_count(Self) -> Int32
+pub fn LayoutState::theme(Self) -> @style.Theme
+
+pub struct MeasureContext {
+  text_layout_system : @text.TextLayoutSystem
+  theme : @style.Theme
+  font : @foundation.FontSpec
+  style : @style.BoxStyle
+  styles : ReadOnlyArray[@style.StyleDeclaration]
+}
+
+pub struct MountContext {
+  // private fields
+}
+pub fn MountContext::invalidate_layout(Self) -> Unit
+pub fn MountContext::invalidate_paint(Self) -> Unit
+
+pub struct PaintContext {
+  renderer : &@foundation.SceneRenderer
+  text_layout_system : @text.TextLayoutSystem
+  focused : Bool
+  state : @foundation.ControlState
+  theme : @style.Theme
+  font : @foundation.FontSpec
+  padding : @foundation.Insets
+  styles : ReadOnlyArray[@style.StyleDeclaration]
+}
+pub fn PaintContext::draw_text(Self, String, @foundation.Rect, @foundation.FontSpec, @foundation.Color, @foundation.TextAlign, baseline? : Double) -> Unit
+pub fn PaintContext::draw_text_block(Self, String, @foundation.Rect, @foundation.FontSpec, @foundation.Color, @foundation.TextAlign, center_vertical? : Bool) -> Unit
+pub fn PaintContext::fill_box(Self, @foundation.Rect, @foundation.Color, Double) -> Unit
+pub fn PaintContext::stroke_appearance(Self, @foundation.Rect, Double, @diagnostics.ComputedStyle) -> Unit
+pub fn PaintContext::with_font(Self, @foundation.FontSpec) -> Self
+
+pub struct Painter {
+  // private fields
+}
+pub fn Painter::Painter((PaintContext, @foundation.Rect) -> Unit) -> Self
+pub fn Painter::empty() -> Self
+pub fn Painter::with_computed_style(Self, (ComputedStyleContext) -> @diagnostics.ComputedStyle) -> Self
+
+pub struct PointerContext {
+  align : @foundation.TextAlign
+  position : @foundation.Point
+  text_layout_system : @text.TextLayoutSystem
+  font : @foundation.FontSpec
+  size : @foundation.Size
+  padding : @foundation.Insets
+}
+
+pub struct Reactivity {
+  // private fields
+}
+pub fn Reactivity::Reactivity(mount? : (MountContext) -> () -> Unit) -> Self
+pub fn Reactivity::paint(() -> Unit) -> Self
+pub fn Reactivity::with_text(Self, TextContent, needs_layout? : () -> Bool) -> Self
+
+#derive(Default, Eq, @debug.Debug)
+pub struct TextAppearance {
+  color : @style.StyleColor?
+}
+pub fn TextAppearance::TextAppearance() -> Self
+pub fn TextAppearance::color(Self, &@style.ColorValue) -> Self
+pub fn TextAppearance::equal(Self, Self) -> Bool
+pub fn TextAppearance::not_equal(Self, Self) -> Bool
+pub fn TextAppearance::to_repr(Self) -> @debug.Repr
+
+pub struct TextContent {
+  id : Int32
+  // private fields
+}
+pub fn TextContent::TextContent(&@klaseca/skerry/reactive/value.StringValue) -> Self
+pub fn TextContent::get(Self) -> String
+
+#derive(Default, Eq, @debug.Debug)
+pub struct TextStates {
+  hovered : TextAppearance?
+  pressed : TextAppearance?
+  focused : TextAppearance?
+  disabled : TextAppearance?
+}
+pub fn TextStates::equal(Self, Self) -> Bool
+pub fn TextStates::not_equal(Self, Self) -> Bool
+pub fn TextStates::to_repr(Self) -> @debug.Repr
+
+#derive(Default, Eq, @debug.Debug)
+pub struct TextStyle {
+  frame : @style.BoxStyle
+  font : @foundation.FontSpec?
+  color : @style.StyleColor?
+  align : @foundation.TextAlign?
+  controls : TextStates
+  // private fields
+}
+pub fn TextStyle::TextStyle() -> Self
+pub fn TextStyle::align(Self, @foundation.TextAlign) -> Self
+pub fn TextStyle::align_self(Self, @style.AlignSelf) -> Self
+pub fn TextStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn TextStyle::color(Self, &@style.ColorValue) -> Self
+pub fn TextStyle::computed(() -> Self) -> Self
+pub fn TextStyle::disabled(Self, TextAppearance) -> Self
+pub fn TextStyle::equal(Self, Self) -> Bool
+pub fn TextStyle::focused(Self, TextAppearance) -> Self
+pub fn TextStyle::font(Self, @foundation.FontSpec) -> Self
+pub fn TextStyle::frame(Self, @style.BoxStyle) -> Self
+pub fn TextStyle::grow(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::hovered(Self, TextAppearance) -> Self
+pub fn TextStyle::max_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::max_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::merge(Self, Self) -> Self
+pub fn TextStyle::metrics(Self) -> @style.StyleMetrics
+pub fn TextStyle::min_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::min_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::not_equal(Self, Self) -> Bool
+pub fn TextStyle::padding(Self, @foundation.Insets) -> Self
+pub fn TextStyle::pressed(Self, TextAppearance) -> Self
+pub fn TextStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] TextStyle::select(Self, (Self) -> T) -> T
+pub fn TextStyle::shrink(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub fn TextStyle::to_repr(Self) -> @debug.Repr
+pub fn TextStyle::width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
+pub impl @style.SourceStyle for TextStyle
+pub impl @style.StyleSpec for TextStyle
+
+pub struct View {
+  // private fields
+}
+pub fn View::blur_path(Self, Array[Int32]) -> Unit
+pub fn View::click_at(Self, size~ : @foundation.Size, point~ : @foundation.Point, text_layout_system~ : @text.TextLayoutSystem) -> Bool
+pub fn View::clip(Self) -> Self
+pub fn View::component(Self, String) -> Self
+pub fn View::debug(Self, name? : String, source? : @diagnostics.SourceLocation) -> Self
+pub fn View::dispatch_key_down_path(Self, Array[Int32], @foundation.KeyEvent) -> KeyHandling
+pub fn View::focus_group(Self, () -> Int32?) -> Self
+pub fn View::focus_group_fallback(Self, Int32) -> Int32?
+pub fn View::focus_group_key_target(Self, Array[Int32], @foundation.KeyEvent) -> HitTarget?
+pub fn View::focus_path(Self, Array[Int32]) -> Bool
+pub fn View::focusable_paths(Self) -> Array[Array[Int32]]
+pub fn View::is_enabled_path(Self, Array[Int32]) -> Bool
+pub fn View::key_down_path(Self, Array[Int32], @foundation.KeyEvent) -> Bool
+pub fn View::layout(Self, size~ : @foundation.Size, text_layout_system~ : @text.TextLayoutSystem) -> @crater-core.Layout
+pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_dirty~ : () -> Unit, on_node_detach? : (Int32) -> Unit, on_theme_change? : (Int32, @style.Theme?) -> Unit, on_disabled_change? : (Int32) -> Unit, style_sheet? : @style.StyleSheet) -> () -> Unit
+pub fn View::node_id_at_path(Self, Array[Int32]) -> Int32?
+pub fn View::path_for_node_id(Self, Int32) -> Array[Int32]?
+pub fn View::pointer_cancel_path(Self, Array[Int32]) -> Bool
+pub fn View::tab_focus_paths(Self, focused_node_id? : Int32) -> Array[Array[Int32]]
+pub fn View::text_edit_path(Self, Array[Int32], @foundation.TextEditCommand) -> @foundation.TextEditResult
+pub fn View::text_input_path(Self, Array[Int32], String) -> Bool
+pub fn View::translated(Self, @foundation.Point) -> Self
+
+// Type aliases
+pub type Measure = (Double, Double) -> @foundation.IntrinsicSize
+
+// Traits

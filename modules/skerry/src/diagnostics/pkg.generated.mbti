@@ -1,0 +1,151 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry/diagnostics"
+
+import {
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/style",
+  "moonbitlang/core/debug",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+#derive(Eq, @debug.Debug)
+pub(all) struct ComponentSnapshot {
+  id : Int32
+  name : String
+  debug_name : String?
+  source : SourceLocation?
+}
+pub fn ComponentSnapshot::equal(Self, Self) -> Bool
+pub fn ComponentSnapshot::not_equal(Self, Self) -> Bool
+pub fn ComponentSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ComputedStyle {
+  font : @foundation.FontSpec?
+  color : @foundation.Color?
+  background : @foundation.Color?
+  radius : Double?
+  align : @foundation.TextAlign?
+  spacing : Double?
+  stroke_color : @foundation.Color?
+  stroke_width : Double?
+  marker_color : @foundation.Color?
+  placeholder_font : @foundation.FontSpec?
+  placeholder_align : @foundation.TextAlign?
+  indicator_size : @foundation.Size?
+  indicator_gap : Double?
+  placeholder_color : @foundation.Color?
+  caret_color : @foundation.Color?
+  selection_color : @foundation.Color?
+}
+pub fn ComputedStyle::ComputedStyle(font? : @foundation.FontSpec, color? : @foundation.Color, background? : @foundation.Color, radius? : Double, align? : @foundation.TextAlign, spacing? : Double, stroke_color? : @foundation.Color, stroke_width? : Double, marker_color? : @foundation.Color, placeholder_font? : @foundation.FontSpec, placeholder_align? : @foundation.TextAlign, indicator_size? : @foundation.Size, indicator_gap? : Double, placeholder_color? : @foundation.Color, caret_color? : @foundation.Color, selection_color? : @foundation.Color) -> Self
+pub fn ComputedStyle::equal(Self, Self) -> Bool
+pub fn ComputedStyle::not_equal(Self, Self) -> Bool
+pub fn ComputedStyle::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ImageSnapshot {
+  size : @foundation.Size
+  fit : @foundation.ImageFit
+  alignment : @foundation.ImageAlignment
+  placement : @foundation.ImagePlacement?
+}
+pub fn ImageSnapshot::equal(Self, Self) -> Bool
+pub fn ImageSnapshot::not_equal(Self, Self) -> Bool
+pub fn ImageSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct NodeSnapshot {
+  id : Int32
+  parent_id : Int32?
+  children : ReadOnlyArray[Int32]
+  component_name : String
+  components : ReadOnlyArray[ComponentSnapshot]
+  style_type : String?
+  debug_name : String?
+  source : SourceLocation?
+  key_label : String?
+  specified_style : @style.StyleDeclaration?
+  style_layers : ReadOnlyArray[@style.StyleDeclaration]
+  computed_style : ComputedStyle?
+  theme : @style.Theme
+  frame : @foundation.Rect
+  content : @foundation.Rect
+  clip : @foundation.Rect
+  scroll : ScrollSnapshot?
+  image : ImageSnapshot?
+  padding : @foundation.Insets
+  border : @foundation.Insets
+  disabled : Bool
+  state : @foundation.ControlState
+  focusable : Bool
+  hit_testable : Bool
+}
+pub fn NodeSnapshot::equal(Self, Self) -> Bool
+pub fn NodeSnapshot::not_equal(Self, Self) -> Bool
+pub fn NodeSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct PaintStats {
+  layout_count : Int32
+  layout_pass_count : Int32
+  text_measure_count : Int32
+  layout_ms : Double?
+  paint_ms : Double?
+}
+pub fn PaintStats::equal(Self, Self) -> Bool
+pub fn PaintStats::not_equal(Self, Self) -> Bool
+pub fn PaintStats::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ScrollSnapshot {
+  axis : @foundation.Axis
+  viewport : @foundation.Rect
+  content_size : @foundation.Size
+  offset : Double
+  max_offset : Double
+  scrollbar : ScrollbarSnapshot?
+}
+pub fn ScrollSnapshot::equal(Self, Self) -> Bool
+pub fn ScrollSnapshot::not_equal(Self, Self) -> Bool
+pub fn ScrollSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct ScrollbarSnapshot {
+  track : @foundation.Rect
+  thumb : @foundation.Rect
+  style : @style.ScrollbarStyle
+  track_color : @foundation.Color
+  thumb_color : @foundation.Color
+}
+pub fn ScrollbarSnapshot::equal(Self, Self) -> Bool
+pub fn ScrollbarSnapshot::not_equal(Self, Self) -> Bool
+pub fn ScrollbarSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct SourceLocation {
+  file : String
+  line : Int32
+  column : Int32?
+}
+pub fn SourceLocation::SourceLocation(file~ : String, line~ : Int32, column? : Int32) -> Self
+pub fn SourceLocation::equal(Self, Self) -> Bool
+pub fn SourceLocation::not_equal(Self, Self) -> Bool
+pub fn SourceLocation::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct TreeSnapshot {
+  size : @foundation.Size
+  nodes : ReadOnlyArray[NodeSnapshot]
+}
+pub fn TreeSnapshot::equal(Self, Self) -> Bool
+pub fn TreeSnapshot::not_equal(Self, Self) -> Bool
+pub fn TreeSnapshot::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

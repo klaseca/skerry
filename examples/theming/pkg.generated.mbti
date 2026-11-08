@@ -1,0 +1,35 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "klaseca/skerry-examples/theming"
+
+import {
+  "klaseca/skerry/style",
+  "klaseca/skerry/view",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn card(String, Array[@view.View], style? : CardStyle) -> @view.View
+
+// Errors
+
+// Types and methods
+#derive(Default, Eq, @debug.Debug)
+pub struct CardStyle {
+  surface : @view.FlexStyle
+  title : @view.TextStyle
+}
+pub fn CardStyle::CardStyle() -> Self
+pub fn CardStyle::equal(Self, Self) -> Bool
+pub fn CardStyle::merge(Self, Self) -> Self
+pub fn CardStyle::metrics(Self) -> @style.StyleMetrics
+pub fn CardStyle::not_equal(Self, Self) -> Bool
+pub fn CardStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] CardStyle::select(Self, (Self) -> T) -> T
+pub fn CardStyle::surface(Self, @view.FlexStyle) -> Self
+pub fn CardStyle::title(Self, @view.TextStyle) -> Self
+pub fn CardStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.StyleSpec for CardStyle
+
+// Type aliases
+
+// Traits

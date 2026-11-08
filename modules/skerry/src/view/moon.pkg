@@ -1,0 +1,20 @@
+import {
+  "klaseca/skerry/value",
+  "klaseca/skerry/diagnostics",
+  "klaseca/skerry/foundation",
+  "klaseca/skerry/internal/environment",
+  "klaseca/skerry/reactive",
+  "klaseca/skerry/style",
+  "klaseca/skerry/text",
+  "mizchi/crater-layout" @crater_layout,
+  "mizchi/crater-layout/block" @crater_block,
+  "mizchi/crater-core" @crater_core,
+  "mizchi/crater-core/node" @crater_node,
+  "mizchi/css/style" @css_style,
+  "mizchi/css/values" @css_values,
+}
+
+import {
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/controls",
+} for "test"
