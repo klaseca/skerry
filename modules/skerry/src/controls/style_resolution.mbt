@@ -25,14 +25,22 @@ fn control_defaults(
       }),
     }
   } else {
+    if shade_background && (state.hovered || state.pressed) {
+      // Compose both overlays before choosing their direction from the original
+      // background. Hover must not reverse the pressed effect near the midpoint.
+      let hover = if state.hovered { 0.04 } else { 0.0 }
+      let press = if state.pressed { 0.12 } else { 0.0 }
+      let amount = hover + (1.0 - hover) * press
+      result = {
+        ..result,
+        background: result.background.map(color => {
+          control_feedback_color(color, amount)
+        }),
+      }
+    }
     if state.hovered {
       result = {
         ..result,
-        background: if shade_background {
-          result.background.map(color => shade_control(color, 0.04))
-        } else {
-          result.background
-        },
         stroke_color: result.stroke_color.map(_ => {
           theme.resolve(@style.accent_token)
         }),
@@ -51,12 +59,6 @@ fn control_defaults(
           ),
         ),
         stroke_width: Some(2.0),
-      }
-    }
-    if state.pressed && shade_background {
-      result = {
-        ..result,
-        background: result.background.map(color => shade_control(color, 0.12)),
       }
     }
   }
@@ -97,15 +99,19 @@ fn apply_control_style(
 }
 
 ///|
-fn shade_control(
+fn control_feedback_color(
   color : @foundation.Color,
   amount : Double,
 ) -> @foundation.Color {
+  // Weighted RGB brightness also handles custom palette colors independently
+  // of the application's Light/Dark/System preference. Keep the source alpha.
+  let brightness = color.r * 0.2126 + color.g * 0.7152 + color.b * 0.0722
+  let target = if brightness < 0.5 { 1.0 } else { 0.0 }
   {
     ..color,
-    r: color.r * (1.0 - amount),
-    g: color.g * (1.0 - amount),
-    b: color.b * (1.0 - amount),
+    r: color.r + (target - color.r) * amount,
+    g: color.g + (target - color.g) * amount,
+    b: color.b + (target - color.b) * amount,
   }
 }
 

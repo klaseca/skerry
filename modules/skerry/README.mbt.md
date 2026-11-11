@@ -1119,10 +1119,13 @@ let button_style = @skerry.ButtonStyle().surface(
 ```
 
 Enabled controls first resolve component defaults for active states, including
-the focus outline. Buttons, checkboxes and radio indicators also shade their
-background on hover/press. Text inputs keep their background and text colors
-steady while hovering, focusing and selecting text; their border still indicates
-hover/focus. Explicit base properties then apply, followed by explicit
+the focus outline. Buttons, checkboxes, radio indicators and Select options also
+adjust their default background on hover/press: dark colors become lighter and
+light colors become darker, preserving alpha. This follows the resolved color,
+including custom token values. Text inputs and the Select field keep their
+background steady; their border still indicates hover/focus. Text input text
+colors also stay steady while hovering, focusing and selecting text.
+Explicit base properties then apply, followed by explicit
 active-state overrides in order: hovered,
 focused, pressed. Unset fields preserve the earlier result. A background set on
 the base stays literal on hover/press; set state backgrounds for custom feedback.
