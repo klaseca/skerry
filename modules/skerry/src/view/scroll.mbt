@@ -9,6 +9,8 @@
 /// scrollbar_style configures thickness and the separate track/thumb appearance.
 /// When omitted, its colors follow the root palette. An explicit style is a
 /// complete value and keeps its colors across theme changes.
+/// scrollbar_gutter reserves a stable strip for the track, including when the
+/// content fits. It reduces layout/child clipping instead of covering content.
 ///
 /// ```mbt check
 /// test {
@@ -50,8 +52,15 @@ pub fn scroll_view(
   disabled? : &@value.BoolValue,
   scrollbar~ : Bool = true,
   scrollbar_style? : @style.ScrollbarStyle,
+  scrollbar_gutter~ : Bool = false,
 ) -> View {
   let style = resolve_style(style)
+  let thickness = scrollbar_style.unwrap_or(ScrollbarStyle()).thickness
+  let gutter = if scrollbar && scrollbar_gutter && thickness.is_finite() {
+    thickness.max(0.0)
+  } else {
+    0.0
+  }
   let offset = offset.unwrap_or(@reactive.signal(0.0))
   let nodes = Ref([child.node])
   view_from_node({
@@ -64,14 +73,21 @@ pub fn scroll_view(
     geometry: Some({
       translation: Point(x=0.0, y=0.0),
       clip_frame: false,
-      scroll: Some({ axis, offset, scrollbar, scrollbar_style, }),
+      scroll: Some({ axis, offset, scrollbar, scrollbar_style, gutter, }),
       theme: None,
       popup: None,
     }),
     make_crater: fn(text_layout_system, styles) {
+      let padding = styles.style.layout.padding.unwrap_or(
+        @foundation.Insets::all(0.0),
+      )
+      let padding = match axis {
+        Vertical => { ..padding, right: padding.right + gutter, }
+        Horizontal => { ..padding, bottom: padding.bottom + gutter, }
+      }
       let viewport = {
         ..flex_style({
-          ..flex_spec(axis, FlexStyle().surface(styles.style)),
+          ..flex_spec(axis, FlexStyle().surface(styles.style.padding(padding))),
           spacing: 0.0,
         }),
         overflow_x: Hidden,

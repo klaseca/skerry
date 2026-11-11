@@ -288,6 +288,8 @@ fn[T, K] dispose_keyed_entry(entry : KeyedChild[T, K]) -> Unit {
 /// mount), after the update's source values materialize. Custom hosts revalidate
 /// focus and capture, including descendants of the reported node, and invalidate
 /// before invoking application callbacks. Mount before using reactive properties.
+/// Custom hosts can provide request_focus and a monotonic millisecond clock for
+/// controls that navigate internally. UiRoot supplies these automatically.
 /// UiRoot handles this automatically. Neither callback requests layout.
 /// This instance and its descendants must not have been mounted before. Reusing
 /// a mounted/disposed instance or placing it twice in a tree is a programming
@@ -299,6 +301,8 @@ pub fn View::mount_reactivity(
   on_node_detach~ : (Int32) -> Unit = fn(_) { () },
   on_theme_change~ : (Int32, @style.Theme?) -> Unit = fn(_, _) { () },
   on_disabled_change~ : (Int32) -> Unit = fn(_) { () },
+  request_focus~ : (Int32) -> Bool = fn(_) { false },
+  clock~ : () -> Double = fn() { 0.0 },
   style_sheet? : @style.StyleSheet,
 ) -> () -> Unit {
   self.with_scope(fn() {
@@ -308,6 +312,8 @@ pub fn View::mount_reactivity(
       on_node_detach,
       on_theme_change,
       on_disabled_change,
+      request_focus,
+      clock,
       style_sheet: match @environment.current_theme_provider() {
         Some(provider) => Some(provider.sheet())
         None => style_sheet

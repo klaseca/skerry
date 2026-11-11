@@ -197,3 +197,25 @@ impl @foundation.SceneRenderer for TextRunRecorder with fn draw_image(
 ) {
   ()
 }
+
+///|
+impl @foundation.SceneRenderer for TextColorRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}
+
+///|
+impl @foundation.SceneRenderer for TextRunRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}

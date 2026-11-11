@@ -36,11 +36,11 @@ pub fn image(&@klaseca/skerry/value.ImageValue, style? : ImageStyle, disabled? :
 
 pub fn interactive(on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
-pub fn popup(View, open? : @reactive.Signal[Bool], trigger? : PopupTrigger, placement? : PopupPlacement, gap? : Double, focus? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> View) -> View
+pub fn popup(View, open? : @reactive.Signal[Bool], trigger? : PopupTrigger, placement? : PopupPlacement, gap? : Double, focus? : Bool, match_anchor_width? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> View) -> View
 
 pub fn row(style? : FlexStyle, Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
-pub fn scroll_view(View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle) -> View
+pub fn scroll_view(View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle, scrollbar_gutter? : Bool) -> View
 
 pub fn show(() -> Bool, () -> View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
@@ -212,6 +212,8 @@ pub struct MountContext {
 }
 pub fn MountContext::invalidate_layout(Self) -> Unit
 pub fn MountContext::invalidate_paint(Self) -> Unit
+pub fn MountContext::now(Self) -> Double
+pub fn MountContext::request_focus(Self, Int32) -> Bool
 
 pub struct PaintContext {
   renderer : &@foundation.SceneRenderer
@@ -367,7 +369,7 @@ pub fn View::focusable_paths(Self) -> Array[Array[Int32]]
 pub fn View::is_enabled_path(Self, Array[Int32]) -> Bool
 pub fn View::key_down_path(Self, Array[Int32], @foundation.KeyEvent) -> Bool
 pub fn View::layout(Self, size~ : @foundation.Size, text_layout_system~ : @text.TextLayoutSystem) -> @crater-core.Layout
-pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_dirty~ : () -> Unit, on_node_detach? : (Int32) -> Unit, on_theme_change? : (Int32, @style.Theme?) -> Unit, on_disabled_change? : (Int32) -> Unit, style_sheet? : @style.StyleSheet) -> () -> Unit
+pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_dirty~ : () -> Unit, on_node_detach? : (Int32) -> Unit, on_theme_change? : (Int32, @style.Theme?) -> Unit, on_disabled_change? : (Int32) -> Unit, request_focus? : (Int32) -> Bool, clock? : () -> Double, style_sheet? : @style.StyleSheet) -> () -> Unit
 pub fn View::node_id_at_path(Self, Array[Int32]) -> Int32?
 pub fn View::path_for_node_id(Self, Int32) -> Array[Int32]?
 pub fn View::pointer_cancel_path(Self, Array[Int32]) -> Bool

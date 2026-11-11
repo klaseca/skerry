@@ -200,9 +200,12 @@ pub using @controls {
   type CheckboxStyle,
   type RadioStyle,
   type TextInputStyle,
+  type SelectStyle,
+  type SelectOption,
   button,
   checkbox,
   radio,
   radio_group,
   text_input,
+  select,
 }

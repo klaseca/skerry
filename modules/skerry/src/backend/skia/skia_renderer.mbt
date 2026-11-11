@@ -131,7 +131,32 @@ impl @foundation.SceneRenderer for SkiaSceneRenderer with fn fill_rect(
 ) {
   self.paint.set_style(Fill)
   self.paint.set_color(to_skia_color(color))
+  // Adjacent axis-aligned backgrounds must share a hard pixel edge. Separate
+  // antialiased fills otherwise leave seams at fractional positions/scales.
+  self.paint.set_antialias(false)
   self.canvas.draw_round_rect(to_skia_rect(rect), 0.0, 0.0, self.paint)
+  self.paint.set_antialias(true)
+}
+
+///|
+impl @foundation.SceneRenderer for SkiaSceneRenderer with fn draw_line(
+  self,
+  start,
+  end,
+  color,
+  width,
+) {
+  guard width > 0.0 else { return }
+  self.paint.set_style(Stroke)
+  self.paint.set_stroke_width(Float::from_double(width))
+  self.paint.set_color(to_skia_color(color))
+  self.canvas.draw_line(
+    Float::from_double(start.x),
+    Float::from_double(start.y),
+    Float::from_double(end.x),
+    Float::from_double(end.y),
+    self.paint,
+  )
 }
 
 ///|

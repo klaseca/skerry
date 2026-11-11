@@ -274,3 +274,14 @@ test "a pointer-only element shares applied style geometry and opts into diagnos
   assert_eq(after.tree.nodes[1].frame.size.width, 120.0)
   assert_eq(after.frame.layout_count, before.frame.layout_count + 1)
 }
+
+///|
+impl @foundation.SceneRenderer for ExtensionRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}

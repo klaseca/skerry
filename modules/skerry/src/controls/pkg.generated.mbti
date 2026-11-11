@@ -19,6 +19,8 @@ pub fn radio(selected? : @reactive.Signal[Bool], label? : &@value.StringValue, s
 
 pub fn[T : Eq, L : @value.StringValue] radio_group(@reactive.Signal[T], Array[T], label~ : (T) -> L, style? : @view.FlexStyle, item_style? : RadioStyle, item_disabled? : (T) -> Bool, on_change? : (@foundation.ChangeEvent[T]) -> Unit, disabled? : &@value.BoolValue) -> @view.View
 
+pub fn[T : Eq] select(ArrayView[SelectOption[T]], selected? : @reactive.Signal[T?], placeholder? : &@value.StringValue, style? : SelectStyle, on_change? : (@foundation.ChangeEvent[T?]) -> Unit, disabled? : &@value.BoolValue, placement? : @view.PopupPlacement) -> @view.View
+
 pub fn text_input(value? : @reactive.Signal[String], placeholder? : &@value.StringValue, style? : TextInputStyle, on_change? : (@foundation.ChangeEvent[String]) -> Unit, on_submit? : (String) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
 
 // Errors
@@ -110,6 +112,45 @@ pub fn[T : @style.SourceStyle] RadioStyle::select(Self, (Self) -> T) -> T
 pub fn RadioStyle::to_repr(Self) -> @debug.Repr
 pub impl @style.SourceStyle for RadioStyle
 pub impl @style.StyleSpec for RadioStyle
+
+pub struct SelectOption[T] {
+  value : T
+  // private fields
+}
+pub fn[T] SelectOption::SelectOption(T, label~ : &@value.StringValue, disabled? : &@value.BoolValue) -> Self[T]
+
+#derive(Default, Eq, @debug.Debug)
+pub struct SelectStyle {
+  surface : @style.BoxStyle
+  label : @view.TextStyle
+  placeholder : @view.TextStyle
+  list : @style.BoxStyle
+  option : ButtonStyle
+  selected : ButtonStyle
+  // private fields
+}
+pub fn SelectStyle::SelectStyle() -> Self
+pub fn SelectStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn SelectStyle::computed(() -> Self) -> Self
+pub fn SelectStyle::disabled(Self, @style.Appearance) -> Self
+pub fn SelectStyle::equal(Self, Self) -> Bool
+pub fn SelectStyle::focused(Self, @style.Appearance) -> Self
+pub fn SelectStyle::hovered(Self, @style.Appearance) -> Self
+pub fn SelectStyle::label(Self, @view.TextStyle) -> Self
+pub fn SelectStyle::list(Self, @style.BoxStyle) -> Self
+pub fn SelectStyle::merge(Self, Self) -> Self
+pub fn SelectStyle::metrics(Self) -> @style.StyleMetrics
+pub fn SelectStyle::not_equal(Self, Self) -> Bool
+pub fn SelectStyle::option(Self, ButtonStyle) -> Self
+pub fn SelectStyle::placeholder(Self, @view.TextStyle) -> Self
+pub fn SelectStyle::pressed(Self, @style.Appearance) -> Self
+pub fn SelectStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] SelectStyle::select(Self, (Self) -> T) -> T
+pub fn SelectStyle::selected(Self, ButtonStyle) -> Self
+pub fn SelectStyle::surface(Self, @style.BoxStyle) -> Self
+pub fn SelectStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for SelectStyle
+pub impl @style.StyleSpec for SelectStyle
 
 #derive(Default, Eq, @debug.Debug)
 pub struct TextInputStyle {

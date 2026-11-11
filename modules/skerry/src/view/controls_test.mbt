@@ -240,3 +240,14 @@ impl @foundation.SceneRenderer for CheckboxPaintRecorder with fn draw_image(
 ) {
   ()
 }
+
+///|
+impl @foundation.SceneRenderer for CheckboxPaintRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}

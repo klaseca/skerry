@@ -1775,6 +1775,9 @@ bottom for horizontal scrolling. It keeps the content width/height unchanged,
 uses a proportional thumb with a minimum target size, and disappears when the
 content fits. The default is a 12-unit theme-colored track with an 8-unit thumb
 inset by 2 units. These logical dimensions follow the display scale.
+Set `scrollbar_gutter=true` to reserve the styled track thickness in layout and
+child clipping. This strip remains when content fits, so its cross-axis size
+stays stable. A disabled scrollbar reserves no space. Select uses this mode.
 Use `ScrollbarStyle()` with methods to configure thickness, track/thumb
 colors, separate corner radii and thumb inset:
 
@@ -1829,6 +1832,75 @@ pointer move/release still reach their target outside a clip, while click
 activation requires a visible hit on release.
 
 Virtualized lists are a future extension.
+
+## Select
+
+`select` builds a single-value selector on top of `popup` from an
+`ArrayView[SelectOption[T]]`. Each option describes a value of type `T`, its label
+and whether it is disabled. The writable model is `Signal[T?]`; `None` displays the placeholder.
+Without `selected`, the control owns an initially empty selection.
+
+```mbt check
+///|
+test "select with a typed model" {
+  let selected = @skerry.signal(Some("moonbit"))
+  let rust_label = @skerry.signal("Rust")
+  let go_disabled = @skerry.signal(true)
+  let control = @skerry.select(
+    [
+      @skerry.SelectOption("moonbit", label="MoonBit"),
+      @skerry.SelectOption("rust", label=rust_label),
+      @skerry.SelectOption("go", label="Go", disabled=go_disabled),
+    ],
+    selected~,
+    placeholder="Choose a language",
+    style=@skerry.SelectStyle()
+      .surface(@skerry.BoxStyle().width(220.0))
+      .list(@skerry.BoxStyle().max_height(180.0)),
+    on_change=fn(event) {
+      if event.value == Some("rust") {
+        event.prevent_default()
+      }
+    },
+  )
+  ignore(control)
+}
+```
+
+Click, Enter, Space or Up/Down opens the list at the selected enabled option
+(otherwise the first enabled one; Up starts at the last when selection is empty).
+Up/Down wraps through enabled options. Home/End goes to the first/last enabled
+option. Navigation moves focus and reveals that option without writing the model.
+Enter, Space or a click confirms it. A prevented change keeps the list open;
+confirming the current value simply closes it without another change event.
+Escape or an outside press dismisses without committing. Tab stays within the
+open popup. Closing restores focus to the field.
+
+Text input searches enabled labels by a case-insensitive prefix. A pause longer
+than 700 ms starts a new prefix; repeating a letter cycles matching options.
+Searching schedules no timer or idle work. Options are copied once. Each label
+accepts String, Signal[String], Computed[String] or Binding[String]; disabled
+accepts the corresponding Bool sources and defaults to false. Construction reads
+neither source. Option labels and availability are subscribed while the list is
+open; the selected field label is also subscribed while closed. Input, painting
+and snapshots read applied values. Descriptions can be reused in several Select
+instances; each instance owns its nodes and subscriptions. Values require Eq and
+do not need to implement Show.
+Empty options disable the field. A model value absent from the options displays
+the placeholder and is preserved until a user confirms another value.
+
+The floating list matches the field width, flips at window edges and contains a
+scroll viewport with a stable gutter so options do not lie beneath the scrollbar.
+The arrow and check are vector strokes, independent of font glyph coverage.
+Custom renderers implement `SceneRenderer::draw_line(start, end, color, width)`
+in logical coordinates; the Skia backend scales and antialiases these strokes.
+`SelectStyle` has `surface`, `label`, `placeholder`, `list`,
+`option` and `selected` parts. `option` and `selected` accept `ButtonStyle` for
+their surface/text declarations; `selected` layers over `option` for the committed
+value, also marked with a check, while focus marks the active navigation target.
+Global SelectStyle rules,
+theme tokens and reactive styles work through the same style projections as
+custom components. `placement` accepts the same positions as `popup`.
 
 ## Popups
 

@@ -6,6 +6,8 @@ pub struct MountContext {
   priv on_theme_change : (Int32, @style.Theme?) -> Unit
   priv on_disabled_change : (Int32) -> Unit
   priv can_change : (Int32) -> Bool
+  priv request_focus : (Int32) -> Bool
+  priv clock : () -> Double
   priv style_sheet : @style.StyleSheet?
   priv style_theme : @environment.ThemeProvider?
 }
@@ -41,6 +43,22 @@ pub fn MountContext::invalidate_layout(self : MountContext) -> Unit {
 ///|
 pub fn MountContext::invalidate_paint(self : MountContext) -> Unit {
   (self.mark_paint_dirty)()
+}
+
+///|
+/// Focus a live, enabled element and reveal it in its scroll viewport.
+/// Returns false if the host cannot focus the requested node.
+pub fn MountContext::request_focus(
+  self : MountContext,
+  node_id : Int32,
+) -> Bool {
+  (self.request_focus)(node_id)
+}
+
+///|
+/// Monotonic milliseconds supplied by the host. Reading time schedules no work.
+pub fn MountContext::now(self : MountContext) -> Double {
+  (self.clock)()
 }
 
 ///|

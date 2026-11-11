@@ -80,12 +80,18 @@ fn LayoutState::layout_popups(
   layout : @crater_core.Layout,
   parent_styles : StyleContext,
   viewport : @foundation.Size,
+  anchor_width~ : Double = 0.0,
 ) -> @crater_core.Layout {
   let layout = if node.is_popup() && !node.children.val.is_empty() {
     let crater = node.crater_content(self.text_layout_system, parent_styles)
     let crater = with_node_style(crater, {
       ..crater.style,
-      width: FitContent(viewport.width.max(0.0)),
+      width: if node.geometry
+        is Some({ popup: Some({ match_anchor_width: true, .. }), .. }) {
+        Length(anchor_width.max(0.0).min(viewport.width.max(0.0)))
+      } else {
+        FitContent(viewport.width.max(0.0))
+      },
       max_width: Length(viewport.width.max(0.0)),
       max_height: Length(viewport.height.max(0.0)),
     })
@@ -98,7 +104,17 @@ fn LayoutState::layout_popups(
   let styles = node.style_context(parent_styles)
   let children = layout.children.mapi(fn(index, child_layout) {
     match node.children.val.get(index) {
-      Some(child) => self.layout_popups(child, child_layout, styles, viewport)
+      Some(child) =>
+        self.layout_popups(
+          child,
+          child_layout,
+          styles,
+          viewport,
+          anchor_width=layout.children
+            .get(0)
+            .map(first => first.width)
+            .unwrap_or(layout.width),
+        )
       None => child_layout
     }
   })

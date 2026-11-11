@@ -58,6 +58,7 @@ priv struct PopupSpec {
   placement : PopupPlacement
   gap : Double
   focus : Bool
+  match_anchor_width : Bool
   dismiss : () -> Unit
 }
 
@@ -74,6 +75,8 @@ priv struct PopupSpec {
 /// Enter/Space. Manual preserves the anchor's behavior for owner-driven opening.
 /// The content receives a session-scoped close function. on_change can prevent
 /// opening or closing, including content close, just like editable controls.
+/// match_anchor_width sizes the floating surface to the anchor, capped by the
+/// window viewport. Child layout styles still apply inside that surface.
 ///
 /// ```mbt nocheck
 /// @view.popup(
@@ -88,6 +91,7 @@ pub fn popup(
   placement~ : PopupPlacement = BottomStart,
   gap~ : Double = 4.0,
   focus~ : Bool = true,
+  match_anchor_width~ : Bool = false,
   on_change? : (@foundation.ChangeEvent[Bool]) -> Unit,
   content : (() -> Unit) -> View,
 ) -> View {
@@ -125,6 +129,7 @@ pub fn popup(
       0.0
     },
     focus,
+    match_anchor_width,
     dismiss: fn() { state.change(false) },
   }
   let children = surface.node.children

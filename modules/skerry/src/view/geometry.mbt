@@ -13,6 +13,7 @@ priv struct ScrollSpec {
   offset : @reactive.Signal[Double]
   scrollbar : Bool
   scrollbar_style : @style.ScrollbarStyle?
+  gutter : Double
 }
 
 ///|
@@ -185,6 +186,14 @@ fn node_geometry(
     None => None
   }
   let scroll : @diagnostics.ScrollSnapshot? = scroll_spec.map(spec => {
+    // Layout padding includes a stable gutter; the scrollbar's viewport also
+    // includes that gutter, while content and child clipping exclude it.
+    let viewport_padding = match spec.axis {
+      Vertical => { ..padding, right: (padding.right - spec.gutter).max(0.0), }
+      Horizontal =>
+        { ..padding, bottom: (padding.bottom - spec.gutter).max(0.0), }
+    }
+    let scroll_viewport = frame.inset(border).inset(viewport_padding)
     let content_size = match
       (node.children.val.get(0), layout.children.get(0)) {
       (Some(child), Some(child_layout)) =>
@@ -199,14 +208,14 @@ fn node_geometry(
     let offset = clamped_scroll_offset(requested, maximum)
     {
       axis: spec.axis,
-      viewport: content,
+      viewport: scroll_viewport,
       content_size,
       offset,
       max_offset: maximum,
       scrollbar: if spec.scrollbar {
         scrollbar_geometry(
           spec.axis,
-          content,
+          scroll_viewport,
           content_size,
           offset,
           maximum,

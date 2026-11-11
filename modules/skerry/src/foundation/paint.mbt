@@ -88,6 +88,8 @@ pub(open) trait SceneRenderer {
   fn stroke_rect(Self, Rect, Color, Double) -> Unit
   fn fill_rounded_rect(Self, RoundedRect, Color) -> Unit
   fn stroke_rounded_rect(Self, RoundedRect, Color, Double) -> Unit
+  /// Stroke a segment in logical coordinates, independently of font coverage.
+  fn draw_line(Self, Point, Point, Color, Double) -> Unit
   fn draw_text(Self, TextRun) -> Unit
   fn draw_image(Self, Image, ImagePlacement) -> Unit
   fn push_clip(Self, Rect) -> Unit

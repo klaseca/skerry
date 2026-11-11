@@ -10,6 +10,7 @@ fn app_view() -> @skerry.View {
   let name = @skerry.signal("")
   let accepted = @skerry.signal(false)
   let large_text = @skerry.signal(false)
+  let language = @skerry.signal(Some("MoonBit"))
   let input_appearance = @skerry.Appearance().radius(10.0)
   let font_theme = @skerry.bind(fn() {
     {
@@ -178,6 +179,27 @@ fn app_view() -> @skerry.View {
             ]
           },
         ],
+        @skerry.select(
+          [
+            @skerry.SelectOption("MoonBit", label="MoonBit"),
+            @skerry.SelectOption("Rust", label="Rust"),
+            @skerry.SelectOption("Go", label="Go"),
+            @skerry.SelectOption("TypeScript", label="TypeScript"),
+            @skerry.SelectOption("Python", label="Python"),
+            @skerry.SelectOption("Swift", label="Swift"),
+            @skerry.SelectOption("Kotlin", label="Kotlin"),
+            @skerry.SelectOption("C++", label="C++"),
+          ],
+          selected=language,
+          style=@skerry.SelectStyle()
+            .surface(@skerry.BoxStyle().width(240.0).shrink(0.0))
+            .list(
+              @skerry.BoxStyle()
+              .max_height(180.0)
+              .stroke(@skerry.border_token)
+              .radius(6.0),
+            ),
+        ),
         @skerry.scroll_view(
           @skerry.column(style=@skerry.FlexStyle().spacing(8.0)) <| Array::makei(
             20,

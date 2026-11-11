@@ -3,11 +3,14 @@ struct StyleRecorder {
   fills : Array[(@foundation.Color, Double)]
   strokes : Array[(@foundation.Color, Double, Double)]
   text : Array[@foundation.TextRun]
+  lines : Array[
+    (@foundation.Point, @foundation.Point, @foundation.Color, Double),
+  ]
 }
 
 ///|
 fn StyleRecorder::StyleRecorder() -> StyleRecorder {
-  { fills: [], strokes: [], text: [], }
+  { fills: [], strokes: [], text: [], lines: [], }
 }
 
 ///|
@@ -15,6 +18,18 @@ impl @foundation.SceneRenderer for StyleRecorder with fn clear(self, _) {
   self.fills.clear()
   self.strokes.clear()
   self.text.clear()
+  self.lines.clear()
+}
+
+///|
+impl @foundation.SceneRenderer for StyleRecorder with fn draw_line(
+  self,
+  start,
+  end,
+  color,
+  width,
+) {
+  self.lines.push((start, end, color, width))
 }
 
 ///|

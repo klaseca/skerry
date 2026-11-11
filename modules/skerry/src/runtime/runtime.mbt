@@ -203,6 +203,23 @@ fn mount_owned(
       mark_layout_dirty=fn() { root.mark_layout_dirty() },
       mark_paint_dirty=fn() { root.mark_paint_dirty() },
       on_disabled_change=fn(_) { root.prune_disabled_interactions() },
+      clock=root.clock,
+      request_focus=fn(id) {
+        guard !root.disposed &&
+          !root.losing_focus &&
+          root.view
+          .focusable_paths()
+          .any(path => root.view.node_id_at_path(path) == Some(id)) else {
+          return false
+        }
+        root.scope.run(fn() {
+          @reactive.during_update(fn() {
+            root.set_focus(id, reveal=true)
+            root.reveal_focus()
+            root.focused_node_id == Some(id)
+          })
+        })
+      },
       on_theme_change=fn(id, theme) {
         if root.layout_state.set_theme_override(id, theme) {
           if root.layout_state.needs_layout() {

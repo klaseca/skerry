@@ -77,7 +77,7 @@ pub let on_accent_token : @style.ThemeToken[@foundation.Color]
 
 pub fn on_cleanup(() -> Unit) -> Unit
 
-pub fn popup(@view.View, open? : @reactive.Signal[Bool], trigger? : @view.PopupTrigger, placement? : @view.PopupPlacement, gap? : Double, focus? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> @view.View) -> @view.View
+pub fn popup(@view.View, open? : @reactive.Signal[Bool], trigger? : @view.PopupTrigger, placement? : @view.PopupPlacement, gap? : Double, focus? : Bool, match_anchor_width? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> @view.View) -> @view.View
 
 pub fn[T] provide(Array[@reactive.ContextBinding], () -> T) -> T
 
@@ -89,11 +89,13 @@ pub fn row(style? : @view.FlexStyle, Array[@view.View], disabled? : &@klaseca/sk
 
 pub fn run(@runtime.App, backend? : (@runtime.App, &@backend.Renderer) -> Unit raise, renderer? : ((&@backend.Renderer) -> Unit raise) -> Unit raise) -> Unit raise
 
-pub fn scroll_view(@view.View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle) -> @view.View
+pub fn scroll_view(@view.View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle, scrollbar_gutter? : Bool) -> @view.View
 
 pub let scrollbar_thumb_token : @style.ThemeToken[@foundation.Color]
 
 pub let scrollbar_track_token : @style.ThemeToken[@foundation.Color]
+
+pub fn[T : Eq] select(ArrayView[@controls.SelectOption[T]], selected? : @reactive.Signal[T?], placeholder? : &@klaseca/skerry/reactive/value.StringValue, style? : @controls.SelectStyle, on_change? : (@foundation.ChangeEvent[T?]) -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue, placement? : @view.PopupPlacement) -> @view.View
 
 pub let selection_token : @style.ThemeToken[@foundation.Color]
 
@@ -255,6 +257,10 @@ pub using @diagnostics {type ScrollSnapshot}
 pub using @diagnostics {type ScrollbarSnapshot}
 
 pub using @style {type ScrollbarStyle}
+
+pub using @controls {type SelectOption}
+
+pub using @controls {type SelectStyle}
 
 pub using @reactive {type Signal}
 

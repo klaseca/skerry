@@ -751,3 +751,14 @@ test "nested interactive click handlers do not activate on text input submit" {
     assert_eq(clicks.val, 0)
   }
 }
+
+///|
+impl @foundation.SceneRenderer for TextInputPaintRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}

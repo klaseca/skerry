@@ -16,6 +16,7 @@ import {
   "klaseca/skerry/style",
   "klaseca/skerry/runtime",
   "klaseca/skerry/reactive",
+  "klaseca/skerry/controls",
   "moonbitlang/core/json",
   "moonbitlang/core/double",
   "moonbitlang/x/fs",

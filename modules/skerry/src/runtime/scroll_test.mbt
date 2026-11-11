@@ -654,3 +654,14 @@ impl @foundation.SceneRenderer for ScrollRecorder with fn draw_image(
 ) {
   ()
 }
+
+///|
+impl @foundation.SceneRenderer for ScrollRecorder with fn draw_line(
+  _,
+  _,
+  _,
+  _,
+  _,
+) {
+  ()
+}
