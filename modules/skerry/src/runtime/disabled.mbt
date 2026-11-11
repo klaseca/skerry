@@ -14,6 +14,7 @@ fn UiRoot::node_is_disabled(self : UiRoot, id : Int32?) -> Bool {
 fn UiRoot::prune_disabled_interactions(self : UiRoot) -> Unit {
   self.scope.run(fn() {
     guard !self.disposed && !self.losing_focus else { return }
+    defer self.request_popup_sync()
     // Decide both before callbacks. A cancel handler can re-enable the subtree;
     // the interrupted interaction must still finish, including blur/key press.
     let cancel = self.node_is_disabled(self.captured_node_id)

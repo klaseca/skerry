@@ -86,6 +86,22 @@ fn UiNode::crater(
   text_layout_system : @text.TextLayoutSystem,
   styles : StyleContext,
 ) -> @crater_node.Node {
+  if self.is_popup() {
+    return leaf_node(
+      "popup-placeholder",
+      absolute_at_origin(empty_style()),
+      @foundation.Size::zero(),
+    )
+  }
+  self.crater_content(text_layout_system, styles)
+}
+
+///|
+fn UiNode::crater_content(
+  self : UiNode,
+  text_layout_system : @text.TextLayoutSystem,
+  styles : StyleContext,
+) -> @crater_node.Node {
   let styles = self.style_context(styles)
   let node = (self.make_crater)(text_layout_system, styles)
   apply_layout_properties(node, styles.style)

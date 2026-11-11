@@ -63,6 +63,8 @@ fn LayoutState::paint_materialized(
     @foundation.Rect::from_size(size),
     StyleContext(theme, overrides),
     false,
+    @foundation.Rect::from_size(size),
+    @foundation.Rect::from_size(size),
   )
   let context = PaintContext(
     renderer,
@@ -73,7 +75,7 @@ fn LayoutState::paint_materialized(
   // scrolling, clipping, resizing and structural updates under a stationary mouse.
   let hovered = match pointer {
     Some(point) =>
-      match hit_test_node(view.node, geometry, point, []) {
+      match hit_test_tree(view.node, geometry, point, []) {
         HitFound(target) if !target.scrollbar => Some(target.node_id)
         _ => None
       }
@@ -91,6 +93,21 @@ fn LayoutState::paint_materialized(
     None,
     context,
   )
+  let layers = []
+  collect_popup_layers(view.node, geometry, [], layers)
+  for layer in layers {
+    paint_node(
+      layer.node,
+      layer.geometry,
+      layer.path,
+      focused_path,
+      hovered,
+      pointer_pressed,
+      keyboard_pressed_node_id,
+      None,
+      context,
+    )
+  }
   // Input during a painter can compute another layout. Only the projection
   // actually drawn by this call may be reported as painted geometry.
   self.painted = self.layout is Some(cached) &&
@@ -166,6 +183,9 @@ fn paint_node(
   for index, child_geometry in geometry.children {
     if node.children.val.get(index) is Some(child) &&
       child.id == child_geometry.id {
+      if child.is_popup() {
+        continue
+      }
       let child_path = path.copy()
       child_path.push(index)
       paint_node(

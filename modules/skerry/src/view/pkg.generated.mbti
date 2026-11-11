@@ -36,6 +36,8 @@ pub fn image(&@klaseca/skerry/value.ImageValue, style? : ImageStyle, disabled? :
 
 pub fn interactive(on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
+pub fn popup(View, open? : @reactive.Signal[Bool], trigger? : PopupTrigger, placement? : PopupPlacement, gap? : Double, focus? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> View) -> View
+
 pub fn row(style? : FlexStyle, Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
 pub fn scroll_view(View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle) -> View
@@ -184,6 +186,7 @@ pub fn LayoutState::pointer_cancel(Self) -> Unit
 pub fn LayoutState::pointer_down_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
 pub fn LayoutState::pointer_move_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
 pub fn LayoutState::pointer_up_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
+pub fn LayoutState::popup_contains(Self, View, PopupTarget, @foundation.Point, size~ : @foundation.Size) -> Bool
 pub fn LayoutState::reveal_node(Self, View, Int32, size~ : @foundation.Size, is_current? : () -> Bool) -> Bool
 pub fn LayoutState::scroll_at(Self, View, size~ : @foundation.Size, point~ : @foundation.Point, delta~ : @foundation.Point) -> Bool
 pub fn LayoutState::scroll_key(Self, View, Int32?, @foundation.KeyEvent, size~ : @foundation.Size) -> Bool
@@ -241,6 +244,36 @@ pub struct PointerContext {
   size : @foundation.Size
   padding : @foundation.Insets
 }
+
+#derive(Eq, @debug.Debug)
+pub(all) enum PopupPlacement {
+  BottomStart
+  BottomEnd
+  TopStart
+  TopEnd
+  LeftStart
+  RightStart
+}
+pub fn PopupPlacement::equal(Self, Self) -> Bool
+pub fn PopupPlacement::not_equal(Self, Self) -> Bool
+pub fn PopupPlacement::to_repr(Self) -> @debug.Repr
+
+pub struct PopupTarget {
+  node_id : Int32
+  anchor_id : Int32
+  path : Array[Int32]
+  focus : Bool
+  dismiss : () -> Unit
+}
+
+#derive(Eq, @debug.Debug)
+pub(all) enum PopupTrigger {
+  Click
+  Manual
+}
+pub fn PopupTrigger::equal(Self, Self) -> Bool
+pub fn PopupTrigger::not_equal(Self, Self) -> Bool
+pub fn PopupTrigger::to_repr(Self) -> @debug.Repr
 
 pub struct Reactivity {
   // private fields
@@ -338,6 +371,8 @@ pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_
 pub fn View::node_id_at_path(Self, Array[Int32]) -> Int32?
 pub fn View::path_for_node_id(Self, Int32) -> Array[Int32]?
 pub fn View::pointer_cancel_path(Self, Array[Int32]) -> Bool
+pub fn View::popup_tab_paths(Self, PopupTarget, focused_node_id? : Int32) -> Array[Array[Int32]]
+pub fn View::popup_targets(Self) -> Array[PopupTarget]
 pub fn View::tab_focus_paths(Self, focused_node_id? : Int32) -> Array[Array[Int32]]
 pub fn View::text_edit_path(Self, Array[Int32], @foundation.TextEditCommand) -> @foundation.TextEditResult
 pub fn View::text_input_path(Self, Array[Int32], String) -> Bool

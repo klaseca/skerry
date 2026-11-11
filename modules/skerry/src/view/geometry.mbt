@@ -4,6 +4,7 @@ priv struct GeometrySpec {
   clip_frame : Bool
   scroll : ScrollSpec?
   theme : ThemeSpec?
+  popup : PopupSpec?
 }
 
 ///|
@@ -45,6 +46,7 @@ pub fn View::translated(self : View, offset : @foundation.Point) -> View {
     clip_frame: false,
     scroll: None,
     theme: None,
+    popup: None,
   })
   view_from_node({
     ..self.node,
@@ -61,6 +63,7 @@ pub fn View::clip(self : View) -> View {
     clip_frame: false,
     scroll: None,
     theme: None,
+    popup: None,
   })
   view_from_node({
     ..self.node,
@@ -103,6 +106,9 @@ fn node_layout_extent(
   }
   for index, child_layout in layout.children {
     if node.children.val.get(index) is Some(child) {
+      if child.is_popup() {
+        continue
+      }
       let extent = node_layout_extent(child, child_layout)
       width = width.max(
         layout.border.left +
@@ -131,11 +137,18 @@ fn node_geometry(
   ancestor_clip : @foundation.Rect,
   styles : StyleContext,
   ancestor_disabled : Bool,
+  viewport : @foundation.Rect,
+  anchor : @foundation.Rect,
 ) -> NodeGeometry {
   let disabled = ancestor_disabled || node.is_disabled()
   let styles = node.style_context(styles)
   let theme = styles.theme
   let base = layout_frame(layout, parent.x, parent.y)
+  let base = match node.geometry {
+    Some({ popup: Some(spec), .. }) =>
+      { ..base, origin: popup_origin(spec, anchor, base.size, viewport), }
+    _ => base
+  }
   let translation = node.geometry
     .map(spec => spec.translation)
     .unwrap_or(Point(x=0.0, y=0.0))
@@ -159,7 +172,10 @@ fn node_geometry(
     left: layout.border.left,
   }
   let content = frame.inset(border).inset(padding)
-  let clip = if node.geometry is Some({ clip_frame: true, .. }) {
+  let ancestor_clip = if node.is_popup() { viewport } else { ancestor_clip }
+  let clip = if node.is_popup() && disabled {
+    @foundation.Rect(x=frame.origin.x, y=frame.origin.y, width=0.0, height=0.0)
+  } else if node.geometry is Some({ clip_frame: true, .. }) {
     ancestor_clip.intersect(frame)
   } else {
     ancestor_clip
@@ -219,7 +235,16 @@ fn node_geometry(
   for index, child_layout in layout.children {
     if node.children.val.get(index) is Some(child) {
       children.push(
-        node_geometry(child, child_layout, origin, child_clip, styles, disabled),
+        node_geometry(
+          child,
+          child_layout,
+          origin,
+          child_clip,
+          styles,
+          disabled,
+          viewport,
+          children.get(0).map(first => first.frame).unwrap_or(frame),
+        ),
       )
     }
   }
@@ -254,6 +279,8 @@ fn LayoutState::input_geometry(
     @foundation.Rect::from_size(size),
     StyleContext(self.theme, self.theme_overrides),
     false,
+    @foundation.Rect::from_size(size),
+    @foundation.Rect::from_size(size),
   )
   if self.painted && self.painted_geometry != Some(geometry) {
     self.painted = false

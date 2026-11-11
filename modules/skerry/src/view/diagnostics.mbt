@@ -82,6 +82,10 @@ fn snapshot_node(
     content: geometry.content,
     clip: geometry.clip,
     scroll: geometry.scroll,
+    popup_anchor: match node.geometry {
+      Some({ popup: Some(spec), .. }) => Some(spec.anchor.id)
+      _ => None
+    },
     image: geometry.image,
     padding,
     border,

@@ -51,6 +51,9 @@ pub struct UiRoot {
   priv clock : () -> Double
   priv mut draining_actions : Bool
   priv wakeup_callback : Ref[(() -> Unit)?]
+  priv mut popup_sessions : Array[PopupSession]
+  priv mut syncing_popups : Bool
+  priv mut popups_pending : Bool
 }
 
 ///|
@@ -190,6 +193,9 @@ fn mount_owned(
     clock,
     draining_actions: false,
     wakeup_callback: Ref(None),
+    popup_sessions: [],
+    syncing_popups: false,
+    popups_pending: false,
   }
   root.dispose_reactivity = scope.run(fn() {
     root.view.mount_reactivity(
@@ -222,6 +228,7 @@ fn mount_owned(
   })
   @environment.mark_values_materialized(root.view.node_id_at_path([]).unwrap())
   root.dirty = NeedsLayout
+  root.sync_popups()
   root
 }
 
@@ -229,6 +236,7 @@ fn mount_owned(
 pub fn UiRoot::dispose(self : UiRoot) -> Unit {
   guard !self.disposed else { return }
   self.disposed = true
+  self.popup_sessions = []
   self.pointer_position = None
   self.hovered_node_id = None
   self.keyboard_press = None
@@ -286,6 +294,7 @@ pub fn UiRoot::mark_layout_dirty(self : UiRoot) -> Unit {
   self.dirty = NeedsLayout
   // Hit testing can populate the cache while a paint is still pending.
   self.layout_state.invalidate()
+  self.request_popup_sync()
   self.notify_invalidation()
   if was_clean {
     self.wakeup_frame()
@@ -397,6 +406,9 @@ pub fn UiRoot::click_at(
     self.viewport_size = Some(size)
     ignore(self.pointer_cancel())
     guard !self.disposed else { false }
+    if self.dismiss_outside_popup(size, point) {
+      return true
+    }
     match self.layout_state.hit_test(self.view, size~, point~) {
       Some(target) => {
         if target.scrollbar {
@@ -484,6 +496,12 @@ pub fn UiRoot::pointer_down(
     self.viewport_size = Some(size)
     ignore(self.pointer_cancel())
     guard !self.disposed else { false }
+    if self.dismiss_outside_popup(size, point) {
+      if !self.disposed {
+        self.update_pointer(size, point)
+      }
+      return true
+    }
     self.update_pointer(size, point)
     guard !self.disposed else { false }
     match self.layout_state.hit_test(self.view, size~, point~) {
@@ -568,6 +586,7 @@ pub fn UiRoot::key_down(
     if size is Some(size) {
       self.viewport_size = Some(size)
     }
+    self.sync_popups()
     match event.key {
       KeyTab if is_focus_traversal_event(event) => {
         let handled = if event.modifiers.shift {
@@ -617,9 +636,15 @@ pub fn UiRoot::key_down(
             return true
           }
           if event.key == KeyEscape {
+            if self.dismiss_top_popup() {
+              return true
+            }
             self.focus_lost()
             return true
           }
+        }
+        if event.key == KeyEscape && self.dismiss_top_popup() {
+          return true
         }
         guard !self.disposed && !self.losing_focus else { return false }
         ignore(self.focused_path())
@@ -766,7 +791,7 @@ fn UiRoot::blur_focused_node(self : UiRoot) -> Unit {
 
 ///|
 fn UiRoot::focus_next(self : UiRoot) -> Bool {
-  let paths = self.view.tab_focus_paths(focused_node_id?=self.focused_node_id)
+  let paths = self.popup_tab_paths()
   if paths.is_empty() {
     self.clear_focus()
     false
@@ -785,7 +810,7 @@ fn UiRoot::focus_next(self : UiRoot) -> Bool {
 
 ///|
 fn UiRoot::focus_previous(self : UiRoot) -> Bool {
-  let paths = self.view.tab_focus_paths(focused_node_id?=self.focused_node_id)
+  let paths = self.popup_tab_paths()
   if paths.is_empty() {
     self.clear_focus()
     false

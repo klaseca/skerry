@@ -86,7 +86,8 @@ fn app_view() -> @skerry.View {
 
 The executable package only imports the framework facade:
 
-```mbt
+```mbt nocheck
+///|
 import {
   "klaseca/skerry",
 }
@@ -1828,6 +1829,79 @@ pointer move/release still reach their target outside a clip, while click
 activation requires a visible hit on release.
 
 Virtualized lists are a future extension.
+
+## Popups
+
+`popup` attaches floating content to an anchor while keeping its logical parent,
+context, theme and disabled state. It occupies only the anchor's space in normal
+layout. The surface paints above ordinary content, including later siblings,
+and escapes ancestor clips and scroll viewports. Paint, hit testing and snapshots
+share the same logical window coordinates.
+
+```mbt nocheck
+///|
+fn actions() -> @skerry.View {
+  @skerry.popup(@skerry.button("Actions"), placement=BottomEnd) <| fn(close) {
+    @skerry.column(
+      style=@skerry.FlexStyle()
+        .width(200.0)
+        .spacing(8.0)
+        .padding(@skerry.Insets::all(12.0))
+        .background(@skerry.surface_token)
+        .stroke(@skerry.border_token)
+        .radius(8.0),
+    ) <| [
+      @skerry.button("Close", on_click=close),
+    ]
+  }
+}
+```
+
+The popup owns its initially closed state by default. Click, Enter and Space
+toggle its anchor, preserving the anchor's existing handlers. An optional
+`open=signal` exposes that same state to its owner. `trigger=Manual` leaves the
+anchor's behavior intact for opening controlled by the application; use it with
+an external signal. Trigger behavior and placement are independent.
+
+The content builder runs once per open session. Closing disposes its subscriptions
+and local state; reopening builds fresh content. Keep persistent application data
+in an external model. Equal open values and paint-only updates retain the current
+instances and layout cache. Its `close` function follows the popup's change policy
+and becomes inactive when that session is disposed, so a retained callback cannot
+close a later session.
+
+Placement defaults to `BottomStart`, with a gap of 4 logical units. `BottomEnd`,
+`TopStart`, `TopEnd`, `LeftStart` and `RightStart` are also available. Placement
+flips to the opposite side when that side has more space, then clamps to the
+window. Natural content size is bounded by the viewport; use `scroll_view` within
+the content when a large surface needs scrolling. Popup content does not increase
+the anchor's scroll extent, and focus reveal or wheel input inside it does not
+scroll the anchor's outer containers.
+
+An outside press closes the topmost popup and consumes the press, so its release
+cannot activate the content underneath. The anchor is excluded from outside
+dismissal; its Click trigger toggles the popup. Escape first reaches the focused control;
+if unhandled, it closes the topmost popup, including when nothing is focused.
+The optional `on_change` receives `ChangeEvent(true)` before opening and
+`ChangeEvent(false)` before closing and may prevent either change. Outside
+dismissal and the content's `close` function use this same policy. Programmatic
+writes to `open` remain ordinary model updates.
+
+By default, opening focuses the first available Tab stop. Tab and Shift+Tab cycle
+within the topmost popup that owns focus. Closing restores previous live focus or
+the anchor; closing a nested popup returns focus to its parent. `focus=false`
+preserves initial keyboard focus and does not contain Tab navigation, for passive
+surfaces. Disabled anchors or ancestors suspend popup painting and input while retaining its
+model and content; re-enabling makes it available again.
+
+Layers follow logical tree order: later popup surfaces appear above earlier ones,
+and nested surfaces appear above their parents. Snapshots retain the logical tree;
+the floating `Popup` node's `popup_anchor` identifies its anchor. Geometry and theme
+are frozen with the completed paint, as for ordinary nodes.
+
+Custom hosts can use `View::popup_targets`, `View::popup_tab_paths` and
+`LayoutState::popup_contains` to implement the same dismissal and focus policy.
+`UiRoot` wires this automatically.
 
 ## Disabled controls and wrappers
 

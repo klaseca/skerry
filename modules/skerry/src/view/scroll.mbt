@@ -66,6 +66,7 @@ pub fn scroll_view(
       clip_frame: false,
       scroll: Some({ axis, offset, scrollbar, scrollbar_style, }),
       theme: None,
+      popup: None,
     }),
     make_crater: fn(text_layout_system, styles) {
       let viewport = {
@@ -110,12 +111,15 @@ pub fn LayoutState::scroll_at(
     }
     let geometry = self.input_geometry(view, size)
     guard !self.disposed else { return false }
-    guard hit_test_node(view.node, geometry, point, [], for_scroll=true)
+    guard hit_test_tree(view.node, geometry, point, [], for_scroll=true)
       is HitFound(target) else {
       return false
     }
     for depth in target.path.length()>=..0 {
       let path = target.path[:depth].to_owned()
+      if node_at_path(view.node, path, 0) is Some(node) && node.is_popup() {
+        break
+      }
       if input_node_at_path(view.node, path, 0) is Some(node) &&
         geometry_at_path(geometry, path, 0)
         is Some({ scroll: Some(scroll), clip, .. }) &&

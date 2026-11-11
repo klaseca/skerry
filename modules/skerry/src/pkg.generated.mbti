@@ -77,6 +77,8 @@ pub let on_accent_token : @style.ThemeToken[@foundation.Color]
 
 pub fn on_cleanup(() -> Unit) -> Unit
 
+pub fn popup(@view.View, open? : @reactive.Signal[Bool], trigger? : @view.PopupTrigger, placement? : @view.PopupPlacement, gap? : Double, focus? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> @view.View) -> @view.View
+
 pub fn[T] provide(Array[@reactive.ContextBinding], () -> T) -> T
 
 pub fn radio(selected? : @reactive.Signal[Bool], label? : &@klaseca/skerry/reactive/value.StringValue, style? : @controls.RadioStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
@@ -235,6 +237,10 @@ pub using @view {type PointerContext}
 pub using @foundation {type PointerEvent}
 
 pub using @foundation {type PointerPhase}
+
+pub using @view {type PopupPlacement}
+
+pub using @view {type PopupTrigger}
 
 pub using @controls {type RadioStyle}
 

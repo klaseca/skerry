@@ -31,6 +31,8 @@ pub(all) struct NodeSnapshot {
   content : @foundation.Rect
   clip : @foundation.Rect
   scroll : ScrollSnapshot?
+  // Floating popup surfaces retain their logical parent and name their anchor.
+  popup_anchor : Int32?
   image : ImageSnapshot?
   padding : @foundation.Insets
   border : @foundation.Insets

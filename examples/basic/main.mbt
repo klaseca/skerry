@@ -150,6 +150,33 @@ fn app_view() -> @skerry.View {
             ),
             disabled=true,
           ),
+          @skerry.popup(
+            @skerry.button(
+              "Actions",
+              style=@skerry.ButtonStyle().surface(
+                @skerry.BoxStyle().width(96.0).height(32.0),
+              ),
+            ),
+            placement=BottomEnd,
+          ) <| fn(close) {
+            @skerry.column(
+              style=@skerry.FlexStyle()
+                .width(220.0)
+                .spacing(8.0)
+                .padding(@skerry.Insets::all(12.0))
+                .background(@skerry.surface_token)
+                .stroke(@skerry.border_token)
+                .radius(8.0),
+            ) <| [
+              @skerry.text("Actions"),
+              @skerry.button("Reset counter", on_click=fn() {
+                count.set(0)
+                close()
+              }),
+              @skerry.checkbox(checked=accepted, label="Accept"),
+              @skerry.button("Close", on_click=close),
+            ]
+          },
         ],
         @skerry.scroll_view(
           @skerry.column(style=@skerry.FlexStyle().spacing(8.0)) <| Array::makei(

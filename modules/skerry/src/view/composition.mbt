@@ -86,6 +86,16 @@ pub fn show(
   render : () -> View,
   disabled? : &@value.BoolValue,
 ) -> View {
+  show_view(condition, render, disabled?)
+}
+
+///|
+fn show_view(
+  condition : () -> Bool,
+  render : () -> View,
+  disabled? : &@value.BoolValue,
+  id? : Int32,
+) -> View {
   let state = {
     let scope = @reactive.Scope::new()
     let visible = scope.run(condition)
@@ -96,7 +106,10 @@ pub fn show(
     ShowState::{ scope, branch_scope, visible, children, }
   }
   let node = {
-    id: next_ui_node_id(),
+    id: match id {
+      Some(id) => id
+      None => next_ui_node_id()
+    },
     lifecycle: NodeLifecycle(),
     component_name: "Show",
     styles: None,

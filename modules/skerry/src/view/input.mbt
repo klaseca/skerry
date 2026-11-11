@@ -97,7 +97,7 @@ pub fn LayoutState::hit_test(
   point~ : @foundation.Point,
 ) -> HitTarget? {
   view.with_scope(fn() {
-    match hit_test_node(view.node, self.input_geometry(view, size), point, []) {
+    match hit_test_tree(view.node, self.input_geometry(view, size), point, []) {
       HitFound(target) => Some(target)
       HitMiss | HitBlocked => None
     }
@@ -538,6 +538,9 @@ fn hit_test_node(
     for index, child_geometry in geometry.children {
       if node.children.val.get(index) is Some(child) &&
         child.id == child_geometry.id {
+        if child.is_popup() {
+          continue
+        }
         let child_path = path.copy()
         child_path.push(index)
         match

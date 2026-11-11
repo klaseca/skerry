@@ -161,6 +161,12 @@ fn LayoutState::layout_materialized(
   }
   self.layout_count += 1
   let layout = self.compute_measured_layout(root, size, measurements)
+  let layout = self.layout_popups(
+    view.node,
+    layout,
+    StyleContext(self.theme, self.theme_overrides.copy()),
+    size,
+  )
   // A measurement callback can invalidate the root. Keep that invalidation;
   // this computation must not put its stale nodes back into the cache.
   if generation == self.generation && !self.disposed {

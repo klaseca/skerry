@@ -67,6 +67,10 @@ pub fn LayoutState::scroll_key(
     }
     for depth in path.length()>=..0 {
       let ancestor_path = path[:depth].to_owned()
+      if node_at_path(view.node, ancestor_path, 0) is Some(node) &&
+        node.is_popup() {
+        break
+      }
       if input_node_at_path(view.node, ancestor_path, 0) is Some(node) &&
         geometry_at_path(geometry, ancestor_path, 0) is Some(ancestor) &&
         node.id == ancestor.id &&
@@ -125,6 +129,9 @@ fn reveal_viewport(
   let mut viewport = viewport
   for parent_depth in (depth - 1)>=..0 {
     let parent_path = path[:parent_depth].to_owned()
+    if node_at_path(view.node, parent_path, 0) is Some(node) && node.is_popup() {
+      break
+    }
     if geometry_at_path(geometry, parent_path, 0) is Some(parent) {
       if parent.scroll is Some(_) {
         return viewport
@@ -188,6 +195,11 @@ pub fn LayoutState::reveal_node(
     let mut has_viewport = false
     for depth in (logical_path.length() - 1)>=..0 {
       if node_at_path(view.node, logical_path[:depth].to_owned(), 0)
+        is Some(node) &&
+        node.is_popup() {
+        break
+      }
+      if node_at_path(view.node, logical_path[:depth].to_owned(), 0)
         is Some({ geometry: Some({ scroll: Some(_), .. }), .. }) {
         has_viewport = true
         break
@@ -204,6 +216,11 @@ pub fn LayoutState::reveal_node(
     }
     let ancestors : Array[Int32] = []
     for depth in (initial_path.length() - 1)>=..0 {
+      if node_at_path(view.node, initial_path[:depth].to_owned(), 0)
+        is Some(node) &&
+        node.is_popup() {
+        break
+      }
       if geometry_at_path(initial, initial_path[:depth].to_owned(), 0)
         is Some({ id, scroll: Some(_), .. }) {
         ancestors.push(id)

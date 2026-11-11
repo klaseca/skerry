@@ -1,5 +1,9 @@
 ///|
 fn UiNode::is_disabled(self : UiNode) -> Bool {
+  if self.geometry is Some({ popup: Some(spec), .. }) &&
+    (spec.anchor.is_disabled() || spec.anchor.lifecycle.phase is Disposed) {
+    return true
+  }
   match self.events.disabled {
     None => false
     Some(spec) =>
