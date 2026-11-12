@@ -38,6 +38,7 @@ fn scroll_axis_length(
 fn scrollbar_geometry(
   axis : @foundation.Axis,
   viewport : @foundation.Rect,
+  bounds : @foundation.Rect,
   content : @foundation.Size,
   offset : Double,
   maximum : Double,
@@ -47,21 +48,22 @@ fn scrollbar_geometry(
   guard maximum > 0.0 && style.thickness > 0.0 && !viewport.is_empty() else {
     return None
   }
+  // Use the padded viewport for track length, and the outer box for its edge.
   let track = match axis {
     Vertical => {
-      let width = style.thickness.min(viewport.size.width)
+      let width = style.thickness.min(bounds.size.width)
       @foundation.Rect(
-        x=viewport.origin.x + viewport.size.width - width,
+        x=bounds.origin.x + bounds.size.width - width,
         y=viewport.origin.y,
         width~,
         height=viewport.size.height,
       )
     }
     Horizontal => {
-      let height = style.thickness.min(viewport.size.height)
+      let height = style.thickness.min(bounds.size.height)
       Rect(
         x=viewport.origin.x,
-        y=viewport.origin.y + viewport.size.height - height,
+        y=bounds.origin.y + bounds.size.height - height,
         width=viewport.size.width,
         height~,
       )
@@ -121,10 +123,9 @@ fn scrollbar_thumb_range(
 
 ///|
 fn paint_scrollbar(geometry : NodeGeometry, context : PaintContext) -> Unit {
-  guard geometry.scroll is Some({ viewport, scrollbar: Some(bar), .. }) else {
-    return
-  }
-  let clip = geometry.clip.intersect(viewport)
+  guard geometry.scroll is Some({ scrollbar: Some(bar), .. }) else { return }
+  // Content padding must not cut off the track anchored to the outer edge.
+  let clip = geometry.clip.intersect(geometry.frame.inset(geometry.border))
   guard !clip.is_empty() else { return }
   let push_clip = clip != geometry.clip
   if push_clip {

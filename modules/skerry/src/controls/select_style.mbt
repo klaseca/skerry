@@ -1,6 +1,8 @@
 ///|
 /// Styles for the field, floating list and its options. `selected` is layered
-/// over `option` for the committed value; focus marks keyboard navigation.
+/// over `option` for the committed value. Focus uses background feedback for
+/// keyboard navigation. The list defaults to four logical pixels of padding;
+/// theme and local list padding override it, including zero.
 #derive(Eq, Debug, Default)
 pub struct SelectStyle {
   priv source : @style.StyleSource[SelectStyle]?

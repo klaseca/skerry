@@ -11,6 +11,8 @@
 /// complete value and keeps its colors across theme changes.
 /// scrollbar_gutter reserves a stable strip for the track, including when the
 /// content fits. It reduces layout/child clipping instead of covering content.
+/// Padding separates content from the track; the track stays at the outer
+/// right/bottom edge and retains the padding at its ends along the scroll axis.
 ///
 /// ```mbt check
 /// test {
@@ -139,7 +141,13 @@ pub fn LayoutState::scroll_at(
       if input_node_at_path(view.node, path, 0) is Some(node) &&
         geometry_at_path(geometry, path, 0)
         is Some({ scroll: Some(scroll), clip, .. }) &&
-        clip_contains(clip.intersect(scroll.viewport), point) &&
+        (
+          clip_contains(clip.intersect(scroll.viewport), point) ||
+          (
+            scroll.scrollbar is Some(bar) &&
+            clip_contains(clip.intersect(bar.track), point)
+          )
+        ) &&
         node.geometry is Some({ scroll: Some(spec), .. }) {
         let amount = match spec.axis {
           Vertical => delta.y

@@ -30,22 +30,22 @@ test "stable scrollbar gutter reserves its styled thickness and keeps pointer ca
       Vertical => {
         assert_eq(child.frame.size.width, 90.0)
         assert_eq(
-          child.frame.origin.x + child.frame.size.width,
+          child.frame.origin.x + child.frame.size.width + 5.0,
           bar.track.origin.x,
         )
         assert_eq(
-          child.clip.origin.x + child.clip.size.width,
+          child.clip.origin.x + child.clip.size.width + 5.0,
           bar.track.origin.x,
         )
       }
       Horizontal => {
         assert_eq(child.frame.size.height, 70.0)
         assert_eq(
-          child.frame.origin.y + child.frame.size.height,
+          child.frame.origin.y + child.frame.size.height + 5.0,
           bar.track.origin.y,
         )
         assert_eq(
-          child.clip.origin.y + child.clip.size.height,
+          child.clip.origin.y + child.clip.size.height + 5.0,
           bar.track.origin.y,
         )
       }

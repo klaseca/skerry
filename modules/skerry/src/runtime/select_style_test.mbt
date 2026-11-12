@@ -1,4 +1,87 @@
 ///|
+test "select list composes its base before component theme and explicit styles" {
+  let padding : @reactive.Signal[Double?] = @reactive.signal(None)
+  let reads = Ref(0)
+  let root = @runtime.mount(
+    fn() {
+      @controls.select(
+        [@controls.SelectOption(1, label="First")],
+        style=@controls.SelectStyle::computed(fn() {
+          reads.val += 1
+          let style = @controls.SelectStyle().surface(
+            @style.BoxStyle().width(160.0),
+          )
+          match padding.get() {
+            None => style
+            Some(value) =>
+              style.list(
+                @style.BoxStyle().padding(@foundation.Insets::all(value)),
+              )
+          }
+        }),
+      )
+    },
+    text_layout_system=test_text_layout_system(),
+  )
+  defer root.dispose()
+  select_test_open(root)
+  let id = select_test_nodes(root)[0].id
+  let check = fn(expected) raise {
+    ignore(select_test_nodes(root))
+    let snapshot = root.snapshot().unwrap()
+    let list = snapshot.tree.nodes
+      .iter()
+      .filter(node => node.scroll is Some(_))
+      .to_array()[0]
+    // The right side also contains the reserved scrollbar gutter.
+    assert_eq(list.padding.left, expected)
+    assert_eq(list.padding.top, expected)
+    assert_eq(list.padding.bottom, expected)
+    assert_eq(select_test_nodes(root)[0].id, id)
+    let count = reads.val
+    ignore(root.snapshot())
+    assert_eq(reads.val, count)
+    // The Select declaration describes its argument, not the list's own base.
+    for node in snapshot.tree.nodes {
+      if node.specified_style is Some(declaration) &&
+        (declaration.get() : @controls.SelectStyle?) is Some(style) {
+        assert_eq(
+          style.list.layout.padding,
+          padding.peek().map(@foundation.Insets::all),
+        )
+      }
+    }
+  }
+  check(4.0)
+  let generic = @style.Styles().add(
+    @style.BoxStyle().padding(@foundation.Insets::all(9.0)),
+  )
+  root.set_theme(Theme(styles=generic))
+  check(4.0)
+  root.set_theme(
+    Theme(
+      styles=generic.add(
+        @controls.SelectStyle().list(
+          @style.BoxStyle().padding(@foundation.Insets::all(6.0)),
+        ),
+      ),
+    ),
+  )
+  check(6.0)
+  padding.set(Some(0.0))
+  check(0.0)
+  padding.set(Some(12.0))
+  check(12.0)
+  padding.set(None)
+  check(6.0)
+  root.set_theme(Theme(styles=generic))
+  check(4.0)
+  root.set_theme(Theme())
+  check(4.0)
+  assert_eq(@controls.SelectStyle().list.layout.padding, None)
+}
+
+///|
 test "select projects global theme rules and reactive parts into its floating list" {
   let height = @reactive.signal(32.0)
   let field = @foundation.Color::rgb(r=30, g=40, b=50)

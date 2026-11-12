@@ -274,6 +274,8 @@ pub using @style {type StyleDeclaration}
 
 pub using @style {type StyleMetrics}
 
+pub using @style {type StyleOrigin}
+
 pub using @style {type StyleSource}
 
 pub using @style {type Styles}

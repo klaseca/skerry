@@ -240,6 +240,7 @@ pub impl ColorValue for StyleColor
 
 pub struct StyleDeclaration {
   name : String
+  origin : StyleOrigin
   layout : BoxStyle
   metrics : StyleMetrics
   roots : ReadOnlyArray[BoxStyle]
@@ -268,6 +269,19 @@ pub fn StyleMetrics::equal(Self, Self) -> Bool
 pub fn StyleMetrics::merge(Self, Self) -> Self
 pub fn StyleMetrics::not_equal(Self, Self) -> Bool
 pub fn StyleMetrics::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum StyleOrigin {
+  Local(String)
+  Binding(String, StyleOrigin)
+  ThemeRule(sheet~ : Int32, rule~ : Int32, family~ : String, source~ : StyleOrigin)
+  Projection(from~ : String, to~ : String, source~ : StyleOrigin)
+  Merged(StyleOrigin, StyleOrigin)
+  Nested(StyleOrigin, StyleOrigin)
+}
+pub fn StyleOrigin::equal(Self, Self) -> Bool
+pub fn StyleOrigin::not_equal(Self, Self) -> Bool
+pub fn StyleOrigin::to_repr(Self) -> @debug.Repr
 
 pub struct StyleSheet {
   // private fields

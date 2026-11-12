@@ -11,16 +11,36 @@ pub(open) trait SourceStyle: StyleSpec + Default {
 
 ///|
 pub struct StyleSource[T] {
-  priv read : (StyleSheet) -> Array[T]
+  priv read : (StyleSheet) -> Array[StyleLayer[T]]
   priv resolving : Ref[Bool]
   priv empty : T
-  priv frozen : ReadOnlyArray[T]?
-  priv equal_frozen : ((ReadOnlyArray[T], ReadOnlyArray[T]) -> Bool)?
+  priv frozen : FrozenStyleSource[T]?
+  priv equal_frozen : ((FrozenStyleSource[T], FrozenStyleSource[T]) -> Bool)?
+}
+
+///|
+priv struct StyleLayer[T] {
+  value : T
+  origin : StyleOrigin
+  // Fragments may share one normal/state declaration. A projection is an
+  // incoming sequence of declarations and retains its boundaries.
+  fragment : Bool
+}
+
+///|
+priv struct FrozenStyleSource[T] {
+  layers : ReadOnlyArray[StyleLayer[T]]
+  values : ReadOnlyArray[T]
+}
+
+///|
+fn[T] style_fragment(value : T) -> StyleLayer[T] {
+  { value, origin: Local(style_name((panic : () -> T))), fragment: true, }
 }
 
 ///|
 fn[T : SourceStyle] StyleSource::StyleSource(
-  read : (StyleSheet) -> Array[T],
+  read : (StyleSheet) -> Array[StyleLayer[T]],
 ) -> StyleSource[T] {
   {
     read,
@@ -51,25 +71,36 @@ pub extend StyleSource with Eq::{equal, not_equal}
 pub extend StyleSource with Debug::{to_repr}
 
 ///|
-fn[T : StyleSpec] expand_style(value : T, sheet : StyleSheet) -> Array[T] {
+fn[T : StyleSpec] expand_style(
+  value : T,
+  sheet : StyleSheet,
+) -> Array[StyleLayer[T]] {
   let (specified, source) = StyleSpec::split_source(value)
   match source {
-    None => [specified]
+    None => [style_fragment(specified)]
     Some(source) => {
       guard !source.resolving.val else { abort("Cyclic style source") }
       source.resolving.val = true
       defer {
         source.resolving.val = false
       }
-      let result : Array[T] = []
+      let result : Array[StyleLayer[T]] = []
       let input = match source.frozen {
-        Some(values) => values.iter().to_array()
+        Some(frozen) => frozen.layers.iter().to_array()
         None => (source.read)(sheet)
       }
       for layer in input {
-        result.append(expand_style(layer, sheet))
+        for nested in expand_style(layer.value, sheet) {
+          result.push({
+            value: nested.value,
+            origin: nest_origin(layer.origin, nested.origin),
+            fragment: layer.fragment && nested.fragment,
+          })
+        }
       }
-      append_local(result, specified)
+      if specified != source.empty {
+        append_fragment(result, style_fragment(specified))
+      }
       result
     }
   }
@@ -80,15 +111,34 @@ fn[P : StyleSpec, T : SourceStyle] project_style(
   parent : P,
   select : (P) -> T,
 ) -> T {
+  let from = style_name((panic : () -> P))
+  let to = style_name((panic : () -> T))
   let source = StyleSource(fn(sheet) {
-    let result : Array[T] = []
-    for rule in (sheet.get() : ReadOnlyArray[P]) {
-      for value in expand_style(rule, sheet) {
-        result.push(select(value))
+    let result : Array[StyleLayer[T]] = []
+    for index, rule in (sheet.get() : ReadOnlyArray[P]) {
+      for layer in expand_style(rule, sheet) {
+        result.push({
+          value: select(layer.value),
+          origin: Projection(
+            from~,
+            to~,
+            source=ThemeRule(
+              sheet=sheet.id,
+              rule=index,
+              family=from,
+              source=layer.origin,
+            ),
+          ),
+          fragment: false,
+        })
       }
     }
-    for value in expand_style(parent, sheet) {
-      result.push(select(value))
+    for layer in expand_style(parent, sheet) {
+      result.push({
+        value: select(layer.value),
+        origin: Projection(from~, to~, source=layer.origin),
+        fragment: false,
+      })
     }
     result
   })
@@ -105,16 +155,26 @@ impl SourceStyle with fn computed(read) {
 impl SourceStyle with fn bind(source) {
   match source.constant_value() {
     Some(value) => value
-    None =>
+    None => {
+      let family = style_name((panic : () -> Self))
       SourceStyle::with_source(
         Default::default(),
-        Some(StyleSource(fn(_) { [source.get()] })),
+        Some(
+          StyleSource(fn(sheet) {
+            expand_style(source.get(), sheet).map(layer => {
+              ..layer,
+              origin: Binding(family, layer.origin),
+            })
+          }),
+        ),
       )
+    }
   }
 }
 
 ///|
-/// Compose source-bearing fragments without folding their state layers.
+/// Merge fragments in expression order. Adjacent value fragments share one
+/// normal/state declaration; incoming projections retain their declaration edges.
 pub fn[T : SourceStyle] merge_sources(a : T, b : T, fields : (T, T) -> T) -> T {
   if a == b {
     return a
@@ -133,12 +193,11 @@ pub fn[T : SourceStyle] merge_sources(a : T, b : T, fields : (T, T) -> T) -> T {
     Some(value) => value.frozen is Some(_)
   }
   if first_frozen && second_frozen {
-    let left = style_layers(a).iter().to_array()
-    let right = style_layers(b).iter().to_array()
-    let local_a = left.pop().unwrap()
-    let local_b = right.pop().unwrap()
-    left.append(right)
-    left.push(fields(local_a, local_b))
+    let left = frozen_layers(a)
+    let right = frozen_layers(b)
+    for layer in right {
+      append_fragment(left, layer)
+    }
     return SourceStyle::with_source(
       Default::default(),
       Some(frozen_source(left)),
@@ -150,10 +209,9 @@ pub fn[T : SourceStyle] merge_sources(a : T, b : T, fields : (T, T) -> T) -> T {
       StyleSource(fn(sheet) {
         let left = expand_style(a, sheet)
         let right = expand_style(b, sheet)
-        let local_a = left.pop().unwrap()
-        let local_b = right.pop().unwrap()
-        left.append(right)
-        left.push(StyleSpec::merge(local_a, local_b))
+        for layer in right {
+          append_fragment(left, layer)
+        }
         left
       }),
     ),
@@ -170,22 +228,42 @@ pub fn[P : SourceStyle, T] apply_style_value(
 ) -> P {
   match source.constant_value() {
     Some(value) => field(owner, value)
-    None =>
+    None => {
+      let family = style_name((panic : () -> P))
       StyleSpec::merge(
         owner,
         SourceStyle::with_source(
           Default::default(),
-          Some(StyleSource(fn(_) { [field(Default::default(), source.get())] })),
+          Some(
+            StyleSource(fn(_) {
+              [
+                {
+                  value: field(Default::default(), source.get()),
+                  origin: Binding(family, Local(family)),
+                  fragment: true,
+                },
+              ]
+            }),
+          ),
         ),
       )
+    }
   }
 }
 
 ///|
-fn[T : StyleSpec] append_local(layers : Array[T], specified : T) -> Unit {
-  match layers.pop() {
-    Some(last) => layers.push(StyleSpec::merge(last, specified))
-    None => layers.push(specified)
+fn[T : StyleSpec] append_fragment(
+  layers : Array[StyleLayer[T]],
+  next : StyleLayer[T],
+) -> Unit {
+  match layers.last() {
+    Some(previous) if previous.fragment && next.fragment =>
+      layers[layers.length() - 1] = {
+        value: StyleSpec::merge(previous.value, next.value),
+        origin: Merged(previous.origin, next.origin),
+        fragment: true,
+      }
+    _ => layers.push(next)
   }
 }
 
@@ -197,7 +275,8 @@ pub fn[T : SourceStyle] freeze_style(value : T, sheet : StyleSheet) -> T {
     return StyleSpec::freeze_fields(value, sheet)
   }
   let values = expand_style(value, sheet).map(layer => {
-    StyleSpec::freeze_fields(layer, sheet)
+    ..layer,
+    value: StyleSpec::freeze_fields(layer.value, sheet),
   })
   SourceStyle::with_source(Default::default(), Some(frozen_source(values)))
 }
@@ -210,14 +289,28 @@ pub fn[T : StyleSpec] style_layers(value : T) -> ReadOnlyArray[T] {
     None => ReadOnlyArray::from_array([specified])
     Some(source) =>
       match source.frozen {
-        Some(values) if specified == source.empty => values
-        Some(values) => {
-          let result = values.iter().to_array()
-          append_local(result, specified)
+        Some(frozen) if specified == source.empty => frozen.values
+        Some(_) => {
+          let result = frozen_layers(value).map(layer => layer.value)
           ReadOnlyArray::from_array(result[:])
         }
         None => abort("Style sources must be materialized before painting")
       }
+  }
+}
+
+///|
+fn[T : StyleSpec] frozen_layers(value : T) -> Array[StyleLayer[T]] {
+  let (specified, source) = StyleSpec::split_source(value)
+  match source {
+    None => [style_fragment(specified)]
+    Some(source) => {
+      let result = source.frozen.unwrap().layers.iter().to_array()
+      if specified != source.empty {
+        append_fragment(result, style_fragment(specified))
+      }
+      result
+    }
   }
 }
 
@@ -252,7 +345,11 @@ pub fn[P : SourceStyle, T : StyleSpec] apply_style_field(
     Default::default(),
     Some(
       StyleSource(fn(sheet) {
-        expand_style(value, sheet).map(value => field(Default::default(), value))
+        expand_style(value, sheet).map(layer => {
+          value: field(Default::default(), layer.value),
+          origin: layer.origin,
+          fragment: layer.fragment,
+        })
       }),
     ),
   )
@@ -260,12 +357,26 @@ pub fn[P : SourceStyle, T : StyleSpec] apply_style_field(
 }
 
 ///|
-fn[T : SourceStyle] frozen_source(values : Array[T]) -> StyleSource[T] {
+fn[T : SourceStyle] frozen_source(
+  layers : Array[StyleLayer[T]],
+) -> StyleSource[T] {
+  let values = layers.map(layer => layer.value)
   {
     read: fn(_) { abort("A frozen source contains data, not a producer") },
     resolving: Ref(false),
     empty: Default::default(),
-    frozen: Some(ReadOnlyArray::from_array(values[:])),
-    equal_frozen: Some(fn(a, b) { a == b }),
+    frozen: Some({
+      layers: ReadOnlyArray::from_array(layers[:]),
+      values: ReadOnlyArray::from_array(values[:]),
+    }),
+    equal_frozen: Some(fn(a, b) {
+      guard a.values == b.values else { return false }
+      for index in 0..<a.layers.length() {
+        if a.layers[index].fragment != b.layers[index].fragment {
+          return false
+        }
+      }
+      true
+    }),
   }
 }

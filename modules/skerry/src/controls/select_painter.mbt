@@ -238,7 +238,13 @@ fn resolve_select_option_style(
   selected : Bool,
 ) -> @diagnostics.ComputedStyle {
   let mut result = control_defaults(
-    state,
+    // Options share background feedback for pointer hover and keyboard focus.
+    // The field keeps its focus border; list rows have no built-in outline.
+    {
+      ..state,
+      hovered: state.hovered || (state.focused && !selected),
+      focused: false,
+    },
     @diagnostics.ComputedStyle(
       font~,
       color=theme.resolve(@style.text_token),
@@ -249,18 +255,11 @@ fn resolve_select_option_style(
           @style.control_surface_token
         },
       ),
-      radius=0.0,
+      radius=4.0,
       align=TextStart,
     ),
     theme,
   )
-  if state.focused && !state.disabled {
-    result = {
-      ..result,
-      stroke_color: Some(theme.resolve(@style.accent_token)),
-      stroke_width: Some(2.0),
-    }
-  }
   for layer in layers {
     let style : ButtonStyle? = layer.get()
     result = match style {

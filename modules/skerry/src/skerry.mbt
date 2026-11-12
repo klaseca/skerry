@@ -60,6 +60,7 @@ pub using @text {
 pub using @style {
   type BoxStyle,
   type StyleDeclaration,
+  type StyleOrigin,
   trait StyleSpec,
   type StyleSource,
   trait SourceStyle,

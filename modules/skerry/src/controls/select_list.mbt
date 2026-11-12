@@ -253,9 +253,10 @@ fn[T : Eq] select_list(
     state.opening = Current
     preferred.bind(index => session.entries[index].node_id_at_path([]))
   })
-  @view.scroll_view(
-    list,
-    style=style.select(s => s.list),
-    scrollbar_gutter=true,
-  ).component("SelectList")
+  let list_style = @style.BoxStyle()
+    .padding(@foundation.Insets::all(4.0))
+    .merge(style.select(s => s.list))
+  @view.scroll_view(list, style=list_style, scrollbar_gutter=true).component(
+    "SelectList",
+  )
 }

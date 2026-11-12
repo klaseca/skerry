@@ -196,6 +196,7 @@ fn app_view() -> @skerry.View {
             .list(
               @skerry.BoxStyle()
               .max_height(180.0)
+              .background(@skerry.control_surface_token)
               .stroke(@skerry.border_token)
               .radius(6.0),
             ),

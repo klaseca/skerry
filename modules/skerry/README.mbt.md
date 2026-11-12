@@ -977,7 +977,9 @@ pub fn card(
 ) -> @skerry.View {
   @skerry.column(
     [@skerry.text(title, style=style.select(s => s.title)), body],
-    style=style.select(s => s.surface),
+    style=@skerry.FlexStyle()
+      .padding(@skerry.Insets::all(12.0))
+      .merge(style.select(s => s.surface)),
   )
 }
 
@@ -999,6 +1001,21 @@ style. It creates no View and does not rebuild the component. Rule lookups are
 shared by concrete family; unrelated font/token/theme changes do not re-run pure
 selectors. Signal reads inside a selector are tracked by its mounted consumer.
 Paint and snapshots read materialized data and never invoke selectors.
+
+Compose a component's base before its incoming projection, as in `card` above.
+The child's own family rules apply first, then the base, projected component
+rules and projected local arguments, in that order. For example, CardStyle.surface
+from a theme can override the base padding of 12; an explicit zero wins too.
+Reversing merge puts the base last and makes it override the projection.
+Plain and computed value fragments merge normal/state fields within a declaration;
+projections preserve separate declarations, so a later normal value still wins
+over an earlier active state.
+
+Materialized `StyleDeclaration.origin` records local/binding sources, theme lookup
+sheet and rule indices, and projection types. It carries data only and does not
+affect priority or value equality. A sheet identifies the effective lookup provider,
+including inherited rules; it does not identify the original defining scope.
+Opaque selectors do not expose field names such as `title` automatically.
 
 Numeric bounds, grow/shrink and flex spacing accept constants, Signal[Double],
 Computed[Double] or Binding[Double] directly. An entire built-in style can use
@@ -1781,6 +1798,8 @@ inset by 2 units. These logical dimensions follow the display scale.
 Set `scrollbar_gutter=true` to reserve the styled track thickness in layout and
 child clipping. This strip remains when content fits, so its cross-axis size
 stays stable. A disabled scrollbar reserves no space. Select uses this mode.
+The track stays at the right/bottom edge; content padding separates content from
+it without pushing it inward. Padding along the scroll axis insets the track ends.
 Use `ScrollbarStyle()` with methods to configure thickness, track/thumb
 colors, separate corner radii and thumb inset:
 
@@ -1899,6 +1918,13 @@ the placeholder and is preserved until a user confirms another value.
 
 The floating list matches the field width, flips at window edges and contains a
 scroll viewport with a stable gutter so options do not lie beneath the scrollbar.
+Its default padding is four logical pixels on each side and stays in place while
+scrolling. Override it through `SelectStyle.list(BoxStyle().padding(...))`;
+explicit zero padding is preserved. For larger corner radii or borders, supply
+matching padding in that list style.
+Keyboard focus uses background feedback, like pointer hover, without a default
+option outline. Selection keeps its distinct background and check. Explicit
+`option`/`selected` state appearances can still supply their own colors or stroke.
 The arrow and check are vector strokes, independent of font glyph coverage.
 Custom renderers implement `SceneRenderer::draw_line(start, end, color, width)`
 in logical coordinates; the Skia backend scales and antialiases these strokes.

@@ -2,9 +2,13 @@
 /// Root/provider-owned rule lookup. Each concrete family has one readonly
 /// signal; unrelated theme changes do not invalidate its consumers.
 pub struct StyleSheet {
+  priv id : Int32
   priv styles : Ref[Styles]
   priv entries : Map[String, SheetEntry]
 }
+
+///|
+let next_style_sheet_id : Ref[Int32] = Ref(0)
 
 ///|
 priv struct SheetEntry {
@@ -21,7 +25,9 @@ priv struct RuleObserver {
 
 ///|
 pub fn StyleSheet::StyleSheet(styles : Styles) -> StyleSheet {
-  { styles: Ref(styles), entries: {}, }
+  let id = next_style_sheet_id.val
+  next_style_sheet_id.val = id + 1
+  { id, styles: Ref(styles), entries: {}, }
 }
 
 ///|

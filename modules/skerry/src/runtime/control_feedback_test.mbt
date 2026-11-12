@@ -15,6 +15,8 @@ test "select option hover contrasts with light and dark backgrounds including se
       )
       defer root.dispose()
       select_test_open(root)
+      // Keyboard focus now uses the same background feedback as pointer hover.
+      root.focus_lost()
       let normal = select_test_nodes(root)[0]
       let color = normal.computed_style.unwrap().background.unwrap()
       let layouts = root.frame_stats().layout_count

@@ -29,6 +29,7 @@ impl StyleSpec with fn root_style(_) {
 /// private; extraction checks both the runtime type witness and description.
 pub struct StyleDeclaration {
   name : String
+  origin : StyleOrigin
   layout : BoxStyle
   metrics : StyleMetrics
   roots : ReadOnlyArray[BoxStyle]
@@ -38,7 +39,6 @@ pub struct StyleDeclaration {
   priv read_layers : ((StyleSheet) -> ReadOnlyArray[StyleDeclaration])?
   priv observe_rules : (StyleSheet, (Bool) -> Unit) -> () -> Unit
   priv dynamic : Bool
-  priv from_theme : Bool
   priv merge_data : (StylePayload, StylePayload) -> StyleDeclaration
   priv equal_value : (StylePayload, StylePayload) -> Bool
   priv debug_value : (StylePayload) -> Repr
@@ -55,7 +55,7 @@ pub fn[T : StyleSpec] StyleDeclaration::StyleDeclaration(
     _ => label
   }
   {
-    from_theme: false,
+    origin: Local(name),
     merge_data: fn(a, b) {
       let a : Ref[T] = restore_style(a)
       let b : Ref[T] = restore_style(b)
@@ -67,18 +67,28 @@ pub fn[T : StyleSpec] StyleDeclaration::StyleDeclaration(
     },
     read_layers: Some(fn(sheet) {
       let result : Array[StyleDeclaration] = []
-      for rule in (sheet.get() : ReadOnlyArray[T]) {
+      for index, rule in (sheet.get() : ReadOnlyArray[T]) {
         for layer in expand_style(rule, sheet) {
           result.push({
-            ..StyleDeclaration::plain(StyleSpec::freeze_fields(layer, sheet)),
-            from_theme: true,
+            ..StyleDeclaration::plain(
+              StyleSpec::freeze_fields(layer.value, sheet),
+            ),
+            origin: ThemeRule(
+              sheet=sheet.id,
+              rule=index,
+              family=name,
+              source=layer.origin,
+            ),
           })
         }
       }
       for layer in expand_style(value, sheet) {
-        result.push(
-          StyleDeclaration::plain(StyleSpec::freeze_fields(layer, sheet)),
-        )
+        result.push({
+          ..StyleDeclaration::plain(
+            StyleSpec::freeze_fields(layer.value, sheet),
+          ),
+          origin: layer.origin,
+        })
       }
       ReadOnlyArray::from_array(result[:])
     }),
@@ -163,7 +173,7 @@ pub fn StyleDeclaration::resolve(
 fn[T : StyleSpec] StyleDeclaration::plain(value : T) -> StyleDeclaration {
   let description = describe_style((panic : () -> Ref[T]))
   {
-    from_theme: false,
+    origin: Local(style_name((panic : () -> T))),
     merge_data: fn(a, b) {
       let a : Ref[T] = restore_style(a)
       let b : Ref[T] = restore_style(b)
@@ -204,10 +214,14 @@ pub fn StyleDeclaration::snapshot(
   }
   let mut result : StyleDeclaration? = None
   for layer in layers {
-    if !layer.from_theme && layer.same_type(self) {
+    if !layer.origin.is_theme() && layer.same_type(self) {
       result = Some(
         match result {
-          Some(previous) => (layer.merge_data)(previous.payload, layer.payload)
+          Some(previous) =>
+            {
+              ..(layer.merge_data)(previous.payload, layer.payload),
+              origin: Merged(previous.origin, layer.origin),
+            }
           None => layer
         },
       )

@@ -25,16 +25,22 @@ test "select indicators use vector lines and options stop before the scrollbar" 
   let nodes = root.snapshot().unwrap().tree.nodes
   let list = nodes.iter().filter(node => node.scroll is Some(_)).to_array()[0]
   let bar = list.scroll.unwrap().scrollbar.unwrap()
+  assert_eq(
+    bar.track.origin.x + bar.track.size.width,
+    list.frame.origin.x + list.frame.size.width,
+  )
   let rows = nodes
     .iter()
     .filter(node => node.component_name == "SelectOption")
     .to_array()
   for row in rows {
     assert_true(
-      row.frame.origin.x + row.frame.size.width <= bar.track.origin.x + 0.001,
+      (row.frame.origin.x + row.frame.size.width + 4.0 - bar.track.origin.x).abs() <
+      0.001,
     )
     assert_true(
-      row.clip.origin.x + row.clip.size.width <= bar.track.origin.x + 0.001,
+      (row.clip.origin.x + row.clip.size.width + 4.0 - bar.track.origin.x).abs() <
+      0.001,
     )
   }
   for index in 1..<rows.length() {

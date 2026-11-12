@@ -216,6 +216,7 @@ fn node_geometry(
         scrollbar_geometry(
           spec.axis,
           scroll_viewport,
+          frame.inset(border),
           content_size,
           offset,
           maximum,
