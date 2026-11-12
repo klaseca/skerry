@@ -13,46 +13,38 @@ test "SDL mouse leave clears hover only for its window and keeps drag capture" {
         let size = @foundation.Size(width=160.0, height=80.0)
         { window_size: size, logical_size: size, }
       }
+      let dispatcher = EventDispatcher(root, window_id=1, geometry=get_geometry)
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(
             @sdl_sys.EVENT_MOUSE_MOTION,
             1,
             point=Point(x=10.0, y=10.0),
           ),
-          window_id=1,
-          geometry=get_geometry,
         ),
       )
       state.sync_frame()
       assert_true(root.snapshot().unwrap().tree.nodes[0].state.hovered)
       let paints = root.frame_stats().paint_count
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(
             @sdl_sys.EVENT_MOUSE_MOTION,
             1,
             point=Point(x=20.0, y=10.0),
           ),
-          window_id=1,
-          geometry=get_geometry,
         ),
       )
       state.sync_frame()
       assert_eq(root.frame_stats().paint_count, paints)
       assert_true(state.prepare_wait())
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(
             @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
             1,
             point=Point(x=10.0, y=10.0),
           ),
-          window_id=1,
-          geometry=get_geometry,
         ),
       )
       state.sync_frame()
@@ -60,11 +52,8 @@ test "SDL mouse leave clears hover only for its window and keeps drag capture" {
       let pointer_queries = queries.val
       for window_id in [2U, 1U] {
         assert_true(
-          dispatch_event(
-            root,
+          dispatcher.dispatch(
             input_test_event(@sdl_sys.EVENT_WINDOW_MOUSE_LEAVE, window_id),
-            window_id=1,
-            geometry=get_geometry,
           ),
         )
         state.sync_frame()
@@ -75,15 +64,12 @@ test "SDL mouse leave clears hover only for its window and keeps drag capture" {
       }
       assert_eq(queries.val, pointer_queries)
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(
             @sdl_sys.EVENT_MOUSE_BUTTON_UP,
             1,
             point=Point(x=10.0, y=10.0),
           ),
-          window_id=1,
-          geometry=get_geometry,
         ),
       )
       state.sync_frame()
@@ -111,12 +97,10 @@ test "SDL keyup clears keyboard pressed without geometry queries or another acti
         let size = @foundation.Size(width=160.0, height=80.0)
         { window_size: size, logical_size: size, }
       }
+      let dispatcher = EventDispatcher(root, window_id=1, geometry=get_geometry)
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1, keycode=0x20U),
-          window_id=1,
-          geometry=get_geometry,
         ),
       )
       state.sync_frame()
@@ -129,11 +113,8 @@ test "SDL keyup clears keyboard pressed without geometry queries or another acti
           (1U, 0x20U, false),
         ] {
         assert_true(
-          dispatch_event(
-            root,
+          dispatcher.dispatch(
             input_test_event(@sdl_sys.EVENT_KEY_UP, window_id, keycode~),
-            window_id=1,
-            geometry=get_geometry,
           ),
         )
         state.sync_frame()

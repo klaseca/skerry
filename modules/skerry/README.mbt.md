@@ -1826,6 +1826,11 @@ otherwise it uses the last paint or pointer/wheel input size. The SDL backend
 supplies the size for navigation keys. If Tab arrives before any host size is
 known, reveal is deferred to preparation of the first paint, before drawing.
 
+Its boolean result reports command consumption. Native hosts cancel that key's
+generated text input when it is consumed; the SDL adapter tracks this per window,
+including repeats of held keys. `UiRoot::text_input` delivers independent committed
+strings unchanged, including spaces and IME text.
+
 `view.translated(Point(...))` moves paint and input coordinates without changing
 layout allocation, scroll extent or identity. Repeating it replaces that node's
 translation. `view.clip()` clips the node and its descendants to its translated

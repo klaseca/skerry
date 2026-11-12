@@ -49,42 +49,17 @@ test "SDL wheel routes fractional and flipped deltas to the correct scaled viewp
       }
     }
     let point = @foundation.Point(x=10.0 / scale, y=50.0 / scale)
-    assert_true(
-      dispatch_event(
-        root,
-        wheel_test_event(2U, 0.0, -0.25, point),
-        window_id=1U,
-        geometry=get_geometry,
-      ),
-    )
+    let dispatcher = EventDispatcher(root, window_id=1U, geometry=get_geometry)
+    assert_true(dispatcher.dispatch(wheel_test_event(2U, 0.0, -0.25, point)))
     assert_eq(queries.val, 0)
     assert_eq(offset.get(), 0.0)
-    assert_true(
-      dispatch_event(
-        root,
-        wheel_test_event(1U, 0.0, -0.25, point),
-        window_id=1U,
-        geometry=get_geometry,
-      ),
-    )
+    assert_true(dispatcher.dispatch(wheel_test_event(1U, 0.0, -0.25, point)))
     assert_eq(offset.get(), 10.0)
     assert_true(
-      dispatch_event(
-        root,
-        wheel_test_event(1U, 0.0, 0.5, point, flipped=true),
-        window_id=1U,
-        geometry=get_geometry,
-      ),
+      dispatcher.dispatch(wheel_test_event(1U, 0.0, 0.5, point, flipped=true)),
     )
     assert_eq(offset.get(), 30.0)
-    assert_true(
-      dispatch_event(
-        root,
-        wheel_test_event(1U, 0.0, -10.0, point),
-        window_id=1U,
-        geometry=get_geometry,
-      ),
-    )
+    assert_true(dispatcher.dispatch(wheel_test_event(1U, 0.0, -10.0, point)))
     assert_eq(offset.get(), 240.0)
   }
 }
@@ -101,20 +76,19 @@ test "SDL horizontal wheel and invalid dimensions do not use vertical steps" {
   })
   defer root.dispose()
   let event = wheel_test_event(1U, 0.5, 0.0, Point(x=5.0, y=5.0))
-  let valid : () -> InputGeometry raise = fn() {
-    {
-      window_size: Size(width=100.0, height=50.0),
-      logical_size: Size(width=100.0, height=50.0),
-    }
-  }
-  assert_true(dispatch_event(root, event, window_id=1U, geometry=valid))
+  let geometry = Ref(InputGeometry::{
+    window_size: Size(width=100.0, height=50.0),
+    logical_size: Size(width=100.0, height=50.0),
+  })
+  let dispatcher = EventDispatcher(root, window_id=1, geometry=() => {
+    geometry.val
+  })
+  assert_true(dispatcher.dispatch(event))
   assert_eq(offset.get(), 20.0)
-  let invalid : () -> InputGeometry raise = fn() {
-    {
-      window_size: Size(width=0.0, height=50.0),
-      logical_size: Size(width=100.0, height=50.0),
-    }
+  geometry.val = {
+    window_size: Size(width=0.0, height=50.0),
+    logical_size: Size(width=100.0, height=50.0),
   }
-  assert_true(dispatch_event(root, event, window_id=1U, geometry=invalid))
+  assert_true(dispatcher.dispatch(event))
   assert_eq(offset.get(), 20.0)
 }

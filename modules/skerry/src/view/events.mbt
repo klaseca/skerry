@@ -24,6 +24,7 @@ pub struct ElementEvents {
 pub(all) enum KeyHandling {
   KeyIgnored
   // Consumed; view reactivity owns invalidation, including no-op actions.
+  // Native adapters prevent the handled key's generated text input.
   KeyHandled
   KeyActivated
 }

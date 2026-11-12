@@ -45,24 +45,24 @@ test "HiDPI pointer and text selection use logical units across platform densiti
         )
       })
       defer root.dispose()
+      let dispatcher = EventDispatcher(root, window_id=1, geometry=fn() {
+        geometry
+      })
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
         42.0 * window_factor,
         50.0 * window_factor,
       )
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_MOTION,
         90.0 * window_factor,
         50.0 * window_factor,
       )
       assert_eq(root.copy_text(), Some("hello"))
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_BUTTON_UP,
         100.0 * window_factor,
         50.0 * window_factor,
@@ -89,55 +89,46 @@ test "HiDPI wheel and scrollbar drag retain logical scroll distances" {
         @view.scroll_view(@view.fill_box(600.0), offset~)
       })
       defer root.dispose()
+      let dispatcher = EventDispatcher(root, window_id=1, geometry=fn() {
+        geometry
+      })
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           wheel_test_event(
             1,
             0.0,
             -0.5,
             Point(x=10.0 * factor, y=20.0 * factor),
           ),
-          window_id=1,
-          geometry=() => geometry,
         ),
       )
       assert_eq(offset.get(), 20.0)
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1, keycode=0x4000004E),
-          window_id=1,
-          geometry=() => geometry,
         ),
       )
       assert_eq(offset.get(), 140.0)
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1, keycode=0x4000004B),
-          window_id=1,
-          geometry=() => geometry,
         ),
       )
       assert_eq(offset.get(), 20.0)
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
         90.0 * factor,
         10.0 * factor,
       )
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_MOTION,
         90.0 * factor,
         34.0 * factor,
       )
       input_test_pointer(
-        root,
-        geometry,
+        dispatcher,
         @sdl_sys.EVENT_MOUSE_BUTTON_UP,
         90.0 * factor,
         34.0 * factor,

@@ -593,6 +593,8 @@ pub fn UiRoot::pointer_move(
 ///|
 /// Controls handle keys first. Unmodified navigation keys then scroll their
 /// nearest eligible viewport. size overrides the last paint/input host size.
+/// True means consumed. Native hosts must cancel the handled key's generated
+/// text before forwarding committed text through text_input.
 pub fn UiRoot::key_down(
   self : UiRoot,
   event : @foundation.KeyEvent,
@@ -691,6 +693,8 @@ fn is_focus_traversal_event(event : @foundation.KeyEvent) -> Bool {
 }
 
 ///|
+/// Deliver an independent committed string, including spaces or IME text.
+/// Native adapters resolve command-key consumption before calling this method.
 pub fn UiRoot::text_input(self : UiRoot, text : String) -> Bool {
   self.scope.run(fn() {
     guard !self.disposed && !self.losing_focus else { false }

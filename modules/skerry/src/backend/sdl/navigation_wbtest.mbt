@@ -14,12 +14,10 @@ test "SDL navigation keys use logical viewport dimensions and ignore foreign win
         logical_size: Size(width=100.0, height=50.0),
       }
     }
+    let dispatcher = EventDispatcher(root, window_id=1U, geometry=get_geometry)
     assert_true(
-      dispatch_event(
-        root,
+      dispatcher.dispatch(
         input_test_event(@sdl_sys.EVENT_KEY_DOWN, 2U, keycode=0x4000004EU),
-        window_id=1U,
-        geometry=get_geometry,
       ),
     )
     assert_eq(queries.val, 0)
@@ -35,11 +33,8 @@ test "SDL navigation keys use logical viewport dimensions and ignore foreign win
         (0x4000004AU, 0.0),
       ] {
       assert_true(
-        dispatch_event(
-          root,
+        dispatcher.dispatch(
           input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1U, keycode~),
-          window_id=1U,
-          geometry=get_geometry,
         ),
       )
       assert_eq(offset.get(), expected)
@@ -70,12 +65,10 @@ test "SDL Tab supplies host size and reveals a focused child before the first pa
       logical_size: Size(width=100.0, height=50.0),
     }
   }
+  let dispatcher = EventDispatcher(root, window_id=1U, geometry=get_geometry)
   assert_true(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1U, keycode=0x09U),
-      window_id=1U,
-      geometry=get_geometry,
     ),
   )
   assert_eq(offset.get(), 80.0)

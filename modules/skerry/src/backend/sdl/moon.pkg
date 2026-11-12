@@ -1,4 +1,5 @@
 import {
+  "moonbitlang/core/hashset",
   "klaseca/skerry/backend",
   "klaseca/skerry/foundation",
   "klaseca/skerry/runtime",

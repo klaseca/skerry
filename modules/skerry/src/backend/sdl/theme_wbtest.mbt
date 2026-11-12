@@ -99,9 +99,8 @@ test "SDL system theme events update System apps without window input geometry" 
     }
     let event = @sdl_sys.Event()
     event.set_event_type(@sdl_sys.EVENT_SYSTEM_THEME_CHANGED)
-    assert_true(
-      dispatch_event(root, event, window_id=999, geometry=get_geometry),
-    )
+    let dispatcher = EventDispatcher(root, window_id=999, geometry=get_geometry)
+    assert_true(dispatcher.dispatch(event))
     let expected = if reported is Some(Dark) {
       @style.Theme(palette=@style.Palette::dark())
     } else {
@@ -112,17 +111,13 @@ test "SDL system theme events update System apps without window input geometry" 
     assert_eq(app.theme_mode(), System)
     assert_eq(queries.val, 0)
     app.set_theme_mode(Dark)
-    assert_true(
-      dispatch_event(root, event, window_id=999, geometry=get_geometry),
-    )
+    assert_true(dispatcher.dispatch(event))
     assert_eq(
       root.theme().tokens,
       @style.Theme(palette=@style.Palette::dark()).tokens,
     )
     root.dispose()
-    assert_true(
-      dispatch_event(root, event, window_id=999, geometry=get_geometry),
-    )
+    assert_true(dispatcher.dispatch(event))
     assert_eq(
       root.theme().tokens,
       @style.Theme(palette=@style.Palette::dark()).tokens,

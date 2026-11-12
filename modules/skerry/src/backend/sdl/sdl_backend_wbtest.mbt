@@ -80,35 +80,21 @@ test "SDL focus loss cancels and blurs only its host window" {
     geometry_queries.val += 1
     { window_size: size, logical_size: size, }
   }
+  let dispatcher = EventDispatcher(root, window_id=1, geometry=get_geometry)
   assert_true(
-    dispatch_event(
-      root,
-      input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 2),
-      window_id=1,
-      geometry=get_geometry,
-    ),
+    dispatcher.dispatch(input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 2)),
   )
   assert_eq(cancelled.val, 0)
   assert_eq(blurred.val, 0)
   assert_true(root.text_input("before blur"))
   assert_true(
-    dispatch_event(
-      root,
-      input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 1),
-      window_id=1,
-      geometry=get_geometry,
-    ),
+    dispatcher.dispatch(input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 1)),
   )
   assert_eq(cancelled.val, 1)
   assert_eq(blurred.val, 1)
   assert_false(root.text_input("after blur"))
   assert_true(
-    dispatch_event(
-      root,
-      input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 1),
-      window_id=1,
-      geometry=get_geometry,
-    ),
+    dispatcher.dispatch(input_test_event(@sdl_sys.EVENT_WINDOW_FOCUS_LOST, 1)),
   )
   assert_eq(cancelled.val, 1)
   assert_eq(blurred.val, 1)
@@ -131,57 +117,45 @@ test "SDL primary pointer keyboard and close events respect window routing" {
   let down = input_test_event(@sdl_sys.EVENT_MOUSE_BUTTON_DOWN, 1)
   let up = input_test_event(@sdl_sys.EVENT_MOUSE_BUTTON_UP, 1)
   let foreign = input_test_event(@sdl_sys.EVENT_MOUSE_BUTTON_DOWN, 2)
-  assert_true(dispatch_event(root, foreign, window_id=1, geometry=get_geometry))
+  let dispatcher = EventDispatcher(root, window_id=1, geometry=get_geometry)
+  assert_true(dispatcher.dispatch(foreign))
   let secondary = input_test_event(
     @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
     1,
     button=3,
   )
-  assert_true(
-    dispatch_event(root, secondary, window_id=1, geometry=get_geometry),
-  )
+  assert_true(dispatcher.dispatch(secondary))
   assert_eq(geometry_queries.val, 0)
-  assert_true(dispatch_event(root, up, window_id=1, geometry=get_geometry))
+  assert_true(dispatcher.dispatch(up))
   assert_eq(clicks.val, 0)
-  assert_true(dispatch_event(root, down, window_id=1, geometry=get_geometry))
+  assert_true(dispatcher.dispatch(down))
   let secondary_up = input_test_event(
     @sdl_sys.EVENT_MOUSE_BUTTON_UP,
     1,
     button=3,
   )
-  assert_true(
-    dispatch_event(root, secondary_up, window_id=1, geometry=get_geometry),
-  )
+  assert_true(dispatcher.dispatch(secondary_up))
   assert_eq(clicks.val, 0)
-  assert_true(dispatch_event(root, up, window_id=1, geometry=get_geometry))
-  assert_true(dispatch_event(root, up, window_id=1, geometry=get_geometry))
+  assert_true(dispatcher.dispatch(up))
+  assert_true(dispatcher.dispatch(up))
   assert_eq(clicks.val, 1)
   let key = input_test_event(@sdl_sys.EVENT_KEY_DOWN, 2, keycode=0x0D)
-  assert_true(dispatch_event(root, key, window_id=1, geometry=get_geometry))
+  assert_true(dispatcher.dispatch(key))
   assert_eq(clicks.val, 1)
   assert_true(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(@sdl_sys.EVENT_KEY_DOWN, 1, keycode=0x0D),
-      window_id=1,
-      geometry=get_geometry,
     ),
   )
   assert_eq(clicks.val, 2)
   assert_true(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(@sdl_sys.EVENT_WINDOW_CLOSE_REQUESTED, 2),
-      window_id=1,
-      geometry=get_geometry,
     ),
   )
   assert_false(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(@sdl_sys.EVENT_WINDOW_CLOSE_REQUESTED, 1),
-      window_id=1,
-      geometry=get_geometry,
     ),
   )
   assert_false(root.key_down(KeyEvent(key=KeyEnter)))
@@ -189,18 +163,14 @@ test "SDL primary pointer keyboard and close events respect window routing" {
 
 ///|
 fn input_test_pointer(
-  root : @runtime.UiRoot,
-  geometry : InputGeometry,
+  dispatcher : EventDispatcher,
   event_type : UInt32,
   x : Double,
   y : Double,
 ) -> Unit raise {
   assert_true(
-    dispatch_event(
-      root,
-      input_test_event(event_type, 1, point=Point(x~, y~)),
-      window_id=1,
-      geometry=() => geometry,
+    dispatcher.dispatch(
+      input_test_event(event_type, dispatcher.window_id, point=Point(x~, y~)),
     ),
   )
 }
@@ -231,23 +201,21 @@ test "SDL pointer capture converts native coordinates to the current logical vie
       window_size: Size(width=320.0, height=240.0),
       logical_size: Size(width=320.0 * scale, height=240.0 * scale),
     }
+    let dispatcher = EventDispatcher(root, window_id=1, geometry=() => geometry)
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
       100.0 / scale,
       60.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_MOTION,
       130.0 / scale,
       70.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_UP,
       100.0 / scale,
       60.0 / scale,
@@ -264,15 +232,13 @@ test "SDL pointer capture converts native coordinates to the current logical vie
       assert_true((events[i].position.y - expected_y).abs() < 0.0001)
     }
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
       100.0 / scale,
       60.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_UP,
       130.0 / scale,
       90.0 / scale,
@@ -280,15 +246,13 @@ test "SDL pointer capture converts native coordinates to the current logical vie
     assert_eq(clicks.val, 1)
     let event_count = events.length()
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
       -10.0 / scale,
       60.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_UP,
       100.0 / scale,
       60.0 / scale,
@@ -325,24 +289,22 @@ test "SDL text selection and caret use the same coordinates as layout" {
       window_size: Size(width=320.0, height=240.0),
       logical_size: Size(width=320.0 * scale, height=240.0 * scale),
     }
+    let dispatcher = EventDispatcher(root, window_id=1, geometry=() => geometry)
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
       42.0 / scale,
       50.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_MOTION,
       90.0 / scale,
       50.0 / scale,
     )
     assert_eq(root.copy_text(), Some("hello"), msg="pixel density \{scale}")
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_UP,
       100.0 / scale,
       50.0 / scale,
@@ -351,15 +313,13 @@ test "SDL text selection and caret use the same coordinates as layout" {
     assert_true(root.text_input("x"))
     assert_eq(value.get(), "xworld")
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
       60.0 / scale,
       50.0 / scale,
     )
     input_test_pointer(
-      root,
-      geometry,
+      dispatcher,
       @sdl_sys.EVENT_MOUSE_BUTTON_UP,
       60.0 / scale,
       50.0 / scale,
@@ -390,16 +350,14 @@ test "SDL pointer input follows current geometry during a captured session" {
     queries.val += 1
     current.val
   }
+  let dispatcher = EventDispatcher(root, window_id=1, geometry=get_geometry)
   assert_true(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(
         @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
         1,
         point=Point(x=90.0, y=15.0),
       ),
-      window_id=1,
-      geometry=get_geometry,
     ),
   )
   current.val = {
@@ -407,15 +365,12 @@ test "SDL pointer input follows current geometry during a captured session" {
     logical_size: Size(width=180.0, height=200.0),
   }
   assert_true(
-    dispatch_event(
-      root,
+    dispatcher.dispatch(
       input_test_event(
         @sdl_sys.EVENT_MOUSE_BUTTON_UP,
         1,
         point=Point(x=115.0, y=15.0),
       ),
-      window_id=1,
-      geometry=get_geometry,
     ),
   )
   assert_eq(clicks.val, 1)
@@ -423,20 +378,8 @@ test "SDL pointer input follows current geometry during a captured session" {
   assert_eq(queries.val, 2)
   // Keep x outside the current logical viewport after conversion; capture still gets up,
   // but release must not activate the stretched control.
-  input_test_pointer(
-    root,
-    current.val,
-    @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
-    115.0,
-    15.0,
-  )
-  input_test_pointer(
-    root,
-    current.val,
-    @sdl_sys.EVENT_MOUSE_BUTTON_UP,
-    121.0,
-    15.0,
-  )
+  input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_BUTTON_DOWN, 115.0, 15.0)
+  input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_BUTTON_UP, 121.0, 15.0)
   assert_eq(clicks.val, 1)
 }
 
@@ -460,23 +403,16 @@ test "SDL pointer input cancels capture when its surface has no extent" {
     { window_size: size, logical_size: Size(width=0.0, height=80.0), },
     { window_size: size, logical_size: Size(width=180.0, height=0.0), },
   ]
+  let current = Ref(valid)
+  let dispatcher = EventDispatcher(root, window_id=1, geometry=() => current.val)
   for geometry in invalid {
-    input_test_pointer(
-      root,
-      valid,
-      @sdl_sys.EVENT_MOUSE_BUTTON_DOWN,
-      10.0,
-      10.0,
-    )
-    input_test_pointer(root, geometry, @sdl_sys.EVENT_MOUSE_MOTION, 10.0, 10.0)
-    input_test_pointer(
-      root,
-      geometry,
-      @sdl_sys.EVENT_MOUSE_BUTTON_UP,
-      10.0,
-      10.0,
-    )
-    input_test_pointer(root, valid, @sdl_sys.EVENT_MOUSE_BUTTON_UP, 10.0, 10.0)
+    current.val = valid
+    input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_BUTTON_DOWN, 10.0, 10.0)
+    current.val = geometry
+    input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_MOTION, 10.0, 10.0)
+    input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_BUTTON_UP, 10.0, 10.0)
+    current.val = valid
+    input_test_pointer(dispatcher, @sdl_sys.EVENT_MOUSE_BUTTON_UP, 10.0, 10.0)
     assert_eq(clicks.val, 0)
   }
   assert_eq(cancelled.val, invalid.length())
