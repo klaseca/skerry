@@ -1,8 +1,8 @@
 ///|
 priv struct SelectSession {
   scope : @reactive.Scope
-  entries : Array[@view.View]
-  labels : Array[@view.TextContent]
+  mut entries : Array[@view.View]
+  mut labels : Array[@view.TextContent]
   mut host : @view.MountContext?
   mut active : Int32?
   mut prefix : String
@@ -123,6 +123,13 @@ fn[T : Eq] select_list(
     prefix: "",
     last_input: 0.0,
   }
+  @reactive.on_cleanup(fn() {
+    // Entries capture this session in their handlers. Drop the session's side
+    // of that cycle after unmount, including cached TextContent handles.
+    session.host = None
+    session.entries = []
+    session.labels = []
+  })
   for index, option in state.options {
     let value = option.value
     let content = @view.TextContent(option.label)

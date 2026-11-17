@@ -79,18 +79,20 @@ pub fn Scope::dispose(self : Scope) -> Unit {
 ///|
 /// Register component teardown, or cleanup before an effect's next run/disposal.
 pub fn on_cleanup(cleanup : () -> Unit) -> Unit {
-  let owner = @signals.get_owner()
-  let active = Ref(true)
+  let scope = Scope::current()
+  let pending = Ref(Some((scope, cleanup)))
   let cleanup_once = fn() {
-    guard active.val else { return }
-    active.val = false
-    match owner {
-      Some(owner) => Scope::{ owner, }.run(cleanup)
+    guard pending.val is Some((scope, cleanup)) else { return }
+    // Release captures even if a registry or saved disposer keeps this wrapper.
+    // Clear before invoking application code so reentrant disposal is harmless.
+    pending.val = None
+    match scope {
+      Some(scope) => scope.run(cleanup)
       None => @signals.untracked(cleanup)
     }
   }
-  match owner {
-    Some(owner) if owner.disposed => cleanup_once()
+  match scope {
+    Some(scope) if scope.is_disposed() => cleanup_once()
     _ => @signals.on_cleanup(cleanup_once)
   }
 }

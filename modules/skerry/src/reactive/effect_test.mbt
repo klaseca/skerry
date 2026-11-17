@@ -84,3 +84,49 @@ test "update callbacks preserve FIFO when a callback queues another callback" {
   })
   assert_eq(order, [1, 2, 3])
 }
+
+///|
+test "cleanup preserves its scope and runs once across reentrant disposal" {
+  let key = @reactive.Context("outside")
+  let parent = @reactive.Scope::root()
+  defer parent.dispose()
+  let cleaned : Array[String] = []
+  let disposed_scopes : Array[Bool] = []
+  let scope = parent.run_with([key.provide("inside")], fn() {
+    let scope = @reactive.Scope::current().unwrap()
+    @reactive.on_cleanup(fn() {
+      disposed_scopes.push(
+        @reactive.Scope::current()
+        .map(scope => scope.is_disposed())
+        .unwrap_or(false),
+      )
+      cleaned.push(key.get())
+      scope.dispose()
+      @reactive.on_cleanup(fn() { cleaned.push("already disposed") })
+    })
+    scope
+  })
+  scope.dispose()
+  scope.dispose()
+  // Disposed providers are unavailable even while their cleanup is running.
+  assert_eq(cleaned, ["outside", "already disposed"])
+  assert_eq(disposed_scopes, [true])
+  assert_eq(key.get(), "outside")
+}
+
+///|
+test "manually stopped effect cleanup runs under its captured live provider" {
+  let key = @reactive.Context("outside")
+  let parent = @reactive.Scope::root()
+  defer parent.dispose()
+  let cleaned : Array[String] = []
+  let stop = parent.run_with([key.provide("inside")], fn() {
+    @reactive.render_effect(fn() {
+      @reactive.on_cleanup(fn() { cleaned.push(key.get()) })
+    })
+  })
+  stop()
+  stop()
+  assert_eq(cleaned, ["inside"])
+  assert_eq(key.get(), "outside")
+}

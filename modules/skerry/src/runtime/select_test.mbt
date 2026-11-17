@@ -607,3 +607,52 @@ test "select shared models keep independent popup sessions across roots" {
   assert_true(second.key_down(test_key_event(KeyEnter)))
   assert_eq(selected.peek(), Some(2))
 }
+
+///|
+test "select repeatedly closes sessions and remounts fresh options without closed subscriptions" {
+  let dependency = @reactive.signal(0)
+  let reads = Ref(0)
+  let selected = @reactive.signal(Some("MoonBit"))
+  let root = @runtime.mount(
+    fn() {
+      @controls.select(
+        ["MoonBit", "Rust", "Go"].map(fn(value) {
+          @controls.SelectOption(
+            value,
+            label=value,
+            disabled=@reactive.bind(fn() {
+              ignore(dependency.get())
+              reads.val += 1
+              false
+            }),
+          )
+        }),
+        selected~,
+      )
+    },
+    text_layout_system=test_text_layout_system(),
+  )
+  defer root.dispose()
+  assert_true(root.key_down(test_key_event(KeyTab)))
+  let mut previous = None
+  for cycle in 0..<25 {
+    assert_true(root.key_down(test_key_event(KeyEnter)))
+    let options = select_test_nodes(root)
+    assert_eq(options.length(), 3)
+    assert_true(Some(options[0].id) != previous)
+    previous = Some(options[0].id)
+    assert_eq(select_test_active(root), Some(0))
+    assert_true(root.key_down(test_key_event(KeyEnd)))
+    assert_eq(select_test_active(root), Some(2))
+    assert_true(root.key_down(test_key_event(KeyEscape)))
+    assert_true(root.view().popup_targets().is_empty())
+    assert_eq(selected.peek(), Some("MoonBit"))
+    let count = reads.val
+    dependency.set(cycle + 1)
+    assert_eq(reads.val, count)
+  }
+  root.dispose()
+  let count = reads.val
+  dependency.set(100)
+  assert_eq(reads.val, count)
+}
