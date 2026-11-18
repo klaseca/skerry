@@ -3,7 +3,7 @@ test "image fitting preserves aspect ratio and resolves cropped source coordinat
   let image = @foundation.Image(
     width=200,
     height=100,
-    Bytes::new(200 * 100 * 4),
+    Bytes::make(200 * 100 * 4, b'\x00'),
   )
   let frame = @foundation.Rect(x=10.0, y=20.0, width=100.0, height=100.0)
   let contain = image.placement(frame).unwrap()

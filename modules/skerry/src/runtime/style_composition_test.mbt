@@ -181,8 +181,8 @@ test "nested projections retain theme and type origins without sampling on inspe
       source=@style.StyleOrigin::Projection(
         from=outer,
         to=inner,
-        source=@style.StyleOrigin::ThemeRule(rule=0, family~, ..)
-      )
+        source=@style.StyleOrigin::ThemeRule(rule=0, family~, ..),
+      ),
     ) &&
     panel.has_suffix("PanelStyle") &&
     text.has_suffix("TextStyle") &&

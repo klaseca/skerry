@@ -11,7 +11,7 @@ pub(all) enum StyleOrigin {
     sheet~ : Int32,
     rule~ : Int32,
     family~ : String,
-    source~ : StyleOrigin
+    source~ : StyleOrigin,
   )
   Projection(from~ : String, to~ : String, source~ : StyleOrigin)
   Merged(StyleOrigin, StyleOrigin)

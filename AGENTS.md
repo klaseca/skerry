@@ -44,11 +44,9 @@ You can browse and install extra skills here:
 
 - `moon fmt` is used to format your code properly.
 
-- Temporary compatibility extensions in `src/style/deprecated.mbt` and
-  `src/view/deprecated.mbt` (under `modules/skerry`) are tagged `TODO(moonbit-implicit-impl)`.
-  They deprecate and hide existing implicit methods so accidental direct calls still warn.
-  Remove these tagged extensions once the compiler stops implicit impl-to-method
-  promotion; keep the ordinary public extensions used by the supported API.
+- Expose intended trait methods through explicit `pub extend` declarations.
+  Keep `Default` and internal `StyleSpec`/`SourceStyle` hooks trait-only; callers
+  use constructors or the trait directly.
 
 - `moon ide` provides project navigation helpers like `peek-def`, `outline`, and
   `find-references`. See $moonbit-agent-guide for details.

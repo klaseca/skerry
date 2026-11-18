@@ -36,7 +36,7 @@ test "select options share edges and paint without seams at fractional scales" {
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (300.0 * scale).to_int()
     let height = (300.0 * scale).to_int()
-    let pixels = Bytes::new(width * height * 4)
+    let pixels = Bytes::make(width * height * 4, b'\x00')
     @backend.Renderer::render(
       renderer,
       root,
@@ -128,7 +128,7 @@ test "select list padding protects rounded corners and border throughout scrolli
     for scale in [1.0, 1.25, 1.5, 2.0] {
       let width = (240.0 * scale).to_int()
       let height = (240.0 * scale).to_int()
-      let pixels = Bytes::new(width * height * 4)
+      let pixels = Bytes::make(width * height * 4, b'\x00')
       @backend.Renderer::render(
         renderer,
         root,
@@ -269,7 +269,7 @@ test "select arrow and selection check render as native geometry at fractional s
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (240.0 * scale).to_int()
     let height = (200.0 * scale).to_int()
-    let pixels = Bytes::new(width * height * 4)
+    let pixels = Bytes::make(width * height * 4, b'\x00')
     @backend.Renderer::render(
       renderer,
       root,

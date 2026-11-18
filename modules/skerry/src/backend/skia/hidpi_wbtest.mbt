@@ -40,7 +40,7 @@ test "raster scale preserves logical geometry while Skia draws full resolution i
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (160.0 * scale).to_int()
     let height = (80.0 * scale).to_int()
-    let pixels = Bytes::new(width * height * 4)
+    let pixels = Bytes::make(width * height * 4, b'\x00')
     let target = @backend.RasterTarget(
       memory=raster_test_memory(pixels),
       width~,
@@ -148,7 +148,7 @@ test "raster scale transforms clips together with paint" {
   defer root.dispose()
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (80.0 * scale).to_int()
-    let pixels = Bytes::new(width * width * 4)
+    let pixels = Bytes::make(width * width * 4, b'\x00')
     @backend.Renderer::render(
       renderer,
       root,
@@ -194,7 +194,7 @@ test "raster scale transforms clips together with paint" {
 
 ///|
 test "raster targets reject zero negative and nonfinite scales" {
-  let pixels = Bytes::new(16)
+  let pixels = Bytes::make(16, b'\x00')
   for
     scale in [
       0.0, -1.0, @double.infinity, @double.neg_infinity, @double.not_a_number,

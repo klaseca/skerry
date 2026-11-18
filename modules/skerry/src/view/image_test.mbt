@@ -3,7 +3,7 @@ test "image intrinsic dimensions and one-axis constraints preserve aspect ratio"
   let image = @foundation.Image(
     width=200,
     height=100,
-    Bytes::new(200 * 100 * 4),
+    Bytes::make(200 * 100 * 4, b'\x00'),
   )
   let layout = @view.column(
     [

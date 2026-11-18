@@ -292,7 +292,7 @@ fn to_skia_color(color : @foundation.Color) -> @skia_lib.Color {
 ///|
 fn color_component_to_byte(value : Double) -> Byte {
   let scaled = clamp_double(value, 0.0, 1.0) * 255.0
-  UInt32::trunc_double(scaled.round()).to_byte()
+  scaled.round().to_uint().to_byte()
 }
 
 ///|

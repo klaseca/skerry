@@ -41,7 +41,7 @@ fn decode_image_data(
   guard height <= @int.MAX_VALUE / row_bytes else {
     raise @foundation.InvalidImageSize(width~, height~)
   }
-  let pixels = Bytes::new(row_bytes * height)
+  let pixels = Bytes::make(row_bytes * height, b'\x00')
   let info = @skia_sys.imageinfo_bgra8888_premul(width, height)
   guard @skia_sys.image_read_pixels(
     image,

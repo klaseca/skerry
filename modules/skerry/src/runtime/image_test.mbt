@@ -1,6 +1,6 @@
 ///|
 fn test_image(width : Int32, height : Int32) -> @foundation.Image raise {
-  @foundation.Image(width~, height~, Bytes::new(width * height * 4))
+  @foundation.Image(width~, height~, Bytes::make(width * height * 4, b'\x00'))
 }
 
 ///|

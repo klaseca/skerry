@@ -33,7 +33,7 @@ test "focus outline retains an even gap and separate border at fractional scales
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (160.0 * scale).to_int()
     let height = (100.0 * scale).to_int()
-    let pixels = Bytes::new(width * height * 4)
+    let pixels = Bytes::make(width * height * 4, b'\x00')
     @backend.Renderer::render(
       renderer,
       root,
