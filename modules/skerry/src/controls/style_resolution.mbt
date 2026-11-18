@@ -1,11 +1,17 @@
 ///|
+// The built-in focus treatment uses the same Appearance API as application
+// styles. Tokens resolve against the consuming theme, including scoped themes.
+let default_focus_appearance : @style.Appearance = @style.Appearance().outline(
+  @style.accent_token,
+)
+
+///|
 // Built-in interaction feedback forms the lowest paint layer. Concrete style
 // declarations then retain their own normal/state/disabled precedence.
 fn control_defaults(
   state : @foundation.ControlState,
   base : @diagnostics.ComputedStyle,
   theme : @style.Theme,
-  button~ : Bool = false,
   shade_background~ : Bool = true,
 ) -> @diagnostics.ComputedStyle {
   let mut result = base
@@ -15,6 +21,9 @@ fn control_defaults(
       background: result.background.map(color => control_color(color, true)),
       color: result.color.map(color => control_color(color, true)),
       stroke_color: result.stroke_color.map(color => control_color(color, true)),
+      outline_color: result.outline_color.map(color => {
+        control_color(color, true)
+      }),
       marker_color: result.marker_color.map(color => control_color(color, true)),
       placeholder_color: result.placeholder_color.map(color => {
         control_color(color, true)
@@ -47,19 +56,11 @@ fn control_defaults(
       }
     }
     if state.focused {
-      result = {
-        ..result,
-        stroke_color: Some(
-          theme.resolve(
-            if button {
-              @style.text_token
-            } else {
-              @style.accent_token
-            },
-          ),
-        ),
-        stroke_width: Some(2.0),
-      }
+      result = @view.apply_appearance(
+        result,
+        Some(default_focus_appearance),
+        theme~,
+      )
     }
   }
   result
@@ -139,6 +140,12 @@ fn apply_disabled_style(
     stroke_color: merge_style_option(
       result.stroke_color,
       style.paint.stroke_color.map(color => {
+        control_color(color.resolve(theme), true)
+      }),
+    ),
+    outline_color: merge_style_option(
+      result.outline_color,
+      style.paint.outline_color.map(color => {
         control_color(color.resolve(theme), true)
       }),
     ),

@@ -147,7 +147,9 @@ test "text input keeps theme surface and text colors across pointer transitions"
       pressed.state.hovered && pressed.state.pressed && pressed.state.focused,
     )
     assert_eq(renderer.strokes[0].0, theme.resolve(@style.accent_token))
-    assert_eq(renderer.strokes[0].1, 2.0)
+    assert_eq(renderer.strokes[0].1, 1.0)
+    assert_eq(renderer.strokes[1].0, theme.resolve(@style.accent_token))
+    assert_eq(renderer.strokes[1].1, 2.0)
     assert_true(root.pointer_up(size~, point~))
     check_surface()
     root.pointer_leave()

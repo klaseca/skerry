@@ -35,7 +35,24 @@ test "explicit normal appearance survives automatic feedback without layout chan
       root.paint(renderer, size~)
       let node = root.snapshot().unwrap().tree.nodes[0]
       let palette = node.computed_style.unwrap()
-      assert_eq(palette, initial.computed_style.unwrap())
+      assert_eq(palette, {
+        ..initial.computed_style.unwrap(),
+        outline_color: if node.state.focused {
+          Some(node.theme.resolve(@style.accent_token))
+        } else {
+          None
+        },
+        outline_width: if node.state.focused {
+          Some(2.0)
+        } else {
+          None
+        },
+        outline_offset: if node.state.focused {
+          Some(2.0)
+        } else {
+          None
+        },
+      })
       assert_eq(node.id, initial.id)
       assert_eq(node.frame, initial.frame)
       assert_eq(
@@ -121,7 +138,11 @@ test "active state patches compose after defaults and retain explicit hover prop
     let no_hover = root.snapshot().unwrap().tree.nodes[0].computed_style.unwrap()
     assert_eq(no_hover.background, Some(background))
     assert_eq(no_hover.color, Some(focused))
-    assert_eq(no_hover.stroke_width, Some(2.0))
+    assert_eq(
+      no_hover.stroke_width,
+      initial.computed_style.unwrap().stroke_width,
+    )
+    assert_eq(no_hover.outline_width, Some(2.0))
     root.focus_lost()
     root.paint(renderer, size~)
     assert_eq(
@@ -196,18 +217,21 @@ fn appearance_test_surface(kind : Int32, style : @style.BoxStyle) -> @view.View 
 }
 
 ///|
-test "explicit zero base or hovered stroke suppresses automatic focus outline" {
+test "explicit zero base or hovered outline suppresses focus without removing the border" {
   for kind in 0..<4 {
     for hovered in [false, true] {
-      let appearance = @style.Appearance().stroke(
+      let appearance = @style.Appearance().outline(
         @foundation.Color::black(),
         width=0.0,
       )
-      let base = @style.BoxStyle().width(100.0).height(40.0)
+      let base = @style.BoxStyle()
+        .width(100.0)
+        .height(40.0)
+        .stroke(@foundation.Color::black(), width=3.0)
       let style = if hovered {
         base.hovered(appearance)
       } else {
-        @style.BoxStyle().appearance(appearance).width(100.0).height(40.0)
+        base.appearance(appearance)
       }
       let root = @runtime.mount(
         fn() { state_test_control(kind, style, false) },
@@ -222,8 +246,9 @@ test "explicit zero base or hovered stroke suppresses automatic focus outline" {
       assert_true(
         node.state.focused && node.state.hovered && node.state.pressed,
       )
-      assert_eq(node.computed_style.unwrap().stroke_width, Some(0.0))
-      assert_eq(renderer.strokes.length(), 0)
+      assert_eq(node.computed_style.unwrap().stroke_width, Some(3.0))
+      assert_eq(node.computed_style.unwrap().outline_width, Some(0.0))
+      assert_eq(renderer.strokes.length(), 1)
     }
   }
 }

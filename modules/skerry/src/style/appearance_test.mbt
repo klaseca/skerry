@@ -44,3 +44,34 @@ test "a reusable appearance composes identically in normal and state styles" {
     Some(0.0),
   )
 }
+
+///|
+test "outlines compose independently from surface strokes and preserve explicit zero" {
+  let border = @foundation.Color::black()
+  let focus = @foundation.Color::accent()
+  let base = @style.Appearance().stroke(border, width=3.0).outline(focus)
+  assert_eq(base.stroke_color, Some(Literal(border)))
+  assert_eq(base.stroke_width, Some(3.0))
+  assert_eq(base.outline_color, Some(Literal(focus)))
+  assert_eq(base.outline_width, Some(2.0))
+  assert_eq(base.outline_offset, Some(2.0))
+  let patch = @style.Appearance().outline(border, width=0.0, offset=-1.0)
+  let merged = base.merge(patch)
+  assert_eq(merged.stroke_color, base.stroke_color)
+  assert_eq(merged.stroke_width, base.stroke_width)
+  assert_eq(merged.outline_color, patch.outline_color)
+  assert_eq(merged.outline_width, Some(0.0))
+  assert_eq(merged.outline_offset, Some(-1.0))
+  assert_eq(
+    @style.BoxStyle().outline(focus).paint,
+    @style.Appearance().outline(focus),
+  )
+  assert_eq(
+    @style.BoxStyle().outline(focus, width=-3.0).paint.outline_width,
+    Some(0.0),
+  )
+  assert_eq(
+    @style.BoxStyle().focused(base).focused(patch).controls.focused,
+    Some(merged),
+  )
+}

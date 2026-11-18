@@ -8,6 +8,9 @@ pub struct Appearance {
   radius : Double?
   stroke_color : StyleColor?
   stroke_width : Double?
+  outline_color : StyleColor?
+  outline_width : Double?
+  outline_offset : Double?
 }
 
 ///|
@@ -61,5 +64,26 @@ pub fn Appearance::merge(self : Appearance, other : Appearance) -> Appearance {
     radius: merge_option(self.radius, other.radius),
     stroke_color: merge_option(self.stroke_color, other.stroke_color),
     stroke_width: merge_option(self.stroke_width, other.stroke_width),
+    outline_color: merge_option(self.outline_color, other.outline_color),
+    outline_width: merge_option(self.outline_width, other.outline_width),
+    outline_offset: merge_option(self.outline_offset, other.outline_offset),
+  }
+}
+
+///|
+/// Draw a separate paint-only outline around the surface. Offset is the
+/// gap from the surface edge to the outline's inner edge; negative values inset
+/// it. Zero width hides the outline. Ancestor viewport clipping still applies.
+pub fn Appearance::outline(
+  self : Appearance,
+  color : &ColorValue,
+  width~ : Double = 2.0,
+  offset~ : Double = 2.0,
+) -> Appearance {
+  {
+    ..self,
+    outline_color: Some(color.to_style_color()),
+    outline_width: Some(width.max(0.0)),
+    outline_offset: Some(offset),
   }
 }

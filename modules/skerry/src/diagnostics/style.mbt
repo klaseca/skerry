@@ -3,7 +3,8 @@
 /// marker_color, placeholder_color, caret_color and selection_color describe
 /// decoration palettes, regardless of whether that decoration was visible.
 /// Placeholder typography and indicator size/gap describe their separate parts. Colors/stroke reflect control state
-/// and appearance overrides at paint time.
+/// and appearance overrides at paint time. outline_color/width/offset describe
+/// the separate paint-only outline; its offset is relative to the surface edge.
 /// Sizes and layout insets are available in NodeSnapshot geometry.
 #derive(Debug, Eq)
 pub(all) struct ComputedStyle {
@@ -15,6 +16,9 @@ pub(all) struct ComputedStyle {
   spacing : Double?
   stroke_color : @foundation.Color?
   stroke_width : Double?
+  outline_color : @foundation.Color?
+  outline_width : Double?
+  outline_offset : Double?
   marker_color : @foundation.Color?
   placeholder_font : @foundation.FontSpec?
   placeholder_align : @foundation.TextAlign?
@@ -41,6 +45,9 @@ pub fn ComputedStyle::ComputedStyle(
   spacing? : Double,
   stroke_color? : @foundation.Color,
   stroke_width? : Double,
+  outline_color? : @foundation.Color,
+  outline_width? : Double,
+  outline_offset? : Double,
   marker_color? : @foundation.Color,
   placeholder_font? : @foundation.FontSpec,
   placeholder_align? : @foundation.TextAlign,
@@ -59,6 +66,9 @@ pub fn ComputedStyle::ComputedStyle(
     spacing,
     stroke_color,
     stroke_width,
+    outline_color,
+    outline_width,
+    outline_offset,
     marker_color,
     placeholder_font,
     placeholder_align,

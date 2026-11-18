@@ -79,6 +79,18 @@ pub fn apply_appearance(
       base.stroke_width,
       appearance.stroke_width,
     ),
+    outline_color: override_control_value(
+      base.outline_color,
+      appearance.outline_color.map(value => value.resolve(theme)),
+    ),
+    outline_width: override_control_value(
+      base.outline_width,
+      appearance.outline_width,
+    ),
+    outline_offset: override_control_value(
+      base.outline_offset,
+      appearance.outline_offset,
+    ),
   }
 }
 
@@ -102,6 +114,22 @@ pub fn PaintContext::stroke_appearance(
     width > 0.0 {
     self.renderer.stroke_rounded_rect(
       RoundedRect(rect=frame, radius~),
+      color,
+      width,
+    )
+  }
+  if palette.outline_color is Some(color) &&
+    palette.outline_width is Some(width) &&
+    width > 0.0 &&
+    width.is_finite() {
+    let offset = palette.outline_offset.unwrap_or(0.0)
+    // SceneRenderer strokes are centered on the supplied rectangle.
+    let outset = offset + width * 0.5
+    guard outset.is_finite() else { return }
+    let rect = frame.inset(@foundation.Insets::all(-outset))
+    guard rect.size.width > 0.0 && rect.size.height > 0.0 else { return }
+    self.renderer.stroke_rounded_rect(
+      RoundedRect(rect~, radius=(radius + outset).max(0.0)),
       color,
       width,
     )

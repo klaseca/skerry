@@ -149,6 +149,11 @@ fn resolve_box_style(
       palette.stroke_color is Some(_) &&
       palette.stroke_width is Some(width) &&
       width > 0.0
+    ) ||
+    (
+      palette.outline_color is Some(_) &&
+      palette.outline_width is Some(width) &&
+      width > 0.0
     )
   {
     ..palette,

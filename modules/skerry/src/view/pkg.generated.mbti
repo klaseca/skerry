@@ -102,6 +102,7 @@ pub fn FlexStyle::metrics(Self) -> @style.StyleMetrics
 pub fn FlexStyle::min_height(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
 pub fn FlexStyle::min_width(Self, &@klaseca/skerry/reactive/value.DoubleValue) -> Self
 pub fn FlexStyle::not_equal(Self, Self) -> Bool
+pub fn FlexStyle::outline(Self, &@style.ColorValue, width? : Double, offset? : Double) -> Self
 pub fn FlexStyle::padding(Self, @foundation.Insets) -> Self
 pub fn FlexStyle::pressed(Self, @style.Appearance) -> Self
 pub fn FlexStyle::radius(Self, Double) -> Self

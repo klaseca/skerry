@@ -75,6 +75,9 @@ pub struct Appearance {
   radius : Double?
   stroke_color : StyleColor?
   stroke_width : Double?
+  outline_color : StyleColor?
+  outline_width : Double?
+  outline_offset : Double?
 }
 pub fn Appearance::Appearance() -> Self
 pub fn Appearance::background(Self, &ColorValue) -> Self
@@ -82,6 +85,7 @@ pub fn Appearance::color(Self, &ColorValue) -> Self
 pub fn Appearance::equal(Self, Self) -> Bool
 pub fn Appearance::merge(Self, Self) -> Self
 pub fn Appearance::not_equal(Self, Self) -> Bool
+pub fn Appearance::outline(Self, &ColorValue, width? : Double, offset? : Double) -> Self
 pub fn Appearance::radius(Self, Double) -> Self
 pub fn Appearance::stroke(Self, &ColorValue, width? : Double) -> Self
 pub fn Appearance::to_repr(Self) -> @debug.Repr
@@ -117,6 +121,7 @@ pub fn BoxStyle::metrics(Self) -> StyleMetrics
 pub fn BoxStyle::min_height(Self, &@value.DoubleValue) -> Self
 pub fn BoxStyle::min_width(Self, &@value.DoubleValue) -> Self
 pub fn BoxStyle::not_equal(Self, Self) -> Bool
+pub fn BoxStyle::outline(Self, &ColorValue, width? : Double, offset? : Double) -> Self
 pub fn BoxStyle::padding(Self, @foundation.Insets) -> Self
 pub fn BoxStyle::pressed(Self, Appearance) -> Self
 pub fn BoxStyle::radius(Self, Double) -> Self

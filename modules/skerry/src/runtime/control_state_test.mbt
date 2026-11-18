@@ -326,7 +326,9 @@ test "default disabled palette fades descendants and only action controls shade 
     if kind == 3 {
       assert_eq(renderer.fills[0].0, base)
       assert_eq(renderer.strokes[0].0, @style.Palette().accent)
-      assert_eq(renderer.strokes[0].1, 2.0)
+      assert_eq(renderer.strokes[0].1, 1.0)
+      assert_eq(renderer.strokes[1].0, @style.Palette().accent)
+      assert_eq(renderer.strokes[1].1, 2.0)
     } else {
       assert_true(renderer.fills[0].0 != hover)
     }

@@ -596,7 +596,7 @@ test {
     palette=@skerry.Palette::dark(),
     styles=@skerry.Styles().add(
       @skerry.TextInputStyle()
-      .focused(@skerry.Appearance().stroke(@skerry.Color::white(), width=2.0))
+      .focused(@skerry.Appearance().outline(@skerry.accent_token))
       .placeholder(@skerry.TextStyle().color(@skerry.muted_text_token)),
     ),
   )
@@ -1084,8 +1084,8 @@ App(light_theme=@material.light(), dark_theme=@material.dark(), content=app_view
 ## Control states
 
 `Appearance` is the shared visual fragment for normal styles and control states:
-background, text color, radius and stroke. Compose the normal appearance with
-`BoxStyle().appearance(fragment)`. The `background`, `color`, `radius` and `stroke`
+background, text color, radius, stroke and outline. Compose the normal appearance with
+`BoxStyle().appearance(fragment)`. The `background`, `color`, `radius`, `stroke` and `outline`
 setters override individual fields. Combine existing styles with `BoxStyle.merge`;
 only explicitly supplied fields in the later style override earlier values.
 
@@ -1110,9 +1110,9 @@ let combined = base.merge(
 // Both derived styles preserve base's radius and width.
 ```
 
-Buttons, checkboxes, radio buttons (including radio groups) and text inputs have
+Buttons, checkboxes, radio buttons (including radio groups), text inputs and Select have
 hover, pressed, focused and disabled appearances. Use paint-only overrides on
-`BoxStyle`; their colors, radius and stroke widths do not change layout or hit geometry:
+`BoxStyle`; their colors, radius, stroke and outline do not change layout or hit geometry:
 
 ```mbt nocheck
 ///|
@@ -1123,7 +1123,7 @@ let button_style = @skerry.ButtonStyle().surface(
   .hovered(
     @skerry.Appearance().background(@skerry.Color::rgb(r=40, g=130, b=230)),
   )
-  .focused(@skerry.Appearance().stroke(@skerry.Color::black(), width=2.0))
+  .focused(@skerry.Appearance().outline(@skerry.accent_token))
   .pressed(
     @skerry.Appearance().background(@skerry.Color::rgb(r=20, g=90, b=180)),
   )
@@ -1135,12 +1135,51 @@ let button_style = @skerry.ButtonStyle().surface(
 )
 ```
 
-Enabled controls first resolve component defaults for active states, including
-the focus outline. Buttons, checkboxes, radio indicators and Select options also
+Built-in buttons, text inputs, checkbox/radio indicators and the Select field
+share one focus outline: the current theme's `accent_token`, width 2 and offset 2,
+in logical UI units. It surrounds the surface without replacing its stroke,
+background or text color. Changing a normal border no longer removes the focus
+indicator. Focus styling applies to the actual focused control for both pointer
+and keyboard focus; disabled controls have no automatic focus outline.
+Select options use background feedback for navigation, retaining their existing
+row treatment without a default outline.
+
+Customize it through the existing state API:
+
+```mbt check
+///|
+test {
+  let focus = @skerry.Appearance().outline(
+    @skerry.accent_token,
+    width=3.0,
+    offset=1.0,
+  )
+  ignore(@skerry.button("Save", style=@skerry.ButtonStyle().focused(focus)))
+  ignore(
+    @skerry.text_input(
+      style=@skerry.TextInputStyle().surface(@skerry.BoxStyle().focused(focus)),
+    ),
+  )
+  let hidden = @skerry.Appearance().outline(@skerry.accent_token, width=0.0)
+  ignore(
+    @skerry.button("Custom focus", style=@skerry.ButtonStyle().focused(hidden)),
+  )
+}
+```
+
+`Appearance.outline` and `BoxStyle.outline` also work in normal/state fragments.
+Offset measures the gap from the surface edge to the outline's inner edge;
+negative offsets inset it. Outlines do not reserve space and remain subject to
+ancestor/window clipping. Leave room in container padding or spacing for an
+outside outline. Primitives retain their explicit styling: for example, interactive
+text can use `TextStyle().frame(BoxStyle().focused(focus))` with the same appearance.
+
+Enabled controls first resolve component defaults for active states. Buttons,
+checkboxes, radio indicators and Select options also
 adjust their default background on hover/press: dark colors become lighter and
 light colors become darker, preserving alpha. This follows the resolved color,
 including custom token values. Text inputs and the Select field keep their
-background steady; their border still indicates hover/focus. Text input text
+background steady; their border indicates hover and the outline indicates focus. Text input text
 colors also stay steady while hovering, focusing and selecting text.
 Explicit base properties then apply, followed by explicit
 active-state overrides in order: hovered,
@@ -1152,9 +1191,9 @@ later-state property overrides them.
 Disabled controls, including descendants of a disabled ancestor, resolve the
 normal appearance, fade its colors to 45% alpha, and apply explicit disabled
 overrides. Other state overrides do not participate. Explicit disabled colors
-replace the fade literally. `stroke(..., width=0.0)` hides the outline, including
-the default focus stroke when applied to an active state or the base.
-Checkbox/radio background and stroke apply to the indicator, and `color` applies
+replace the fade literally. `stroke(..., width=0.0)` hides only the surface stroke.
+Use `outline(..., width=0.0)` to hide the separate outline on the base or a state.
+Checkbox/radio background, stroke and outline apply to the indicator, and `color` applies
 to the label. Radius applies to buttons, checkbox indicators and text inputs;
 radio radius follows the indicator size. The text input placeholder keeps its separate
 default color. `BoxStyle.merge` merges each state's explicitly set fields.
@@ -1567,8 +1606,9 @@ are optional when inapplicable. Effective dimensions/content/padding/border come
 from the existing snapshot geometry; host sizing can override specified dimensions.
 There is no style inheritance beyond the framework's current actual behavior.
 
-`stroke_color`/`stroke_width` describe the focus-dependent visual stroke, distinct
-from layout border insets. `marker_color` is the checkbox/radio marker palette;
+`stroke_color`/`stroke_width` describe the surface stroke, distinct from layout
+border insets. `outline_color`/`outline_width`/`outline_offset` describe the separate
+outline, including built-in focus feedback. `marker_color` is the checkbox/radio marker palette;
 `placeholder_color` is the text input placeholder palette. These palettes remain
 available even when their decoration is not shown. Checkbox/radio backgrounds
 describe the indicator fill. The computed main text color remains distinct from

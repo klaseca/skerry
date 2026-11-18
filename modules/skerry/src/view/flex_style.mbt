@@ -262,6 +262,16 @@ pub fn FlexStyle::stroke(
 }
 
 ///|
+pub fn FlexStyle::outline(
+  self : FlexStyle,
+  color : &@style.ColorValue,
+  width~ : Double = 2.0,
+  offset~ : Double = 2.0,
+) -> FlexStyle {
+  { ..self, surface: self.surface.outline(color, width~, offset~), }
+}
+
+///|
 fn resolved_flex_style(
   layers : ReadOnlyArray[@style.StyleDeclaration],
 ) -> FlexStyle {

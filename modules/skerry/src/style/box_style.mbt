@@ -196,6 +196,17 @@ pub fn BoxStyle::padding(
 }
 
 ///|
+/// A separate paint-only outline. See Appearance.outline for offset semantics.
+pub fn BoxStyle::outline(
+  self : BoxStyle,
+  color : &ColorValue,
+  width~ : Double = 2.0,
+  offset~ : Double = 2.0,
+) -> BoxStyle {
+  { ..self, paint: self.paint.outline(color, width~, offset~), }
+}
+
+///|
 pub fn BoxStyle::width(
   self : BoxStyle,
   width : &@value.DoubleValue,

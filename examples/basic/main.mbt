@@ -63,9 +63,6 @@ fn app_view() -> @skerry.View {
                 @skerry.Appearance().stroke(
                   @skerry.Color::rgb(r=100, g=116, b=139),
                 ),
-              )
-              .focused(
-                @skerry.Appearance().stroke(@skerry.Color::accent(), width=2.0),
               ),
             ),
           ),
@@ -90,9 +87,6 @@ fn app_view() -> @skerry.View {
                   @skerry.Color::rgb(r=42, g=73, b=183),
                 ),
               )
-              .focused(
-                @skerry.Appearance().stroke(@skerry.Color::white(), width=2.0),
-              )
               .radius(10.0),
             ),
           ),
@@ -106,7 +100,13 @@ fn app_view() -> @skerry.View {
                 "Text size: 16px (activate for 22px). Tab changes focus."
               }
             }),
-            style=@skerry.TextStyle().shrink(0.0),
+            style=@skerry.TextStyle()
+              .shrink(0.0)
+              .frame(
+                @skerry.BoxStyle().focused(
+                  @skerry.Appearance().outline(@skerry.accent_token),
+                ),
+              ),
           ),
           on_click=fn() { large_text.update(fn(value) { !value }) },
         ),

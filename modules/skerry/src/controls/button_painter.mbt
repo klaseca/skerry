@@ -48,7 +48,6 @@ fn resolve_button_style(
       align=TextCenter,
     ),
     theme,
-    button=true,
   )
   for layer in layers {
     let style : ButtonStyle? = layer.get()

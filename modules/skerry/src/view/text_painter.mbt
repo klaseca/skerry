@@ -21,6 +21,14 @@ fn text_painter(spec : TextSpec) -> Painter {
       font~,
       color?=applied.color,
       align?=applied.align,
+      radius?=if applied.outline_color is Some(_) {
+        applied.radius
+      } else {
+        None
+      },
+      outline_color?=applied.outline_color,
+      outline_width?=applied.outline_width,
+      outline_offset?=applied.outline_offset,
     )
   }
   Painter(fn(context, frame) {
@@ -38,6 +46,7 @@ fn text_painter(spec : TextSpec) -> Painter {
       palette.color.unwrap(),
       palette.align.unwrap_or(TextStart),
     )
+    context.stroke_appearance(frame, palette.radius.unwrap_or(0.0), palette)
   }).with_computed_style(fn(context) {
     resolve(
       context.frame,

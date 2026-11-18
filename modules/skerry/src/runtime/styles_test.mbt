@@ -168,15 +168,16 @@ test "button defaults disabled colors padding and focus match renderer commands"
       assert_true(root.key_down(test_key_event(KeyTab)))
       root.paint(renderer, size=Size(width=200.0, height=100.0))
       let focused = root.snapshot().unwrap().tree.nodes[0].computed_style.unwrap()
-      assert_eq(focused.stroke_color, Some(renderer.strokes[0].0))
-      assert_eq(focused.stroke_width, Some(renderer.strokes[0].1))
+      assert_eq(focused.stroke_color, None)
+      assert_eq(focused.outline_color, Some(renderer.strokes[0].0))
+      assert_eq(focused.outline_width, Some(renderer.strokes[0].1))
       assert_eq(root.frame_stats().layout_count, 1)
     }
   }
 }
 
 ///|
-test "checkbox paint only updates reuse layout and focus stroke is captured" {
+test "checkbox paint only updates reuse layout and separate focus outline is captured" {
   let checked = @reactive.signal(false)
   let root = @runtime.mount(
     fn() {
@@ -210,7 +211,9 @@ test "checkbox paint only updates reuse layout and focus stroke is captured" {
   root.paint(renderer, size=Size(width=200.0, height=100.0))
   let focused = root.snapshot().unwrap().tree.nodes[0].computed_style.unwrap()
   assert_eq(focused.stroke_color, Some(renderer.strokes[0].0))
-  assert_eq(focused.stroke_width, Some(2.0))
+  assert_eq(focused.stroke_width, Some(1.0))
+  assert_eq(focused.outline_color, Some(renderer.strokes[1].0))
+  assert_eq(focused.outline_width, Some(renderer.strokes[1].1))
   assert_eq(
     initial.tree.nodes[0].computed_style.unwrap().stroke_width,
     Some(1.0),
@@ -395,12 +398,12 @@ test "roots sharing a view retain independent painted focus styles" {
   snapshot_paint(a)
   snapshot_paint(b)
   assert_eq(
-    a.snapshot().unwrap().tree.nodes[0].computed_style.unwrap().stroke_width,
+    a.snapshot().unwrap().tree.nodes[0].computed_style.unwrap().outline_width,
     Some(2.0),
   )
   assert_eq(
-    b.snapshot().unwrap().tree.nodes[0].computed_style.unwrap().stroke_width,
-    Some(1.0),
+    b.snapshot().unwrap().tree.nodes[0].computed_style.unwrap().outline_width,
+    None,
   )
 }
 
@@ -417,7 +420,7 @@ test "a custom host can reuse its focus path without changing painted styles" {
     focused_path=Some(focus),
   )
   let before = state.snapshot(view).unwrap()
-  assert_eq(before.nodes[1].computed_style.unwrap().stroke_width, Some(2.0))
+  assert_eq(before.nodes[1].computed_style.unwrap().outline_width, Some(2.0))
   focus[0] = 99
   assert_eq(state.snapshot(view), Some(before))
   state.invalidate()

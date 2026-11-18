@@ -31,6 +31,8 @@ test "select keyboard focus uses background feedback without a default option ou
     for row in rows {
       assert_eq(row.computed_style.unwrap().stroke_color, None)
       assert_eq(row.computed_style.unwrap().stroke_width, None)
+      assert_eq(row.computed_style.unwrap().outline_color, None)
+      assert_eq(row.computed_style.unwrap().outline_width, None)
     }
     assert_eq(root.frame_stats().layout_count, layouts)
     let list = root.snapshot().unwrap().tree.nodes

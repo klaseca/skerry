@@ -33,6 +33,9 @@ pub(all) struct ComputedStyle {
   spacing : Double?
   stroke_color : @foundation.Color?
   stroke_width : Double?
+  outline_color : @foundation.Color?
+  outline_width : Double?
+  outline_offset : Double?
   marker_color : @foundation.Color?
   placeholder_font : @foundation.FontSpec?
   placeholder_align : @foundation.TextAlign?
@@ -42,7 +45,7 @@ pub(all) struct ComputedStyle {
   caret_color : @foundation.Color?
   selection_color : @foundation.Color?
 }
-pub fn ComputedStyle::ComputedStyle(font? : @foundation.FontSpec, color? : @foundation.Color, background? : @foundation.Color, radius? : Double, align? : @foundation.TextAlign, spacing? : Double, stroke_color? : @foundation.Color, stroke_width? : Double, marker_color? : @foundation.Color, placeholder_font? : @foundation.FontSpec, placeholder_align? : @foundation.TextAlign, indicator_size? : @foundation.Size, indicator_gap? : Double, placeholder_color? : @foundation.Color, caret_color? : @foundation.Color, selection_color? : @foundation.Color) -> Self
+pub fn ComputedStyle::ComputedStyle(font? : @foundation.FontSpec, color? : @foundation.Color, background? : @foundation.Color, radius? : Double, align? : @foundation.TextAlign, spacing? : Double, stroke_color? : @foundation.Color, stroke_width? : Double, outline_color? : @foundation.Color, outline_width? : Double, outline_offset? : Double, marker_color? : @foundation.Color, placeholder_font? : @foundation.FontSpec, placeholder_align? : @foundation.TextAlign, indicator_size? : @foundation.Size, indicator_gap? : Double, placeholder_color? : @foundation.Color, caret_color? : @foundation.Color, selection_color? : @foundation.Color) -> Self
 pub fn ComputedStyle::equal(Self, Self) -> Bool
 pub fn ComputedStyle::not_equal(Self, Self) -> Bool
 pub fn ComputedStyle::to_repr(Self) -> @debug.Repr

@@ -239,7 +239,7 @@ fn resolve_select_option_style(
 ) -> @diagnostics.ComputedStyle {
   let mut result = control_defaults(
     // Options share background feedback for pointer hover and keyboard focus.
-    // The field keeps its focus border; list rows have no built-in outline.
+    // The field keeps its focus outline; list rows have no built-in outline.
     {
       ..state,
       hovered: state.hovered || (state.focused && !selected),
