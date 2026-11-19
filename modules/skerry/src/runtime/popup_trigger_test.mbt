@@ -17,18 +17,18 @@ test "popup owns state and content can close it without an external signal" {
   )
   defer root.dispose()
   let size = @foundation.Size(width=200.0, height=200.0)
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(builds.val, 0)
   assert_true(root.pointer_down(size~, point=Point(x=5.0, y=5.0)))
   assert_true(root.pointer_up(size~, point=Point(x=5.0, y=5.0)))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_eq(builds.val, 1)
   assert_true(root.key_down(test_key_event(KeyEnter)))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(proposals, [true, false])
   assert_true(root.key_down(test_key_event(KeySpace)))
   assert_eq(builds.val, 2)
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
 }
 
 ///|
@@ -60,17 +60,17 @@ test "popup change policy can prevent default opening and content closing" {
   let size = @foundation.Size(width=200.0, height=200.0)
   let point = @foundation.Point(x=5.0, y=5.0)
   assert_true(root.click_at(size~, point~))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(builds.val, 0)
   prevent.val = false
   assert_true(root.click_at(size~, point~))
   assert_eq(builds.val, 1)
   prevent.val = true
   close_ref.val.unwrap()()
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   prevent.val = false
   close_ref.val.unwrap()()
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   close_ref.val.unwrap()()
   assert_eq(proposals, [true, true, false, false])
 }
@@ -104,7 +104,7 @@ test "popup manual trigger preserves anchor behavior and uses the supplied model
   assert_eq(clicks.val, 1)
   assert_false(open.get())
   open.set(true)
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.click_at(size~, point~))
   assert_eq(clicks.val, 2)
   assert_true(open.get())
@@ -162,12 +162,12 @@ test "popup text anchor gets keyboard activation without repeating the toggle" {
   defer root.dispose()
   assert_true(root.key_down(test_key_event(KeyTab)))
   assert_true(root.key_down(test_key_event(KeyEnter)))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.key_down(KeyEvent(key=KeyEnter, repeat=true)))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_eq(proposals, [true])
   assert_true(root.key_down(test_key_event(KeySpace)))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(proposals, [true, false])
 }
 
@@ -264,13 +264,13 @@ test "popup internal models remain independent across roots" {
   defer second.dispose()
   let size = @foundation.Size(width=200.0, height=200.0)
   assert_true(first.click_at(size~, point=Point(x=5.0, y=5.0)))
-  assert_eq(first.view().popup_targets().length(), 1)
-  assert_true(second.view().popup_targets().is_empty())
+  assert_eq(first.view().overlay_targets().length(), 1)
+  assert_true(second.view().overlay_targets().is_empty())
   first.dispose()
   assert_true(second.click_at(size~, point=Point(x=5.0, y=5.0)))
-  assert_eq(second.view().popup_targets().length(), 1)
+  assert_eq(second.view().overlay_targets().length(), 1)
   assert_true(second.key_down(test_key_event(KeyEnter)))
-  assert_true(second.view().popup_targets().is_empty())
+  assert_true(second.view().overlay_targets().is_empty())
 }
 
 ///|

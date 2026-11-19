@@ -31,35 +31,11 @@ pub extend PopupTrigger with Eq::{equal, not_equal}
 pub extend PopupTrigger with Debug::{to_repr}
 
 ///|
-priv struct PopupState {
-  id : Int32
-  open : @reactive.Signal[Bool]
-  on_change : ((@foundation.ChangeEvent[Bool]) -> Unit)?
-}
-
-///|
-fn PopupState::change(self : PopupState, next : Bool) -> Unit {
-  let before = self.open.peek()
-  guard before != next else { return }
-  ignore(
-    dispatch_change(
-      self.id,
-      next,
-      self.on_change,
-      fn() { self.open.set(next) },
-      is_current=fn() { self.open.peek() == before },
-    ),
-  )
-}
-
-///|
 priv struct PopupSpec {
-  anchor : UiNode
   placement : PopupPlacement
   gap : Double
   focus : Bool
   match_anchor_width : Bool
-  dismiss : () -> Unit
 }
 
 ///|
@@ -95,42 +71,22 @@ pub fn popup(
   on_change? : (@foundation.ChangeEvent[Bool]) -> Unit,
   content : (() -> Unit) -> View,
 ) -> View {
-  let state : PopupState = {
-    id: next_ui_node_id(),
-    open: match open {
-      Some(open) => open
-      None => @reactive.signal(false)
-    },
-    on_change: on_change.map(scoped_handler),
-  }
-  let surface = show_view(
-    fn() { state.open.get() },
-    fn() {
-      let scope = @reactive.Scope::current().unwrap()
-      let close = fn() {
-        if !scope.is_disposed() {
-          scope.run(fn() { state.change(false) })
-        }
-      }
-      content(close)
-    },
-    id=state.id,
+  let (anchor, surface, state) = overlay_session(
+    anchor, open, trigger, on_change, content,
   )
-  let anchor = match trigger {
-    Manual => anchor
-    Click => popup_click_anchor(anchor, state)
-  }
-  let spec : PopupSpec = {
-    anchor: anchor.node,
-    placement,
-    gap: if gap >= 0.0 && gap.is_finite() {
-      gap
-    } else {
-      0.0
+  let spec : OverlaySpec = {
+    policy: PopupSpec::{
+      placement,
+      gap: if gap >= 0.0 && gap.is_finite() {
+        gap
+      } else {
+        0.0
+      },
+      focus,
+      match_anchor_width,
     },
-    focus,
-    match_anchor_width,
     dismiss: fn() { state.change(false) },
+    trigger: anchor.node,
   }
   let children = surface.node.children
   let surface = view_from_node({
@@ -146,99 +102,6 @@ pub fn popup(
         children.val.map(node => node.crater(system, styles)),
       )
     },
-    geometry: Some({
-      translation: Point(x=0.0, y=0.0),
-      clip_frame: false,
-      scroll: None,
-      theme: None,
-      popup: Some(spec),
-    }),
-    events: ElementEvents(editable=true, hit_testable=true),
   })
-  let nodes = [anchor.node, surface.node]
-  view_from_node({
-    id: next_ui_node_id(),
-    lifecycle: NodeLifecycle(),
-    component_name: "PopupAnchor",
-    styles: None,
-    metadata: None,
-    geometry: None,
-    specified_style: None,
-    make_crater: fn(system, styles) {
-      @crater_node.Node::new(
-        "popup-anchor",
-        flex_style(flex_spec(Vertical, FlexStyle())),
-        nodes.map(node => node.crater(system, styles)),
-      )
-    },
-    painter: Painter(fn(_, _) { () }),
-    events: ElementEvents(),
-    reactivity: empty_reactivity(),
-    children: Ref(nodes),
-  })
-}
-
-///|
-fn UiNode::is_popup(self : UiNode) -> Bool {
-  self.geometry is Some({ popup: Some(_), .. })
-}
-
-///|
-/// Host protocol for open popups, in paint order (later entries are on top).
-/// Paths and callbacks belong to the current live tree; do not retain them after
-/// detach. Reading this does not evaluate application producers or run layout.
-pub struct PopupTarget {
-  node_id : Int32
-  anchor_id : Int32
-  path : Array[Int32]
-  focus : Bool
-  dismiss : () -> Unit
-}
-
-///|
-pub fn View::popup_targets(self : View) -> Array[PopupTarget] {
-  let result = []
-  collect_popup_targets(self.node, [], result)
-  result
-}
-
-///|
-fn collect_popup_targets(
-  node : UiNode,
-  path : Array[Int32],
-  result : Array[PopupTarget],
-) -> Unit {
-  guard !node.is_disabled() && !(node.lifecycle.phase is Disposed) else {
-    return
-  }
-  if node.geometry is Some({ popup: Some(spec), .. }) &&
-    node.children.val.any(child => !(child.lifecycle.phase is Disposed)) {
-    result.push({
-      node_id: node.id,
-      anchor_id: spec.anchor.id,
-      path: path.copy(),
-      focus: spec.focus,
-      dismiss: spec.dismiss,
-    })
-  }
-  for index, child in node.children.val {
-    let next = path.copy()
-    next.push(index)
-    collect_popup_targets(child, next, result)
-  }
-}
-
-///|
-/// Group-aware Tab stops within one popup, ignoring focus groups outside it.
-pub fn View::popup_tab_paths(
-  self : View,
-  target : PopupTarget,
-  focused_node_id? : Int32,
-) -> Array[Array[Int32]] {
-  let paths = []
-  if input_node_at_path(self.node, target.path, 0) is Some(node) &&
-    node.id == target.node_id {
-    collect_tab_focus_paths(node, target.path, focused_node_id, paths)
-  }
-  paths
+  overlay_view(anchor, surface, spec, "PopupAnchor")
 }

@@ -58,7 +58,14 @@ pub fn LayoutState::scroll_key(
     }
     let geometry = self.input_geometry(view, size)
     guard !self.disposed else { return false }
-    let id = node_id.unwrap_or(view.node.id)
+    let id = node_id.unwrap_or_else(fn() {
+      view
+      .overlay_targets()
+      .filter(target => target.behavior.focus == Contain)
+      .last()
+      .map(target => target.node_id)
+      .unwrap_or(view.node.id)
+    })
     guard path_for_node_id(view.node, id, []) is Some(path) &&
       input_node_at_path(view.node, path, 0) is Some(_) &&
       geometry_at_path(geometry, path, 0) is Some({ id: projected_id, .. }) &&
@@ -68,7 +75,7 @@ pub fn LayoutState::scroll_key(
     for depth in path.length()>=..0 {
       let ancestor_path = path[:depth].to_owned()
       if node_at_path(view.node, ancestor_path, 0) is Some(node) &&
-        node.is_popup() {
+        node.is_overlay() {
         break
       }
       if input_node_at_path(view.node, ancestor_path, 0) is Some(node) &&
@@ -129,7 +136,8 @@ fn reveal_viewport(
   let mut viewport = viewport
   for parent_depth in (depth - 1)>=..0 {
     let parent_path = path[:parent_depth].to_owned()
-    if node_at_path(view.node, parent_path, 0) is Some(node) && node.is_popup() {
+    if node_at_path(view.node, parent_path, 0) is Some(node) &&
+      node.is_overlay() {
       break
     }
     if geometry_at_path(geometry, parent_path, 0) is Some(parent) {
@@ -196,7 +204,7 @@ pub fn LayoutState::reveal_node(
     for depth in (logical_path.length() - 1)>=..0 {
       if node_at_path(view.node, logical_path[:depth].to_owned(), 0)
         is Some(node) &&
-        node.is_popup() {
+        node.is_overlay() {
         break
       }
       if node_at_path(view.node, logical_path[:depth].to_owned(), 0)
@@ -218,7 +226,7 @@ pub fn LayoutState::reveal_node(
     for depth in (initial_path.length() - 1)>=..0 {
       if node_at_path(view.node, initial_path[:depth].to_owned(), 0)
         is Some(node) &&
-        node.is_popup() {
+        node.is_overlay() {
         break
       }
       if geometry_at_path(initial, initial_path[:depth].to_owned(), 0)

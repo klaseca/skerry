@@ -1,6 +1,7 @@
 ///|
 pub struct MountContext {
   priv mark_layout_dirty : () -> Unit
+  priv on_layout_change : ((Int32) -> Unit)?
   priv mark_paint_dirty : () -> Unit
   priv on_node_detach : (Int32) -> Unit
   priv on_theme_change : (Int32, @style.Theme?) -> Unit

@@ -39,7 +39,7 @@ test "select indicators use vector lines and options stop before the scrollbar" 
       0.001,
     )
     assert_true(
-      (row.clip.origin.x + row.clip.size.width + 4.0 - bar.track.origin.x).abs() <
+      (row.clip.origin.x + row.clip.size.width - bar.track.origin.x).abs() <
       0.001,
     )
   }
@@ -60,7 +60,7 @@ test "select indicators use vector lines and options stop before the scrollbar" 
   assert_true(root.pointer_down(size~, point=start))
   assert_true(root.pointer_up(size~, point=end))
   assert_eq(selected.peek(), Some(0))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   root.paint(recorder, size~)
   let scroll = root.snapshot().unwrap().tree.nodes
   .iter()

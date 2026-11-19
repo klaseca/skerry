@@ -86,9 +86,9 @@ fn UiNode::crater(
   text_layout_system : @text.TextLayoutSystem,
   styles : StyleContext,
 ) -> @crater_node.Node {
-  if self.is_popup() {
+  if self.is_overlay() {
     return leaf_node(
-      "popup-placeholder",
+      "overlay-placeholder",
       absolute_at_origin(empty_style()),
       @foundation.Size::zero(),
     )

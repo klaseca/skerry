@@ -1,6 +1,6 @@
 ///|
-fn PopupState::toggle_after(
-  self : PopupState,
+fn OverlayState::toggle_after(
+  self : OverlayState,
   anchor : NodeLifecycle,
   before : Bool,
 ) -> Unit {
@@ -12,7 +12,7 @@ fn PopupState::toggle_after(
 }
 
 ///|
-fn popup_click_anchor(anchor : View, state : PopupState) -> View {
+fn overlay_click_anchor(anchor : View, state : OverlayState) -> View {
   let previous = anchor.node.events
   let lifecycle = anchor.node.lifecycle
   let click = scoped_callback(fn() {

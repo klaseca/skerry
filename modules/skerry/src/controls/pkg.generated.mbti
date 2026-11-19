@@ -15,6 +15,8 @@ pub fn button(&@value.StringValue, on_click? : () -> Unit, style? : ButtonStyle,
 
 pub fn checkbox(checked? : @reactive.Signal[Bool], label? : &@value.StringValue, style? : CheckboxStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
 
+pub fn dialog(@view.View, open? : @reactive.Signal[Bool], trigger? : @view.PopupTrigger, style? : DialogStyle, close_on_escape? : Bool, close_on_backdrop? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> @view.View) -> @view.View
+
 pub fn radio(selected? : @reactive.Signal[Bool], label? : &@value.StringValue, style? : RadioStyle, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, disabled? : &@value.BoolValue) -> @view.View
 
 pub fn[T : Eq, L : @value.StringValue] radio_group(@reactive.Signal[T], Array[T], label~ : (T) -> L, style? : @view.FlexStyle, item_style? : RadioStyle, item_disabled? : (T) -> Bool, on_change? : (@foundation.ChangeEvent[T]) -> Unit, disabled? : &@value.BoolValue) -> @view.View
@@ -81,6 +83,27 @@ pub fn[T : @style.SourceStyle] CheckboxStyle::select(Self, (Self) -> T) -> T
 pub fn CheckboxStyle::to_repr(Self) -> @debug.Repr
 pub impl @style.SourceStyle for CheckboxStyle
 pub impl @style.StyleSpec for CheckboxStyle
+
+#derive(Default, Eq, @debug.Debug)
+pub struct DialogStyle {
+  surface : @style.BoxStyle
+  backdrop : @style.BoxStyle
+  // private fields
+}
+pub fn DialogStyle::DialogStyle() -> Self
+pub fn DialogStyle::backdrop(Self, @style.BoxStyle) -> Self
+pub fn DialogStyle::bind(@reactive.Binding[Self]) -> Self
+pub fn DialogStyle::computed(() -> Self) -> Self
+pub fn DialogStyle::equal(Self, Self) -> Bool
+pub fn DialogStyle::merge(Self, Self) -> Self
+pub fn DialogStyle::metrics(Self) -> @style.StyleMetrics
+pub fn DialogStyle::not_equal(Self, Self) -> Bool
+pub fn DialogStyle::root_style(Self) -> @style.BoxStyle
+pub fn[T : @style.SourceStyle] DialogStyle::select(Self, (Self) -> T) -> T
+pub fn DialogStyle::surface(Self, @style.BoxStyle) -> Self
+pub fn DialogStyle::to_repr(Self) -> @debug.Repr
+pub impl @style.SourceStyle for DialogStyle
+pub impl @style.StyleSpec for DialogStyle
 
 #derive(Default, Eq, @debug.Debug)
 pub struct RadioStyle {

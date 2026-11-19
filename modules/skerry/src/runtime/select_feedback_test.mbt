@@ -58,7 +58,7 @@ test "select keyboard focus uses background feedback without a default option ou
     ignore(root.pointer_up(size~, point~))
     assert_false(root.scroll_at(size~, point~, delta=Point(x=0.0, y=20.0)))
     assert_eq(selected.peek(), Some(0))
-    assert_eq(root.view().popup_targets().length(), 1)
+    assert_eq(root.view().overlay_targets().length(), 1)
   }
 }
 

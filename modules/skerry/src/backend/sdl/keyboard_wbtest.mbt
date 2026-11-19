@@ -96,7 +96,7 @@ test "SDL consumed Space text does not reopen Select or reset focus during repea
           let next = initial.unwrap_or(0) + 1
           assert_eq(keyboard_test_active(state), Some(next))
           keyboard_test_key(dispatcher, key)
-          assert_true(root.view().popup_targets().is_empty())
+          assert_true(root.view().overlay_targets().is_empty())
           if key == KeySpace {
             assert_false(dispatcher.text_input(" "))
           }
@@ -105,7 +105,7 @@ test "SDL consumed Space text does not reopen Select or reset focus during repea
             assert_false(dispatcher.text_input(" "))
           }
           keyboard_test_key(dispatcher, key, down=false)
-          assert_true(root.view().popup_targets().is_empty())
+          assert_true(root.view().overlay_targets().is_empty())
           assert_eq(selected.peek(), Some(next))
           assert_eq(proposals, [Some(next)])
           state.sync_frame()
@@ -151,7 +151,7 @@ test "SDL consumed Space preserves active Select option after a vetoed proposal"
         assert_eq(proposals.val, 1)
       }
       keyboard_test_key(dispatcher, KeySpace, down=false)
-      assert_eq(root.view().popup_targets().length(), 1)
+      assert_eq(root.view().overlay_targets().length(), 1)
     },
   )
 }

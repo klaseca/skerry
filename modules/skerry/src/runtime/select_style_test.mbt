@@ -234,7 +234,7 @@ test "select follows field width changes and remains bounded on a small viewport
   let tree = root.snapshot().unwrap().tree.nodes
   let surface = tree
     .iter()
-    .filter(node => node.popup_anchor is Some(_))
+    .filter(node => node.component_name == "Popup")
     .to_array()[0]
   assert_eq(surface.frame.size.width, 280.0)
   let size = @foundation.Size(width=100.0, height=100.0)
@@ -242,7 +242,7 @@ test "select follows field width changes and remains bounded on a small viewport
   let tree = root.snapshot().unwrap().tree.nodes
   let surface = tree
     .iter()
-    .filter(node => node.popup_anchor is Some(_))
+    .filter(node => node.component_name == "Popup")
     .to_array()[0]
   assert_eq(surface.frame.size.width, 100.0)
   assert_true(surface.frame.size.height <= 100.0)

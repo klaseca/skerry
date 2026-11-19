@@ -80,7 +80,7 @@ pub(all) struct NodeSnapshot {
   content : @foundation.Rect
   clip : @foundation.Rect
   scroll : ScrollSnapshot?
-  popup_anchor : Int32?
+  overlay : OverlaySnapshot?
   image : ImageSnapshot?
   padding : @foundation.Insets
   border : @foundation.Insets
@@ -92,6 +92,15 @@ pub(all) struct NodeSnapshot {
 pub fn NodeSnapshot::equal(Self, Self) -> Bool
 pub fn NodeSnapshot::not_equal(Self, Self) -> Bool
 pub fn NodeSnapshot::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct OverlaySnapshot {
+  trigger_id : Int32
+  behavior : @foundation.OverlayBehavior
+}
+pub fn OverlaySnapshot::equal(Self, Self) -> Bool
+pub fn OverlaySnapshot::not_equal(Self, Self) -> Bool
+pub fn OverlaySnapshot::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) struct PaintStats {

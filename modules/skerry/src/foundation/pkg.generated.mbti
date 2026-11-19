@@ -229,6 +229,48 @@ pub fn KeyModifiers::not_equal(Self, Self) -> Bool
 pub fn KeyModifiers::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
+pub(all) struct OverlayBehavior {
+  focus : OverlayFocus
+  pointer : OverlayPointer
+  escape : OverlayDismiss
+  outside_press : OverlayDismiss
+}
+pub fn OverlayBehavior::OverlayBehavior(focus? : OverlayFocus, pointer? : OverlayPointer, escape? : OverlayDismiss, outside_press? : OverlayDismiss) -> Self
+pub fn OverlayBehavior::equal(Self, Self) -> Bool
+pub fn OverlayBehavior::not_equal(Self, Self) -> Bool
+pub fn OverlayBehavior::takes_focus(Self) -> Bool
+pub fn OverlayBehavior::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum OverlayDismiss {
+  Ignore
+  Consume
+  Dismiss
+}
+pub fn OverlayDismiss::equal(Self, Self) -> Bool
+pub fn OverlayDismiss::not_equal(Self, Self) -> Bool
+pub fn OverlayDismiss::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum OverlayFocus {
+  Preserve
+  Cycle
+  Contain
+}
+pub fn OverlayFocus::equal(Self, Self) -> Bool
+pub fn OverlayFocus::not_equal(Self, Self) -> Bool
+pub fn OverlayFocus::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) enum OverlayPointer {
+  PassThrough
+  BlockOutside
+}
+pub fn OverlayPointer::equal(Self, Self) -> Bool
+pub fn OverlayPointer::not_equal(Self, Self) -> Bool
+pub fn OverlayPointer::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
 pub(all) struct Point {
   x : Double
   y : Double

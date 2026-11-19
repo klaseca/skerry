@@ -34,7 +34,7 @@ test "stable scrollbar gutter reserves its styled thickness and keeps pointer ca
           bar.track.origin.x,
         )
         assert_eq(
-          child.clip.origin.x + child.clip.size.width + 5.0,
+          child.clip.origin.x + child.clip.size.width,
           bar.track.origin.x,
         )
       }
@@ -45,7 +45,7 @@ test "stable scrollbar gutter reserves its styled thickness and keeps pointer ca
           bar.track.origin.y,
         )
         assert_eq(
-          child.clip.origin.y + child.clip.size.height + 5.0,
+          child.clip.origin.y + child.clip.size.height,
           bar.track.origin.y,
         )
       }

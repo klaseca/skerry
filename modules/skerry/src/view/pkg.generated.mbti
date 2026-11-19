@@ -36,6 +36,8 @@ pub fn image(&@klaseca/skerry/value.ImageValue, style? : ImageStyle, disabled? :
 
 pub fn interactive(on_click? : () -> Unit, on_focus? : () -> Unit, on_blur? : () -> Unit, on_key_down? : (@foundation.KeyEvent) -> Unit, on_text_input? : (String) -> Unit, on_pointer_down? : (@foundation.PointerEvent) -> Unit, on_pointer_move? : (@foundation.PointerEvent) -> Unit, on_pointer_up? : (@foundation.PointerEvent) -> Unit, on_pointer_cancel? : () -> Unit, View, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
 
+pub fn modal(View, open? : @reactive.Signal[Bool], trigger? : PopupTrigger, style? : FlexStyle, close_on_escape? : Bool, close_on_backdrop? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> View) -> View
+
 pub fn popup(View, open? : @reactive.Signal[Bool], trigger? : PopupTrigger, placement? : PopupPlacement, gap? : Double, focus? : Bool, match_anchor_width? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> View) -> View
 
 pub fn row(style? : FlexStyle, Array[View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> View
@@ -177,17 +179,18 @@ pub fn LayoutState::dispose(Self) -> Unit
 pub fn LayoutState::hit_test(Self, View, size~ : @foundation.Size, point~ : @foundation.Point) -> HitTarget?
 pub fn LayoutState::hovered_node_id(Self) -> Int32?
 pub fn LayoutState::invalidate(Self) -> Unit
+pub fn LayoutState::invalidate_node(Self, View, Int32) -> Unit
 pub fn LayoutState::last_paint_stats(Self) -> @diagnostics.PaintStats?
 pub fn LayoutState::layout(Self, View, size~ : @foundation.Size) -> @crater-core.Layout
 pub fn LayoutState::layout_count(Self) -> Int32
 pub fn LayoutState::layout_pass_count(Self) -> Int32
 pub fn LayoutState::needs_layout(Self) -> Bool
+pub fn LayoutState::overlay_contains(Self, View, OverlayTarget, @foundation.Point, size~ : @foundation.Size) -> Bool
 pub fn LayoutState::paint(Self, View, size~ : @foundation.Size, &@foundation.SceneRenderer, focused_path~ : Array[Int32]?, pointer? : @foundation.Point, captured_node_id? : Int32, keyboard_pressed_node_id? : Int32, clear? : @foundation.Color) -> Unit
 pub fn LayoutState::pointer_cancel(Self) -> Unit
 pub fn LayoutState::pointer_down_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
 pub fn LayoutState::pointer_move_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
 pub fn LayoutState::pointer_up_path(Self, View, size~ : @foundation.Size, Array[Int32], point~ : @foundation.Point, scrollbar? : Bool) -> Bool
-pub fn LayoutState::popup_contains(Self, View, PopupTarget, @foundation.Point, size~ : @foundation.Size) -> Bool
 pub fn LayoutState::reveal_node(Self, View, Int32, size~ : @foundation.Size, is_current? : () -> Bool) -> Bool
 pub fn LayoutState::scroll_at(Self, View, size~ : @foundation.Size, point~ : @foundation.Point, delta~ : @foundation.Point) -> Bool
 pub fn LayoutState::scroll_key(Self, View, Int32?, @foundation.KeyEvent, size~ : @foundation.Size) -> Bool
@@ -215,6 +218,15 @@ pub fn MountContext::invalidate_layout(Self) -> Unit
 pub fn MountContext::invalidate_paint(Self) -> Unit
 pub fn MountContext::now(Self) -> Double
 pub fn MountContext::request_focus(Self, Int32) -> Bool
+
+pub struct OverlayTarget {
+  node_id : Int32
+  trigger_id : Int32
+  path : Array[Int32]
+  behavior : @foundation.OverlayBehavior
+  dismiss : () -> Unit
+}
+pub fn OverlayTarget::contains_path(Self, ArrayView[Int32]) -> Bool
 
 pub struct PaintContext {
   renderer : &@foundation.SceneRenderer
@@ -260,14 +272,6 @@ pub(all) enum PopupPlacement {
 pub fn PopupPlacement::equal(Self, Self) -> Bool
 pub fn PopupPlacement::not_equal(Self, Self) -> Bool
 pub fn PopupPlacement::to_repr(Self) -> @debug.Repr
-
-pub struct PopupTarget {
-  node_id : Int32
-  anchor_id : Int32
-  path : Array[Int32]
-  focus : Bool
-  dismiss : () -> Unit
-}
 
 #derive(Eq, @debug.Debug)
 pub(all) enum PopupTrigger {
@@ -362,6 +366,7 @@ pub fn View::clip(Self) -> Self
 pub fn View::component(Self, String) -> Self
 pub fn View::debug(Self, name? : String, source? : @diagnostics.SourceLocation) -> Self
 pub fn View::dispatch_key_down_path(Self, Array[Int32], @foundation.KeyEvent) -> KeyHandling
+pub fn View::focus_allows_path(Self, Array[Int32]) -> Bool
 pub fn View::focus_group(Self, () -> Int32?) -> Self
 pub fn View::focus_group_fallback(Self, Int32) -> Int32?
 pub fn View::focus_group_key_target(Self, Array[Int32], @foundation.KeyEvent) -> HitTarget?
@@ -370,12 +375,13 @@ pub fn View::focusable_paths(Self) -> Array[Array[Int32]]
 pub fn View::is_enabled_path(Self, Array[Int32]) -> Bool
 pub fn View::key_down_path(Self, Array[Int32], @foundation.KeyEvent) -> Bool
 pub fn View::layout(Self, size~ : @foundation.Size, text_layout_system~ : @text.TextLayoutSystem) -> @crater-core.Layout
-pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_dirty~ : () -> Unit, on_node_detach? : (Int32) -> Unit, on_theme_change? : (Int32, @style.Theme?) -> Unit, on_disabled_change? : (Int32) -> Unit, request_focus? : (Int32) -> Bool, clock? : () -> Double, style_sheet? : @style.StyleSheet) -> () -> Unit
+pub fn View::mount_reactivity(Self, mark_layout_dirty~ : () -> Unit, mark_paint_dirty~ : () -> Unit, on_layout_change? : (Int32) -> Unit, on_node_detach? : (Int32) -> Unit, on_theme_change? : (Int32, @style.Theme?) -> Unit, on_disabled_change? : (Int32) -> Unit, request_focus? : (Int32) -> Bool, clock? : () -> Double, style_sheet? : @style.StyleSheet) -> () -> Unit
 pub fn View::node_id_at_path(Self, Array[Int32]) -> Int32?
+pub fn View::overlay_tab_paths(Self, OverlayTarget, focused_node_id? : Int32) -> Array[Array[Int32]]
+pub fn View::overlay_targets(Self) -> Array[OverlayTarget]
 pub fn View::path_for_node_id(Self, Int32) -> Array[Int32]?
+pub fn View::pointer_allows_path(Self, Array[Int32]) -> Bool
 pub fn View::pointer_cancel_path(Self, Array[Int32]) -> Bool
-pub fn View::popup_tab_paths(Self, PopupTarget, focused_node_id? : Int32) -> Array[Array[Int32]]
-pub fn View::popup_targets(Self) -> Array[PopupTarget]
 pub fn View::tab_focus_paths(Self, focused_node_id? : Int32) -> Array[Array[Int32]]
 pub fn View::text_edit_path(Self, Array[Int32], @foundation.TextEditCommand) -> @foundation.TextEditResult
 pub fn View::text_input_path(Self, Array[Int32], String) -> Bool

@@ -47,6 +47,8 @@ pub fn current_theme() -> @style.Theme
 
 pub fn decode_image(Bytes) -> @foundation.Image raise @foundation.ImageError
 
+pub fn dialog(@view.View, open? : @reactive.Signal[Bool], trigger? : @view.PopupTrigger, style? : @controls.DialogStyle, close_on_escape? : Bool, close_on_backdrop? : Bool, on_change? : (@foundation.ChangeEvent[Bool]) -> Unit, (() -> Unit) -> @view.View) -> @view.View
+
 pub fn[T] dispatch_change(Int32, T, ((@foundation.ChangeEvent[T]) -> Unit)?, () -> Unit, is_current? : () -> Bool) -> Bool
 
 pub fn effect(() -> Unit) -> () -> Unit
@@ -174,6 +176,8 @@ pub using @foundation {type ControlState}
 
 pub using @style {type ControlStyles}
 
+pub using @controls {type DialogStyle}
+
 pub using @runtime {type DirtyState}
 
 pub using @view {type ElementEvents}
@@ -223,6 +227,16 @@ pub using @view {type MeasureContext}
 pub using @view {type MountContext}
 
 pub using @diagnostics {type NodeSnapshot}
+
+pub using @foundation {type OverlayBehavior}
+
+pub using @foundation {type OverlayDismiss}
+
+pub using @foundation {type OverlayFocus}
+
+pub using @foundation {type OverlayPointer}
+
+pub using @diagnostics {type OverlaySnapshot}
 
 pub using @view {type PaintContext}
 

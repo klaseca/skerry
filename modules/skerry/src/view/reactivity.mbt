@@ -291,6 +291,9 @@ fn[T, K] dispose_keyed_entry(entry : KeyedChild[T, K]) -> Unit {
 /// Custom hosts can provide request_focus and a monotonic millisecond clock for
 /// controls that navigate internally. UiRoot supplies these automatically.
 /// UiRoot handles this automatically. Neither callback requests layout.
+/// When supplied, on_layout_change replaces mark_layout_dirty for node changes
+/// and reports their source ID. Custom hosts can forward it to
+/// LayoutState::invalidate_node to retain background layout for floating updates.
 /// This instance and its descendants must not have been mounted before. Reusing
 /// a mounted/disposed instance or placing it twice in a tree is a programming
 /// error; create fresh instances by calling their component functions again.
@@ -298,6 +301,7 @@ pub fn View::mount_reactivity(
   self : View,
   mark_layout_dirty~ : () -> Unit,
   mark_paint_dirty~ : () -> Unit,
+  on_layout_change? : (Int32) -> Unit,
   on_node_detach~ : (Int32) -> Unit = fn(_) { () },
   on_theme_change~ : (Int32, @style.Theme?) -> Unit = fn(_, _) { () },
   on_disabled_change~ : (Int32) -> Unit = fn(_) { () },
@@ -309,6 +313,7 @@ pub fn View::mount_reactivity(
     let host = {
       mark_layout_dirty,
       mark_paint_dirty,
+      on_layout_change,
       on_node_detach,
       on_theme_change,
       on_disabled_change,
@@ -337,6 +342,13 @@ fn UiNode::mount_reactivity(self : UiNode, host : MountContext) -> () -> Unit {
 fn UiNode::mount_claimed(self : UiNode, host : MountContext) -> () -> Unit {
   self.lifecycle.phase = Mounted
   self.lifecycle.scope = @reactive.Scope::current()
+  let host = match host.on_layout_change {
+    Some(notify) => {
+      let id = self.id
+      { ..host, mark_layout_dirty: fn() { notify(id) }, }
+    }
+    None => host
+  }
   let host = match self.geometry {
     Some({ theme: Some(spec), .. }) =>
       {

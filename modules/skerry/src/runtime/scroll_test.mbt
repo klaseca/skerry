@@ -403,7 +403,10 @@ test "scroll viewport padding and resize share stable snapshots and child coordi
   assert_eq(scroll.content_size, Size(width=50.0, height=90.0))
   assert_eq(scroll.max_offset, 50.0)
   assert_eq(first.tree.nodes[2].frame.origin, Point(x=5.0, y=-15.0))
-  assert_eq(first.tree.nodes[2].clip, scroll.viewport)
+  assert_eq(
+    first.tree.nodes[2].clip,
+    Rect(x=0.0, y=5.0, width=60.0, height=40.0),
+  )
   assert_false(
     root.scroll_at(
       size=Size(width=60.0, height=50.0),

@@ -4,7 +4,7 @@ priv struct GeometrySpec {
   clip_frame : Bool
   scroll : ScrollSpec?
   theme : ThemeSpec?
-  popup : PopupSpec?
+  overlay : OverlaySpec?
 }
 
 ///|
@@ -47,7 +47,7 @@ pub fn View::translated(self : View, offset : @foundation.Point) -> View {
     clip_frame: false,
     scroll: None,
     theme: None,
-    popup: None,
+    overlay: None,
   })
   view_from_node({
     ..self.node,
@@ -64,7 +64,7 @@ pub fn View::clip(self : View) -> View {
     clip_frame: false,
     scroll: None,
     theme: None,
-    popup: None,
+    overlay: None,
   })
   view_from_node({
     ..self.node,
@@ -107,7 +107,7 @@ fn node_layout_extent(
   }
   for index, child_layout in layout.children {
     if node.children.val.get(index) is Some(child) {
-      if child.is_popup() {
+      if child.is_overlay() {
         continue
       }
       let extent = node_layout_extent(child, child_layout)
@@ -146,8 +146,8 @@ fn node_geometry(
   let theme = styles.theme
   let base = layout_frame(layout, parent.x, parent.y)
   let base = match node.geometry {
-    Some({ popup: Some(spec), .. }) =>
-      { ..base, origin: popup_origin(spec, anchor, base.size, viewport), }
+    Some({ overlay: Some(spec), .. }) =>
+      { ..base, origin: spec.policy.origin(anchor, base.size, viewport), }
     _ => base
   }
   let translation = node.geometry
@@ -173,8 +173,8 @@ fn node_geometry(
     left: layout.border.left,
   }
   let content = frame.inset(border).inset(padding)
-  let ancestor_clip = if node.is_popup() { viewport } else { ancestor_clip }
-  let clip = if node.is_popup() && disabled {
+  let ancestor_clip = if node.is_overlay() { viewport } else { ancestor_clip }
+  let clip = if node.is_overlay() && disabled {
     @foundation.Rect(x=frame.origin.x, y=frame.origin.y, width=0.0, height=0.0)
   } else if node.geometry is Some({ clip_frame: true, .. }) {
     ancestor_clip.intersect(frame)
@@ -236,10 +236,39 @@ fn node_geometry(
       Point(x=origin.x - offset, y=origin.y)
     None => origin
   }
-  let child_clip = if scroll is Some(_) {
-    clip.intersect(content)
-  } else {
-    clip
+  let child_clip = match (scroll, scroll_spec) {
+    (Some(scroll), Some(spec)) => {
+      // Padding is available for decorations such as focus outlines. Only the
+      // overflowing scroll axis needs the fixed content edge; retain the gutter
+      // on the other axis so descendants cannot paint/hit beneath the track.
+      let gutter = match spec.axis {
+        Vertical => { ..@foundation.Insets::all(0.0), right: spec.gutter, }
+        Horizontal => { ..@foundation.Insets::all(0.0), bottom: spec.gutter, }
+      }
+      let padding_box = frame.inset(border).inset(gutter)
+      let viewport = if scroll.max_offset > 0.0 {
+        match spec.axis {
+          Vertical =>
+            @foundation.Rect(
+              x=padding_box.origin.x,
+              y=content.origin.y,
+              width=padding_box.size.width,
+              height=content.size.height,
+            )
+          Horizontal =>
+            @foundation.Rect(
+              x=content.origin.x,
+              y=padding_box.origin.y,
+              width=content.size.width,
+              height=padding_box.size.height,
+            )
+        }
+      } else {
+        padding_box
+      }
+      clip.intersect(viewport)
+    }
+    _ => clip
   }
   let children = []
   for index, child_layout in layout.children {

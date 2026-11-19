@@ -1,9 +1,8 @@
 # Skerry
 
-Skerry is an experimental native desktop UI framework for MoonBit. It provides
-reactive state, layout, text, images, basic controls, Select, scrolling, themes and
-anchored popups. The default backend uses SDL 3 for windows and input and Skia for
-CPU rendering.
+Skerry is an experimental native desktop UI framework for MoonBit, built around
+declarative composition and fine-grained reactive updates. The default backend
+uses SDL 3 for windows and input and Skia for CPU rendering.
 
 ## Getting started
 
@@ -52,15 +51,8 @@ Windows; Linux and macOS have not yet been verified for Skerry.
 
 ## Examples
 
-Run these commands from the repository root:
-
-```sh
-moon run examples/form
-moon run examples/images
-moon run examples/theming
-```
-
-The examples cover form validation, image rendering and custom themed components.
+Runnable applications are available in the [examples directory](examples).
+From the repository root, use `moon run` followed by the example directory path.
 
 ## Development
 
@@ -75,8 +67,7 @@ moon build --deny-warn
 
 ## Documentation
 
-See the [API guide](modules/skerry/README.mbt.md) for components, reactive values,
-styling, themes, lifecycle and custom backends.
+See the [API guide](modules/skerry/README.mbt.md) for application development and
+framework extension points.
 
-This is an experimental project with an evolving API. GPU rendering, multiple
-windows, accessibility, IME composition and complex text shaping are future work.
+The project is under active development, and its API may change between releases.

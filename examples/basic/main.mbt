@@ -179,28 +179,57 @@ fn app_view() -> @skerry.View {
             ]
           },
         ],
-        @skerry.select(
-          [
-            @skerry.SelectOption("MoonBit", label="MoonBit"),
-            @skerry.SelectOption("Rust", label="Rust"),
-            @skerry.SelectOption("Go", label="Go"),
-            @skerry.SelectOption("TypeScript", label="TypeScript"),
-            @skerry.SelectOption("Python", label="Python"),
-            @skerry.SelectOption("Swift", label="Swift"),
-            @skerry.SelectOption("Kotlin", label="Kotlin"),
-            @skerry.SelectOption("C++", label="C++"),
-          ],
-          selected=language,
-          style=@skerry.SelectStyle()
-            .surface(@skerry.BoxStyle().width(240.0).shrink(0.0))
-            .list(
-              @skerry.BoxStyle()
-              .max_height(180.0)
-              .background(@skerry.control_surface_token)
-              .stroke(@skerry.border_token)
-              .radius(6.0),
-            ),
-        ),
+        @skerry.row(
+          style=@skerry.FlexStyle()
+            .spacing(12.0)
+            .shrink(0.0)
+            .align_items(Center),
+        ) <| [
+          @skerry.select(
+            [
+              @skerry.SelectOption("MoonBit", label="MoonBit"),
+              @skerry.SelectOption("Rust", label="Rust"),
+              @skerry.SelectOption("Go", label="Go"),
+              @skerry.SelectOption("TypeScript", label="TypeScript"),
+              @skerry.SelectOption("Python", label="Python"),
+              @skerry.SelectOption("Swift", label="Swift"),
+              @skerry.SelectOption("Kotlin", label="Kotlin"),
+              @skerry.SelectOption("C++", label="C++"),
+            ],
+            selected=language,
+            style=@skerry.SelectStyle()
+              .surface(@skerry.BoxStyle().width(240.0).shrink(0.0))
+              .list(
+                @skerry.BoxStyle()
+                .max_height(180.0)
+                .background(@skerry.control_surface_token)
+                .stroke(@skerry.border_token)
+                .radius(6.0),
+              ),
+          ),
+          @skerry.dialog(@skerry.button("Edit name")) <| fn(close) {
+            let draft = @skerry.signal(name.peek())
+            @skerry.column(style=@skerry.FlexStyle().spacing(16.0)) <| [
+              @skerry.text(
+                "Edit name",
+                style=@skerry.TextStyle().font(
+                  @skerry.FontSpec::default().size(22.0),
+                ),
+              ),
+              @skerry.text("Changes apply when you save."),
+              @skerry.text_input(value=draft, placeholder="Your name"),
+              @skerry.row(
+                style=@skerry.FlexStyle().spacing(8.0).justify_content(End),
+              ) <| [
+                @skerry.button("Cancel", on_click=close),
+                @skerry.button("Save", on_click=fn() {
+                  name.set(draft.get())
+                  close()
+                }),
+              ],
+            ]
+          },
+        ],
         @skerry.scroll_view(
           @skerry.column(style=@skerry.FlexStyle().spacing(8.0)) <| Array::makei(
             20,

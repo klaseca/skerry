@@ -13,6 +13,9 @@
 /// content fits. It reduces layout/child clipping instead of covering content.
 /// Padding separates content from the track; the track stays at the outer
 /// right/bottom edge and retains the padding at its ends along the scroll axis.
+/// Focus outlines may use that padding. Clipping excludes the gutter and keeps
+/// fixed padding along an overflowing scroll axis; fitting content can paint
+/// decorations within the padding box.
 ///
 /// ```mbt check
 /// test {
@@ -77,7 +80,7 @@ pub fn scroll_view(
       clip_frame: false,
       scroll: Some({ axis, offset, scrollbar, scrollbar_style, gutter, }),
       theme: None,
-      popup: None,
+      overlay: None,
     }),
     make_crater: fn(text_layout_system, styles) {
       let padding = styles.style.layout.padding.unwrap_or(
@@ -135,7 +138,7 @@ pub fn LayoutState::scroll_at(
     }
     for depth in target.path.length()>=..0 {
       let path = target.path[:depth].to_owned()
-      if node_at_path(view.node, path, 0) is Some(node) && node.is_popup() {
+      if node_at_path(view.node, path, 0) is Some(node) && node.is_overlay() {
         break
       }
       if input_node_at_path(view.node, path, 0) is Some(node) &&

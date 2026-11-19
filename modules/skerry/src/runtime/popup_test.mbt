@@ -72,7 +72,16 @@ test "popup escapes ancestor clips and later siblings for paint and pointer inpu
   let popup = popup_node(root)
   assert_eq(popup.frame, Rect(x=0.0, y=28.0, width=100.0, height=40.0))
   assert_eq(popup.clip, @foundation.Rect::from_size(size))
-  assert_eq(popup.popup_anchor, root.view().node_id_at_path([0, 0, 0]))
+  assert_eq(
+    popup.overlay,
+    Some({
+      trigger_id: root.view().node_id_at_path([0, 0, 0]).unwrap(),
+      behavior: @foundation.OverlayBehavior(
+        escape=Dismiss,
+        outside_press=Dismiss,
+      ),
+    }),
+  )
   assert_eq(renderer.fills.last().unwrap().2, red)
   assert_eq(renderer.fills.last().unwrap().1, @foundation.Rect::from_size(size))
   assert_true(root.pointer_down(size~, point=Point(x=10.0, y=35.0)))
@@ -454,7 +463,7 @@ test "disabled popup ancestor suspends floating input focus and paint without lo
   root.paint(ScrollRecorder(), size~)
   assert_eq(focused.val, 1)
   disabled.set(true)
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_false(root.key_down(test_key_event(KeyEnter)))
   assert_false(root.click_at(size~, point=Point(x=5.0, y=32.0)))
   let renderer = ScrollRecorder()
@@ -580,7 +589,7 @@ test "popup focus handler can immediately close or dispose its owner" {
     } else {
       assert_false(open.get())
     }
-    assert_true(root.view().popup_targets().is_empty())
+    assert_true(root.view().overlay_targets().is_empty())
   }
 }
 
@@ -707,7 +716,7 @@ test "popup dismissal skips the default model write when its handler detaches th
   defer root.dispose()
   assert_true(root.key_down(test_key_event(KeyEscape)))
   assert_true(open.get())
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
 }
 
 ///|
@@ -754,7 +763,7 @@ test "disabling only the anchor suspends popup focus input and painting" {
   )
   defer root.dispose()
   disabled.set(true)
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_false(root.key_down(test_key_event(KeyEnter)))
   let size = @foundation.Size(width=200.0, height=200.0)
   let renderer = ScrollRecorder()

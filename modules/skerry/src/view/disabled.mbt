@@ -1,7 +1,7 @@
 ///|
 fn UiNode::is_disabled(self : UiNode) -> Bool {
-  if self.geometry is Some({ popup: Some(spec), .. }) &&
-    (spec.anchor.is_disabled() || spec.anchor.lifecycle.phase is Disposed) {
+  if self.geometry is Some({ overlay: Some(spec), .. }) &&
+    (spec.trigger.is_disabled() || spec.trigger.lifecycle.phase is Disposed) {
     return true
   }
   match self.events.disabled {

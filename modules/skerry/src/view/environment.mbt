@@ -62,7 +62,7 @@ pub fn style_scope(
       let geometry = view.node.geometry.unwrap_or({
         translation: Point(x=0.0, y=0.0),
         clip_frame: false,
-        popup: None,
+        overlay: None,
         scroll: None,
         theme: None,
       })

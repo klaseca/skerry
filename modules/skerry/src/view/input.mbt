@@ -538,7 +538,7 @@ fn hit_test_node(
     for index, child_geometry in geometry.children {
       if node.children.val.get(index) is Some(child) &&
         child.id == child_geometry.id {
-        if child.is_popup() {
+        if child.is_overlay() {
           continue
         }
         let child_path = path.copy()

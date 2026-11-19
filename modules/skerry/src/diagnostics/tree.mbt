@@ -31,8 +31,7 @@ pub(all) struct NodeSnapshot {
   content : @foundation.Rect
   clip : @foundation.Rect
   scroll : ScrollSnapshot?
-  // Floating popup surfaces retain their logical parent and name their anchor.
-  popup_anchor : Int32?
+  overlay : OverlaySnapshot?
   image : ImageSnapshot?
   padding : @foundation.Insets
   border : @foundation.Insets
@@ -62,6 +61,21 @@ pub extend TreeSnapshot with Debug::{to_repr}
 
 ///|
 pub extend TreeSnapshot with Eq::{equal, not_equal}
+
+///|
+/// Identity of the trigger and independent input policies of a floating layer.
+/// Component names remain diagnostic metadata, never a behavior selector.
+#derive(Eq, Debug)
+pub(all) struct OverlaySnapshot {
+  trigger_id : Int32
+  behavior : @foundation.OverlayBehavior
+}
+
+///|
+pub extend OverlaySnapshot with Eq::{equal, not_equal}
+
+///|
+pub extend OverlaySnapshot with Debug::{to_repr}
 
 ///|
 /// Image geometry only. No pixel storage or native resource is retained.

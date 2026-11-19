@@ -82,8 +82,9 @@ fn snapshot_node(
     content: geometry.content,
     clip: geometry.clip,
     scroll: geometry.scroll,
-    popup_anchor: match node.geometry {
-      Some({ popup: Some(spec), .. }) => Some(spec.anchor.id)
+    overlay: match node.geometry {
+      Some({ overlay: Some(spec), .. }) =>
+        Some({ trigger_id: spec.trigger.id, behavior: spec.behavior(), })
       _ => None
     },
     image: geometry.image,

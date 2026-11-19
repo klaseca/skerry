@@ -57,7 +57,7 @@ test "select separates keyboard navigation from committing the model" {
   assert_true(root.key_down(test_key_event(KeyEnter)))
   assert_eq(selected.peek(), Some(0))
   assert_eq(changes, [Some(0)])
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   root.paint(StyleRecorder(), size=Size(width=320.0, height=400.0))
   assert_eq(
     root.snapshot().unwrap().focused_node_id,
@@ -112,9 +112,9 @@ test "select veto keeps the list open while Escape cancels navigation" {
   assert_true(root.key_down(test_key_event(KeyEnter)))
   assert_eq(selected.peek(), Some(0))
   assert_eq(select_test_active(root), Some(1))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.key_down(test_key_event(KeyEscape)))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(selected.peek(), Some(0))
 }
 
@@ -269,12 +269,12 @@ test "select pointer commits a typed option and outside presses only dismiss" {
   assert_true(root.pointer_down(size~, point~))
   assert_true(root.pointer_up(size~, point~))
   assert_eq(selected.peek(), Some("Two"))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_true(root.key_down(test_key_event(KeyEnter)))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.pointer_down(size~, point=Point(x=300.0, y=350.0)))
   ignore(root.pointer_up(size~, point=Point(x=300.0, y=350.0)))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_eq(selected.peek(), Some("Two"))
   assert_eq(clicks.val, 0)
 }
@@ -315,7 +315,7 @@ test "select revalidates removed or disabled options before applying a proposal"
     assert_true(root.key_down(test_key_event(KeyEnter)))
     assert_eq(selected.peek(), Some(0))
     if remove {
-      assert_true(root.view().popup_targets().is_empty())
+      assert_true(root.view().overlay_targets().is_empty())
     }
   }
 }
@@ -344,7 +344,7 @@ test "select does not activate with horizontal arrows modifiers or repeat" {
   assert_false(root.key_down(test_control_key_event(KeyArrowDown)))
   assert_false(root.key_down(test_shift_key_event(KeyArrowDown)))
   assert_true(root.key_down(KeyEvent(key=KeyEnter, repeat=true)))
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.key_down(KeyEvent(key=KeyArrowDown, repeat=true)))
   assert_eq(select_test_active(root), Some(1))
   assert_eq(selected.peek(), Some(0))
@@ -414,9 +414,9 @@ test "select empty options are disabled and all-disabled lists dismiss safely" {
   defer root.dispose()
   select_test_open(root)
   assert_eq(select_test_active(root), None)
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_true(root.key_down(test_key_event(KeyEscape)))
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
 }
 
 ///|
@@ -440,11 +440,11 @@ test "select disabled state suspends the open list and preserves its selection" 
   defer root.dispose()
   select_test_open(root)
   blocked.set(true)
-  assert_true(root.view().popup_targets().is_empty())
+  assert_true(root.view().overlay_targets().is_empty())
   assert_false(root.key_down(test_key_event(KeyEnter)))
   assert_eq(selected.peek(), Some(1))
   blocked.set(false)
-  assert_eq(root.view().popup_targets().length(), 1)
+  assert_eq(root.view().overlay_targets().length(), 1)
   assert_eq(select_test_active(root), Some(1))
   assert_eq(changes.val, 0)
 }
@@ -596,7 +596,7 @@ test "select shared models keep independent popup sessions across roots" {
   )
   defer second.dispose()
   select_test_open(first)
-  assert_true(second.view().popup_targets().is_empty())
+  assert_true(second.view().overlay_targets().is_empty())
   select_test_open(second)
   assert_true(first.key_down(test_key_event(KeyArrowDown)))
   assert_true(first.key_down(test_key_event(KeyEnter)))
@@ -645,7 +645,7 @@ test "select repeatedly closes sessions and remounts fresh options without close
     assert_true(root.key_down(test_key_event(KeyEnd)))
     assert_eq(select_test_active(root), Some(2))
     assert_true(root.key_down(test_key_event(KeyEscape)))
-    assert_true(root.view().popup_targets().is_empty())
+    assert_true(root.view().overlay_targets().is_empty())
     assert_eq(selected.peek(), Some("MoonBit"))
     let count = reads.val
     dependency.set(cycle + 1)

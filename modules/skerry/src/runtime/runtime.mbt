@@ -51,9 +51,9 @@ pub struct UiRoot {
   priv clock : () -> Double
   priv mut draining_actions : Bool
   priv wakeup_callback : Ref[(() -> Unit)?]
-  priv mut popup_sessions : Array[PopupSession]
-  priv mut syncing_popups : Bool
-  priv mut popups_pending : Bool
+  priv mut overlay_sessions : Array[OverlaySession]
+  priv mut syncing_overlays : Bool
+  priv mut overlays_pending : Bool
 }
 
 ///|
@@ -193,15 +193,16 @@ fn mount_owned(
     clock,
     draining_actions: false,
     wakeup_callback: Ref(None),
-    popup_sessions: [],
-    syncing_popups: false,
-    popups_pending: false,
+    overlay_sessions: [],
+    syncing_overlays: false,
+    overlays_pending: false,
   }
   root.dispose_reactivity = scope.run(fn() {
     root.view.mount_reactivity(
       style_sheet=root.layout_state.style_sheet(),
       mark_layout_dirty=fn() { root.mark_layout_dirty() },
       mark_paint_dirty=fn() { root.mark_paint_dirty() },
+      on_layout_change=fn(id) { root.invalidate_layout(Some(id)) },
       on_disabled_change=fn(_) { root.prune_disabled_interactions() },
       clock=root.clock,
       request_focus=fn(id) {
@@ -245,7 +246,7 @@ fn mount_owned(
   })
   @environment.mark_values_materialized(root.view.node_id_at_path([]).unwrap())
   root.dirty = NeedsLayout
-  root.sync_popups()
+  root.sync_overlays()
   root
 }
 
@@ -253,7 +254,7 @@ fn mount_owned(
 pub fn UiRoot::dispose(self : UiRoot) -> Unit {
   guard !self.disposed else { return }
   self.disposed = true
-  self.popup_sessions = []
+  self.overlay_sessions = []
   self.pointer_position = None
   self.hovered_node_id = None
   self.keyboard_press = None
@@ -306,12 +307,20 @@ pub fn UiRoot::dirty(self : UiRoot) -> DirtyState {
 
 ///|
 pub fn UiRoot::mark_layout_dirty(self : UiRoot) -> Unit {
+  self.invalidate_layout(None)
+}
+
+///|
+fn UiRoot::invalidate_layout(self : UiRoot, node_id : Int32?) -> Unit {
   guard !self.disposed else { return }
   let was_clean = self.dirty == Clean
   self.dirty = NeedsLayout
   // Hit testing can populate the cache while a paint is still pending.
-  self.layout_state.invalidate()
-  self.request_popup_sync()
+  match node_id {
+    Some(id) => self.layout_state.invalidate_node(self.view, id)
+    None => self.layout_state.invalidate()
+  }
+  self.request_overlay_sync()
   self.notify_invalidation()
   if was_clean {
     self.wakeup_frame()
@@ -423,7 +432,7 @@ pub fn UiRoot::click_at(
     self.viewport_size = Some(size)
     ignore(self.pointer_cancel())
     guard !self.disposed else { false }
-    if self.dismiss_outside_popup(size, point) {
+    if self.dismiss_outside_overlay(size, point) {
       return true
     }
     match self.layout_state.hit_test(self.view, size~, point~) {
@@ -439,7 +448,9 @@ pub fn UiRoot::click_at(
         true
       }
       None => {
-        self.clear_focus()
+        if self.view.focus_allows_path([]) {
+          self.clear_focus()
+        }
         false
       }
     }
@@ -490,13 +501,14 @@ fn UiRoot::activate_target(self : UiRoot, target : @view.HitTarget) -> Unit {
   guard !target.scrollbar else { return }
   if target.focusable {
     self.set_focus(target.node_id)
-  } else {
+  } else if self.view.focus_allows_path(target.path) {
     self.clear_focus()
   }
   // Focus callbacks can dispose the root or remove the target.
   if !self.disposed &&
     self.view.path_for_node_id(target.node_id) is Some(path) &&
     self.view.is_enabled_path(path) &&
+    self.view.pointer_allows_path(path) &&
     target.on_click is Some(action) {
     action()
   }
@@ -513,7 +525,7 @@ pub fn UiRoot::pointer_down(
     self.viewport_size = Some(size)
     ignore(self.pointer_cancel())
     guard !self.disposed else { false }
-    if self.dismiss_outside_popup(size, point) {
+    if self.dismiss_outside_overlay(size, point) {
       if !self.disposed {
         self.update_pointer(size, point)
       }
@@ -528,7 +540,7 @@ pub fn UiRoot::pointer_down(
         if !target.scrollbar {
           if target.focusable {
             self.set_focus(target.node_id)
-          } else {
+          } else if self.view.focus_allows_path(target.path) {
             self.clear_focus()
           }
         }
@@ -551,7 +563,9 @@ pub fn UiRoot::pointer_down(
         true
       }
       None => {
-        self.clear_focus()
+        if self.view.focus_allows_path([]) {
+          self.clear_focus()
+        }
         false
       }
     }
@@ -605,7 +619,7 @@ pub fn UiRoot::key_down(
     if size is Some(size) {
       self.viewport_size = Some(size)
     }
-    self.sync_popups()
+    self.sync_overlays()
     match event.key {
       KeyTab if is_focus_traversal_event(event) => {
         let handled = if event.modifiers.shift {
@@ -644,6 +658,7 @@ pub fn UiRoot::key_down(
                 self.focused_node_id == Some(next.node_id) &&
                 self.view.path_for_node_id(next.node_id) is Some(path) &&
                 self.view.is_enabled_path(path) &&
+                self.view.focus_allows_path(path) &&
                 next.on_click is Some(action) {
                 action()
               }
@@ -655,14 +670,14 @@ pub fn UiRoot::key_down(
             return true
           }
           if event.key == KeyEscape {
-            if self.dismiss_top_popup() {
+            if self.dismiss_top_overlay() {
               return true
             }
             self.focus_lost()
             return true
           }
         }
-        if event.key == KeyEscape && self.dismiss_top_popup() {
+        if event.key == KeyEscape && self.dismiss_top_overlay() {
           return true
         }
         guard !self.disposed && !self.losing_focus else { return false }
@@ -762,6 +777,10 @@ fn UiRoot::set_focus(
   reveal~ : Bool = false,
 ) -> Unit {
   guard !self.disposed && !self.losing_focus else { return }
+  guard self.view.path_for_node_id(node_id) is Some(requested) &&
+    self.view.focus_allows_path(requested) else {
+    return
+  }
   // The latest request wins, including one made synchronously from blur/focus.
   // A token avoids overwriting a nested focus without its matching blur.
   self.focus_request.val = true
@@ -777,7 +796,8 @@ fn UiRoot::set_focus(
   guard !superseded.val &&
     !self.disposed &&
     self.view.path_for_node_id(node_id) is Some(path) &&
-    self.view.is_enabled_path(path) else {
+    self.view.is_enabled_path(path) &&
+    self.view.focus_allows_path(path) else {
     return
   }
   // Register focus before the callback so removal during on_focus can blur it.
@@ -812,10 +832,10 @@ fn UiRoot::blur_focused_node(self : UiRoot) -> Unit {
 
 ///|
 fn UiRoot::focus_next(self : UiRoot) -> Bool {
-  let paths = self.popup_tab_paths()
+  let paths = self.overlay_tab_paths()
   if paths.is_empty() {
     self.clear_focus()
-    false
+    self.view.overlay_targets().any(target => target.behavior.focus == Contain)
   } else {
     let next = match self.focused_path() {
       Some(current) => next_focus_path(paths, current)
@@ -831,10 +851,10 @@ fn UiRoot::focus_next(self : UiRoot) -> Bool {
 
 ///|
 fn UiRoot::focus_previous(self : UiRoot) -> Bool {
-  let paths = self.popup_tab_paths()
+  let paths = self.overlay_tab_paths()
   if paths.is_empty() {
     self.clear_focus()
-    false
+    self.view.overlay_targets().any(target => target.behavior.focus == Contain)
   } else {
     let previous = match self.focused_path() {
       Some(current) => previous_focus_path(paths, current)
@@ -852,7 +872,8 @@ fn UiRoot::focus_previous(self : UiRoot) -> Bool {
 fn UiRoot::focused_path(self : UiRoot) -> Array[Int32]? {
   guard self.focused_node_id is Some(node_id) else { None }
   match self.view.path_for_node_id(node_id) {
-    Some(path) if self.view.is_enabled_path(path) => Some(path)
+    Some(path) if self.view.is_enabled_path(path) &&
+      self.view.focus_allows_path(path) => Some(path)
     _ => {
       self.clear_focus()
       None
@@ -864,7 +885,8 @@ fn UiRoot::focused_path(self : UiRoot) -> Array[Int32]? {
 fn UiRoot::captured_path(self : UiRoot) -> Array[Int32]? {
   guard self.captured_node_id is Some(node_id) else { None }
   match self.view.path_for_node_id(node_id) {
-    Some(path) if self.view.is_enabled_path(path) => Some(path)
+    Some(path) if self.view.is_enabled_path(path) &&
+      self.view.pointer_allows_path(path) => Some(path)
     _ => {
       ignore(self.pointer_cancel())
       None

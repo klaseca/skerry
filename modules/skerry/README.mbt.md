@@ -3,9 +3,8 @@
 `klaseca/skerry` is an experimental native desktop UI framework for MoonBit. The
 initial backend uses SDL 3 for windows and input and Skia for CPU rendering.
 
-The first release focuses on a small, usable foundation: layout, reactive state,
-text, images, basic controls, scrolling, themes, focus handling and text editing
-in a single native window.
+Applications are composed declaratively from views. Reactive state updates their
+properties and structure, while typed styles and scoped themes control appearance.
 
 ## Getting started
 
@@ -108,13 +107,9 @@ Run the repository example with:
 moon run examples/basic
 ```
 
-`moon run examples/form` runs a contact form with inline
-validation, a reactive Save/Saved button, Enter submission and a result message.
-It uses the same built-in application theme and scrolls at smaller window sizes.
-
-`moon run examples/images` demonstrates PNG transparency, JPEG,
-reactive replacement, fitting and crop alignment. Run it from the repository root
-so its relative asset paths resolve.
+See the [repository examples](https://github.com/klaseca/skerry#examples) for more
+runnable applications. Run examples from the repository root so their relative
+asset paths resolve.
 
 ## Components and primitives
 
@@ -1810,8 +1805,11 @@ the resolved allocation in `frame` and `content`.
 `scroll_view(child, axis=Vertical, offset=signal, style=...)` displays one child
 inside a bounded viewport. Its size comes from the root host or parent layout,
 or from `BoxStyle.width`/`BoxStyle.height`. The child keeps its natural extent on the
-scroll axis. Padding belongs to the viewport; children are clipped to its content
-box. The default axis is vertical and the default offset is an internal signal.
+scroll axis. Padding belongs to the viewport and provides room for focus outlines.
+Along an overflowing scroll axis, the content edge clips scrolling children and
+keeps the end padding fixed. Along the other axis, and when content fits,
+decorations can use the padding box. The reserved scrollbar gutter always clips
+children. The default axis is vertical and the default offset is an internal signal.
 
 ```mbt nocheck
 ///|
@@ -2042,12 +2040,101 @@ model and content; re-enabling makes it available again.
 
 Layers follow logical tree order: later popup surfaces appear above earlier ones,
 and nested surfaces appear above their parents. Snapshots retain the logical tree;
-the floating `Popup` node's `popup_anchor` identifies its anchor. Geometry and theme
-are frozen with the completed paint, as for ordinary nodes.
+the floating `Popup` node's `overlay` records its trigger ID and input policies.
+Geometry and theme are frozen with the completed paint, as for ordinary nodes.
 
-Custom hosts can use `View::popup_targets`, `View::popup_tab_paths` and
-`LayoutState::popup_contains` to implement the same dismissal and focus policy.
+Custom hosts can use `View::overlay_targets`, `View::overlay_tab_paths` and
+`LayoutState::overlay_contains` to implement the same dismissal and focus policy.
 `UiRoot` wires this automatically.
+
+## Dialogs
+
+`dialog` opens a centered modal surface with a full-window backdrop. The anchor
+opens it by click, Enter or Space; visibility is owned internally by default.
+An optional `open` signal and `trigger=Manual` support application-controlled
+opening, following the same conventions as `popup`.
+
+```mbt check
+///|
+test "dialog with internal state" {
+  let control = @skerry.dialog(@skerry.button("Open")) <| fn(close) {
+    @skerry.column(style=@skerry.FlexStyle().spacing(16.0)) <| [
+      @skerry.text("Save changes?"),
+      @skerry.button("Close", on_click=close),
+    ]
+  }
+  ignore(control)
+}
+```
+
+Content is constructed once per opening and disposed when closed. Keep persistent
+data outside the builder; a retained `close` cannot affect a later session.
+Escape, backdrop presses and the supplied `close` request `on_change(false)`;
+`event.prevent_default()` cancels the transition. `close_on_escape=false` and
+`close_on_backdrop=false` disable those dismissal routes while keeping an explicit
+close button usable. Direct writes to `open` remain ordinary model updates.
+
+The first available control receives focus. Tab and Shift+Tab cycle inside the
+dialog, and closing restores the previous live focus or its anchor. The backdrop
+blocks background presses and scrolling, including when closing is prevented.
+Dialogs without focusable content also block background keyboard/text input.
+Programmatic focus requests cannot move focus outside the active modal. Select
+and other popups inside a dialog paint above it; Escape dismisses the top layer
+first, restoring focus within its parent.
+
+The default surface is 420 logical pixels wide, with 24 pixels of padding and a
+24-pixel gap from window edges. Width and height are bounded by the available
+viewport; tall content scrolls within the surface. `DialogStyle.surface` controls
+the panel; `DialogStyle.backdrop` controls its background and window-edge padding.
+Both support theme rules, tokens and reactive declarations through the existing
+style system. The surface follows the current light/dark theme automatically.
+
+```mbt check
+///|
+test "dialog style and dismissal policy" {
+  let open = @skerry.signal(false)
+  let control = @skerry.dialog(
+    @skerry.button("Open"),
+    open~,
+    close_on_backdrop=false,
+    style=@skerry.DialogStyle()
+      .surface(@skerry.BoxStyle().width(500.0).radius(16.0))
+      .backdrop(@skerry.BoxStyle().padding(@skerry.Insets::all(16.0))),
+    fn(close) { @skerry.button("Close", on_click=close) },
+  )
+  ignore(control)
+}
+```
+
+Snapshots retain the logical hierarchy. `NodeSnapshot.overlay` contains an
+`OverlaySnapshot` with `trigger_id` and a value-only `OverlayBehavior`.
+`OverlayTarget` carries the same policies; its `trigger_id` is the fallback
+target for focus restoration. Component names describe identity for diagnostics;
+the host routes input through independent policies:
+
+| Field | Values | Meaning |
+| --- | --- | --- |
+| `focus` | `Preserve`, `Cycle`, `Contain` | Leave focus alone; enter/cycle/restore it; additionally restrict it to the layer. |
+| `pointer` | `PassThrough`, `BlockOutside` | Permit outside pointer/wheel input or block it and place the layer above background layers. |
+| `escape`, `outside_press` | `Ignore`, `Consume`, `Dismiss` | Forward the event, consume it without closing, or request closing and consume it. |
+
+These capabilities combine independently. A layer can block pointer input while
+preserving keyboard focus, or contain focus while permitting background clicks.
+Ignored events continue to lower eligible layers. Keyboard routing stays within
+the active containing focus scope; pointer routing stops at a blocking boundary.
+`Dismiss` consumes the event even when `on_change` prevents closing.
+Custom hosts use `View::focus_allows_path` for focus requests and
+`View::pointer_allows_path` for activation/capture, along with the shared overlay
+protocol. A popup uses `Cycle` (or `Preserve` for `focus=false`), `PassThrough`, and
+`Dismiss` for both closing routes. A dialog uses `Contain` and `BlockOutside`;
+disabled closing routes use `Consume`.
+`UiRoot` handles this automatically. The lower-level `@view.modal` primitive is
+available for compound controls that supply their own content and backdrop.
+Its `style` accepts `FlexStyle` and arranges content as a column inside the
+viewport-sized layer. Set `align_items` and `justify_content` to choose placement;
+`dialog` explicitly sets both to `Center`. Background and window-edge padding
+belong to the same style's surface. Modal input and dismissal policies apply
+independently of content placement.
 
 ## Disabled controls and wrappers
 

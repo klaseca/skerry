@@ -7,6 +7,7 @@ pub struct LayoutState {
   priv mut disposed : Bool
   priv mut root : @crater_node.Node?
   priv mut layout : @crater_core.Layout?
+  priv mut normal_layout : @crater_core.Layout?
   priv mut size : @foundation.Size?
   priv mut measurements : Map[Int32, MeasuredLayoutNode]
   priv mut style_tree : StyleTree?
@@ -46,6 +47,7 @@ pub fn LayoutState::LayoutState(
     disposed: false,
     root: None,
     layout: None,
+    normal_layout: None,
     size: None,
     measurements: {},
     style_tree: None,
@@ -78,9 +80,40 @@ pub fn LayoutState::invalidate(self : LayoutState) -> Unit {
   self.painted_geometry = None
   self.root = None
   self.layout = None
+  self.normal_layout = None
   self.size = None
   self.measurements = {}
   self.style_tree = None
+}
+
+///|
+/// Invalidate a mounted node's layout. Floating surfaces do not contribute to
+/// normal layout, so changes inside them retain the background allocation and
+/// measurements. Other changes use full invalidation, including missing nodes.
+/// Hosts may use this with mount_reactivity's on_layout_change callback.
+pub fn LayoutState::invalidate_node(
+  self : LayoutState,
+  view : View,
+  node_id : Int32,
+) -> Unit {
+  if view.path_for_node_id(node_id) is Some(path) {
+    for depth in path.length()>=..0 {
+      if node_at_path(view.node, path[:depth].to_owned(), 0) is Some(node) &&
+        node.is_overlay() {
+        self.generation += 1
+        self.painted = false
+        self.painted_focus = None
+        self.painted_hover = None
+        self.painted_pointer_press = None
+        self.painted_key_press = None
+        self.painted_geometry = None
+        self.layout = None
+        self.style_tree = None
+        return
+      }
+    }
+  }
+  self.invalidate()
 }
 
 ///|
@@ -160,10 +193,15 @@ fn LayoutState::layout_materialized(
     }
   }
   self.layout_count += 1
-  let layout = self.compute_measured_layout(root, size, measurements)
-  let layout = self.layout_popups(
+  let normal_layout = if self.size == Some(size) &&
+    self.normal_layout is Some(layout) {
+    layout
+  } else {
+    self.compute_measured_layout(root, size, measurements)
+  }
+  let layout = self.layout_overlays(
     view.node,
-    layout,
+    normal_layout,
     StyleContext(self.theme, self.theme_overrides.copy()),
     size,
   )
@@ -172,6 +210,7 @@ fn LayoutState::layout_materialized(
   if generation == self.generation && !self.disposed {
     self.root = Some(root)
     self.layout = Some(layout)
+    self.normal_layout = Some(normal_layout)
     self.size = Some(size)
     self.measurements = measurements
     self.style_tree = Some(view.node.style_tree())

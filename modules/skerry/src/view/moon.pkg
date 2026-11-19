@@ -18,3 +18,8 @@ import {
   "klaseca/skerry/runtime",
   "klaseca/skerry/controls",
 } for "test"
+
+import {
+  "klaseca/skerry/runtime",
+  "klaseca/skerry/controls",
+} for "wbtest"

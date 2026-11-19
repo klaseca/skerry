@@ -94,8 +94,8 @@ fn LayoutState::paint_materialized(
     context,
   )
   let layers = []
-  collect_popup_layers(view.node, geometry, [], layers)
-  for layer in layers {
+  collect_overlay_layers(view.node, geometry, [], layers)
+  for layer in ordered_overlay_layers(layers) {
     paint_node(
       layer.node,
       layer.geometry,
@@ -183,7 +183,7 @@ fn paint_node(
   for index, child_geometry in geometry.children {
     if node.children.val.get(index) is Some(child) &&
       child.id == child_geometry.id {
-      if child.is_popup() {
+      if child.is_overlay() {
         continue
       }
       let child_path = path.copy()
