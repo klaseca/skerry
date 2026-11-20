@@ -21,10 +21,10 @@ priv struct InputGeometry {
 
 ///|
 fn input_geometry(
-  renderer : @sdl_lib.Renderer,
+  surface : &@backend.Surface,
   window : @sdl_lib.Window,
 ) -> InputGeometry raise {
-  let output_size = event_size(renderer, window)
+  let output_size = surface.output_size()
   let window_size = window.size()
   let scale = window.display_scale().to_double()
   InputGeometry(
@@ -59,16 +59,6 @@ fn InputGeometry::to_logical(
       y=point.y * self.logical_size.height / self.window_size.height,
     ),
   )
-}
-
-///|
-fn event_size(
-  renderer : @sdl_lib.Renderer,
-  window : @sdl_lib.Window,
-) -> @sdl_lib.Size raise {
-  renderer.output_size() catch {
-    _ => window.size_in_pixels()
-  }
 }
 
 ///|

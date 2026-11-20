@@ -3,7 +3,7 @@ test "SDL mouse leave clears hover only for its window and keeps drag capture" {
   let clicks = Ref(0)
   with_render_state(
     fn(_) { @controls.button("button", on_click=fn() { clicks.val += 1 }) },
-    (state, _) => {
+    (state, _, _) => {
       state.sync_frame()
       let root = state.root
       let baseline = root.frame_stats().layout_count
@@ -86,7 +86,7 @@ test "SDL keyup clears keyboard pressed without geometry queries or another acti
   let clicks = Ref(0)
   with_render_state(
     fn(_) { @controls.button("button", on_click=fn() { clicks.val += 1 }) },
-    (state, _) => {
+    (state, _, _) => {
       state.sync_frame()
       let root = state.root
       let baseline = root.frame_stats().layout_count

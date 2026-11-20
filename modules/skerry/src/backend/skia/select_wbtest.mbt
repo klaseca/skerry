@@ -27,7 +27,7 @@ test "select options share edges and paint without seams at fractional scales" {
         style=@view.FlexStyle().align_items(Start),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   assert_true(root.key_down(@foundation.KeyEvent(key=KeyTab)))
@@ -37,8 +37,7 @@ test "select options share edges and paint without seams at fractional scales" {
     let width = (300.0 * scale).to_int()
     let height = (300.0 * scale).to_int()
     let pixels = Bytes::make(width * height * 4, b'\x00')
-    @backend.Renderer::render(
-      renderer,
+    renderer.render(
       root,
       @backend.RasterTarget(
         memory=raster_test_memory(pixels),
@@ -115,7 +114,7 @@ test "select list padding protects rounded corners and border throughout scrolli
           .align_items(Start),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   assert_true(root.key_down(@foundation.KeyEvent(key=KeyTab)))
@@ -129,8 +128,7 @@ test "select list padding protects rounded corners and border throughout scrolli
       let width = (240.0 * scale).to_int()
       let height = (240.0 * scale).to_int()
       let pixels = Bytes::make(width * height * 4, b'\x00')
-      @backend.Renderer::render(
-        renderer,
+      renderer.render(
         root,
         @backend.RasterTarget(
           memory=raster_test_memory(pixels),
@@ -260,7 +258,7 @@ test "select arrow and selection check render as native geometry at fractional s
         style=@view.FlexStyle().align_items(Start),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   assert_true(root.key_down(@foundation.KeyEvent(key=KeyTab)))
@@ -270,8 +268,7 @@ test "select arrow and selection check render as native geometry at fractional s
     let width = (240.0 * scale).to_int()
     let height = (200.0 * scale).to_int()
     let pixels = Bytes::make(width * height * 4, b'\x00')
-    @backend.Renderer::render(
-      renderer,
+    renderer.render(
       root,
       @backend.RasterTarget(
         memory=raster_test_memory(pixels),

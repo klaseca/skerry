@@ -15,8 +15,8 @@ pub extend RasterFormat with Debug::{to_repr}
 pub extend RasterFormat with Eq::{not_equal, equal}
 
 ///|
-/// A writable raster buffer borrowed for the duration of `Renderer::render`.
-/// Renderers must not retain `memory` after `render` returns.
+/// A writable raster buffer borrowed during `RasterSurface::with_pixels`.
+/// Renderers must not retain `memory` after its callback returns.
 /// Width, height and row_bytes describe physical pixels. Scale maps logical UI
 /// units to pixels; renderers paint the root at logical_size() with this transform.
 pub struct RasterTarget {
@@ -59,16 +59,10 @@ pub fn RasterTarget::logical_size(self : Self) -> @foundation.Size {
 }
 
 ///|
-pub(open) trait Renderer {
-  fn text_layout_system(Self) -> @text.TextLayoutSystem
-  fn render(Self, @runtime.UiRoot, RasterTarget, @foundation.Color) -> Unit raise
-}
+pub type AppBackend = (@runtime.App, RendererFactory) -> Unit raise
 
 ///|
-pub type AppBackend = (@runtime.App, &Renderer) -> Unit raise
-
-///|
-pub type RendererProvider = ((&Renderer) -> Unit raise) -> Unit raise
+pub type RendererFactory = (&SurfaceFactory) -> &Renderer raise
 
 ///|
 #derive(Debug, Eq)

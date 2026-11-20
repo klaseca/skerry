@@ -6,6 +6,7 @@ priv struct Renderer {
   surface_props : @skia_sys.Surfaceprops
   mut images : Map[@foundation.Image, CachedImage]
   image_error : Ref[SkiaRendererError?]
+  mut disposed : Bool
 }
 
 ///|
@@ -28,11 +29,14 @@ fn Renderer::Renderer() -> Renderer raise {
     surface_props,
     images: Map([]),
     image_error: Ref(None),
+    disposed: false,
   }
 }
 
 ///|
 fn Renderer::dispose(self : Self) -> Unit {
+  guard !self.disposed else { return }
+  self.disposed = true
   self.images = Map([])
   @skia_sys.surfaceprops_delete(self.surface_props)
   self.paint.dispose()
@@ -41,24 +45,20 @@ fn Renderer::dispose(self : Self) -> Unit {
 }
 
 ///|
-impl @backend.Renderer for Renderer with fn text_layout_system(self) {
+fn Renderer::text_layout_system(self : Self) -> @text.TextLayoutSystem {
   @text.TextLayoutSystem::from_metrics(skia_text_metrics_provider(self.font))
 }
 
 ///|
-impl @backend.Renderer for Renderer with fn render(self, root, target, clear) {
+fn Renderer::render(
+  self : Self,
+  root : @runtime.UiRoot,
+  target : @backend.RasterTarget,
+  clear : @foundation.Color,
+) -> Unit raise {
   self.render_to_raster(target, scene_renderer => {
     root.paint(scene_renderer, size=target.logical_size(), clear~)
   })
-}
-
-///|
-pub fn with_renderer(
-  use_renderer : (&@backend.Renderer) -> Unit raise,
-) -> Unit raise {
-  let renderer = Renderer()
-  defer renderer.dispose()
-  use_renderer(renderer)
 }
 
 ///|

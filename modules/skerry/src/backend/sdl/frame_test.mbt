@@ -14,17 +14,34 @@ impl @backend.Renderer for FrameRenderer with fn text_layout_system(self) {
 impl @backend.Renderer for FrameRenderer with fn render(
   self,
   root,
-  target,
+  width,
+  height,
+  scale,
   clear,
 ) {
   self.root.val = Some(root)
-  self.renderer.render(root, target, clear)
+  self.renderer.render(root, width, height, scale, clear)
   self.frames.val += 1
   // A lost request fails the assertions after run instead of blocking the test.
   if self.frames.val >= 2 ||
     (!root.needs_frame() && root.next_action_delay() is None) {
     root.dispose()
   }
+}
+
+///|
+impl @backend.Renderer for FrameRenderer with fn surface(self) {
+  self.renderer.surface()
+}
+
+///|
+impl @backend.Renderer for FrameRenderer with fn dispose(self) {
+  self.renderer.dispose()
+}
+
+///|
+impl @backend.Renderer for FrameRenderer with fn name(self) {
+  self.renderer.name()
 }
 
 ///|
@@ -42,12 +59,13 @@ fn with_frame_app(
   })()
   let frames = Ref(0)
   let root : Ref[@runtime.UiRoot?] = Ref(None)
-  @skia_backend.with_renderer(renderer => {
-    @sdl.run(
-      App(title="Frame loop test", width=160, height=80, content~, on_mount~),
-      FrameRenderer::{ renderer, frames, root, },
-    )
-  })
+  @sdl.run(
+    App(title="Frame loop test", width=160, height=80, content~, on_mount~),
+    factory => {
+      let renderer = @skia_backend.raster_renderer(factory)
+      FrameRenderer::{ renderer, frames, root, }
+    },
+  )
   assert_eq(frames.val, 2)
   let root = root.val.unwrap()
   assert_true(root.is_disposed())

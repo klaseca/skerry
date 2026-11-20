@@ -8,7 +8,7 @@ import {
 }
 
 // Values
-pub fn run(@runtime.App, &@backend.Renderer) -> Unit raise
+pub fn run(@runtime.App, (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> Unit raise
 
 // Errors
 #derive(Eq, @debug.Debug)

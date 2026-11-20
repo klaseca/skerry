@@ -24,7 +24,7 @@ pub struct App {
   // private fields
 }
 pub fn App::App(title? : String, width? : Int32, height? : Int32, clear? : @foundation.Color, theme_mode? : ThemeMode, light_theme? : &@value.ThemeSource, dark_theme? : &@value.ThemeSource, providers? : Array[@reactive.ContextBinding], content~ : () -> @view.View, on_mount? : (UiRoot) -> Unit) -> Self
-pub fn App::mount(Self, text_layout_system~ : @text.TextLayoutSystem, system_theme? : @style.ColorScheme, clock? : () -> Double) -> UiRoot
+pub fn App::mount(Self, text_layout_system~ : @text.TextLayoutSystem, system_theme? : @style.ColorScheme, rendering? : RenderingInfo, clock? : () -> Double) -> UiRoot
 pub fn App::options(Self) -> WindowOptions
 pub fn App::set_theme_mode(Self, ThemeMode) -> Unit
 pub fn App::theme_mode(Self) -> ThemeMode
@@ -63,6 +63,15 @@ pub(all) struct FrameStats {
 pub fn FrameStats::equal(Self, Self) -> Bool
 pub fn FrameStats::not_equal(Self, Self) -> Bool
 pub fn FrameStats::to_repr(Self) -> @debug.Repr
+
+#derive(Eq, @debug.Debug)
+pub(all) struct RenderingInfo {
+  backend : String
+  renderer : String
+}
+pub fn RenderingInfo::equal(Self, Self) -> Bool
+pub fn RenderingInfo::not_equal(Self, Self) -> Bool
+pub fn RenderingInfo::to_repr(Self) -> @debug.Repr
 
 #derive(Eq, @debug.Debug)
 pub(all) enum ThemeMode {
@@ -109,6 +118,7 @@ pub fn UiRoot::pointer_up(Self, size~ : @foundation.Size, point~ : @foundation.P
 pub fn UiRoot::post(Self, () -> Unit) -> () -> Unit
 pub fn UiRoot::post_delayed(Self, Int32, () -> Unit) -> () -> Unit
 pub fn UiRoot::record_present(Self, Int32) -> Unit
+pub fn UiRoot::rendering_info(Self) -> RenderingInfo?
 pub fn UiRoot::scroll_at(Self, size~ : @foundation.Size, point~ : @foundation.Point, delta~ : @foundation.Point) -> Bool
 pub fn UiRoot::set_system_theme(Self, @style.ColorScheme?) -> Unit
 pub fn UiRoot::set_theme(Self, @style.Theme, color_scheme? : @style.ColorScheme) -> Unit
@@ -126,6 +136,7 @@ pub(all) struct UiSnapshot {
   tree : @diagnostics.TreeSnapshot
   focused_node_id : Int32?
   captured_node_id : Int32?
+  rendering : RenderingInfo?
 }
 pub fn UiSnapshot::equal(Self, Self) -> Bool
 pub fn UiSnapshot::not_equal(Self, Self) -> Bool

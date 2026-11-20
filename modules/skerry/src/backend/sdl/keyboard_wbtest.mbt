@@ -77,7 +77,7 @@ test "SDL consumed Space text does not reopen Select or reset focus during repea
             on_change=fn(event) { proposals.push(event.value) },
           )
         },
-        (state, _) => {
+        (state, _, _) => {
           let root = state.root
           let dispatcher = keyboard_test_dispatcher(root)
           keyboard_test_key(dispatcher, KeyTab)
@@ -133,7 +133,7 @@ test "SDL consumed Space preserves active Select option after a vetoed proposal"
         },
       )
     },
-    (state, _) => {
+    (state, _, _) => {
       let root = state.root
       let dispatcher = keyboard_test_dispatcher(root)
       keyboard_test_key(dispatcher, KeyTab)

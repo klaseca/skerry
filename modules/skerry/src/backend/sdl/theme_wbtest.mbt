@@ -15,11 +15,28 @@ impl @backend.Renderer for ThemeRecordingRenderer with fn text_layout_system(
 impl @backend.Renderer for ThemeRecordingRenderer with fn render(
   self,
   root,
-  target,
+  width,
+  height,
+  scale,
   clear,
 ) {
   self.clears.push(clear)
-  self.delegate.render(root, target, clear)
+  self.delegate.render(root, width, height, scale, clear)
+}
+
+///|
+impl @backend.Renderer for ThemeRecordingRenderer with fn surface(self) {
+  self.delegate.surface()
+}
+
+///|
+impl @backend.Renderer for ThemeRecordingRenderer with fn dispose(self) {
+  self.delegate.dispose()
+}
+
+///|
+impl @backend.Renderer for ThemeRecordingRenderer with fn name(self) {
+  self.delegate.name()
 }
 
 ///|
@@ -29,7 +46,7 @@ test "SDL clear follows the root palette unless explicitly overridden and return
     let clears : Array[@foundation.Color] = []
     with_render_state(
       fn(_) { @view.empty() },
-      (state, _) => {
+      (state, _, _) => {
         state.sync_frame()
         assert_eq(clears, [
           if explicit {
@@ -80,7 +97,7 @@ test "SDL clear follows the root palette unless explicitly overridden and return
 
 ///|
 test "SDL system theme events update System apps without window input geometry" {
-  with_render_state(fn(_) { @view.empty() }, (state, _) => {
+  with_render_state(fn(_) { @view.empty() }, (state, _, _) => {
     let reported = system_theme()
     let app = @runtime.App(content=@view.empty)
     let root = app.mount(

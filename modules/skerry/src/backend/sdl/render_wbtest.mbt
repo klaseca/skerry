@@ -17,7 +17,7 @@ test "texture capacity rounding cannot overflow signed dimensions" {
 ///|
 test "queued UI actions wake SDL and prevent waiting until they are drained" {
   let value = @reactive.signal("first")
-  with_render_state(fn(_) { @view.text_of(value) }, (state, _) => {
+  with_render_state(fn(_) { @view.text_of(value) }, (state, _, _) => {
     state.sync_frame()
     let event = @sdl_sys.Event()
     while @sdl_sys.poll_event(event) {
@@ -45,7 +45,7 @@ test "SDL waits for a future timer and treats its timeout as normal completion" 
   let value = @reactive.signal("first")
   with_render_state(
     fn(_) { @view.text_of(value) },
-    (state, _) => {
+    (state, _, _) => {
       state.sync_frame()
       let event = @sdl_sys.Event()
       while @sdl_sys.poll_event(event) {
@@ -93,7 +93,7 @@ test "a callback registered during paint uses that present without an extra fram
         }),
       )
     },
-    (state, _) => {
+    (state, _, _) => {
       root_ref.val = Some(state.root)
       state.sync_frame()
       assert_eq(calls.val, 1)
@@ -119,7 +119,7 @@ test "modal resize in a present callback redraws only the final batched state" {
         painter=@view.Painter(fn(_, _) { painted.push(value.get()) }),
       )
     },
-    (state, window) => {
+    (state, window, _) => {
       state.sync_frame()
       let listeners = state.watch_window(window)
       defer (fn() {
@@ -159,7 +159,7 @@ test "synchronous resize during an action does not paint intermediate batch stat
         painter=@view.Painter(fn(_, _) { painted.push(value.get()) }),
       )
     },
-    (state, window) => {
+    (state, window, _) => {
       let listener = window.on(Resized, fn(_) { state.redraw_now() })
       defer listener.dispose()
       state.sync_frame()
@@ -185,7 +185,7 @@ test "synchronous resize during an action does not paint intermediate batch stat
 ///|
 fn with_render_state(
   content : (@sdl_lib.Window) -> @view.View,
-  check : (SdlAppState, @sdl_lib.Window) -> Unit raise,
+  check : (SdlAppState, @sdl_lib.Window, RasterSurface) -> Unit raise,
   clock~ : () -> Double = fn() { 0.0 },
   clear~ : @foundation.Color? = Some(@foundation.Color::white()),
   observed_clears~ : Array[@foundation.Color] = [],
@@ -210,21 +210,34 @@ fn with_render_state(
   defer window.destroy()
   let sdl_renderer = @sdl_lib.Renderer(window, name="software")
   defer sdl_renderer.destroy()
-  @skia_backend.with_renderer(renderer => {
-    let recorder : ThemeRecordingRenderer = {
-      delegate: renderer,
-      clears: observed_clears,
-    }
-    let root = @runtime.mount(
-      fn() { content(window) },
-      text_layout_system=renderer.text_layout_system(),
-      clock~,
-    )
-    defer root.dispose()
-    let state = SdlAppState(root, sdl_renderer, recorder, clear, display_scale~)
-    defer state.destroy()
-    check(state, window)
-  })
+  let surface = RasterSurface(sdl_renderer)
+  defer surface.destroy()
+  let factory = TestSurfaceFactory::{ surface, }
+  let renderer = @skia_backend.raster_renderer(factory)
+  let recorder : &@backend.Renderer = ThemeRecordingRenderer::{
+    delegate: renderer,
+    clears: observed_clears,
+  }
+  defer recorder.dispose()
+  let root = @runtime.mount(
+    fn() { content(window) },
+    text_layout_system=recorder.text_layout_system(),
+    clock~,
+  )
+  defer root.dispose()
+  let state = SdlAppState(root, recorder, clear, display_scale~)
+  defer state.destroy()
+  check(state, window, surface)
+}
+
+///|
+priv struct TestSurfaceFactory {
+  surface : RasterSurface
+}
+
+///|
+impl @backend.SurfaceFactory for TestSurfaceFactory with fn raster(self) {
+  self.surface
 }
 
 ///|
@@ -240,15 +253,15 @@ test "SDL backend paints each output size and reuses a clean frame" {
         }),
       )
     },
-    (state, window) => {
+    (state, window, surface) => {
       state.sync_frame()
       assert_eq(state.root.dirty(), @runtime.Clean)
       window.set_size(width=180, height=90)
       state.sync_frame()
-      let texture = state.texture
+      let texture = surface.texture
       window.set_size(width=170, height=85)
       state.sync_frame()
-      assert_true(physical_equal(state.texture, texture))
+      assert_true(physical_equal(surface.texture, texture))
       assert_eq(frames, [
         @foundation.Size(width=160.0, height=80.0),
         @foundation.Size(width=180.0, height=90.0),
@@ -270,7 +283,7 @@ test "SDL backend paints each output size and reuses a clean frame" {
 
 ///|
 test "repeated resize notifications reuse a clean frame and preserve pending paint" {
-  with_render_state(fn(_) { @view.text("cached") }, (state, _) => {
+  with_render_state(fn(_) { @view.text("cached") }, (state, _, _) => {
     state.sync_frame()
     let before = state.root.frame_stats()
     state.redraw_now()
@@ -293,15 +306,15 @@ test "repeated resize notifications reuse a clean frame and preserve pending pai
 
 ///|
 test "CPU paints and idle keep one raster texture until capacity changes" {
-  with_render_state(fn(_) { @view.text("cached") }, (state, window) => {
+  with_render_state(fn(_) { @view.text("cached") }, (state, window, surface) => {
     state.sync_frame()
-    let texture = state.texture
+    let texture = surface.texture
     let before = state.root.frame_stats()
     for _ in 0..<40 {
       state.root.mark_paint_dirty()
       state.sync_frame()
       assert_true(state.prepare_wait())
-      assert_true(physical_equal(state.texture, texture))
+      assert_true(physical_equal(surface.texture, texture))
       assert_false(texture.raw().is_null())
     }
     let after = state.root.frame_stats()
@@ -311,7 +324,7 @@ test "CPU paints and idle keep one raster texture until capacity changes" {
     window.set_size(width=180, height=90)
     state.sync_frame()
     assert_true(texture.raw().is_null())
-    assert_false(state.texture.raw().is_null())
+    assert_false(surface.texture.raw().is_null())
     assert_true(state.prepare_wait())
     state.present_cached_frame()
     assert_eq(state.root.dirty(), Clean)
@@ -320,21 +333,21 @@ test "CPU paints and idle keep one raster texture until capacity changes" {
 
 ///|
 test "failed raster resize preserves the working frame and permits a later resize" {
-  with_render_state(fn(_) { @view.text("cached") }, (state, window) => {
+  with_render_state(fn(_) { @view.text("cached") }, (state, window, surface) => {
     state.sync_frame()
-    let texture = state.texture
-    let capacity = (state.texture_width, state.texture_height)
+    let texture = surface.texture
+    let capacity = (surface.texture_width, surface.texture_height)
     let before = state.root.frame_stats()
     let failed = try {
-      ignore(state.sync_texture_size(@int.MAX_VALUE, 2, false))
+      ignore(surface.sync_texture_size(@int.MAX_VALUE, 2, false))
       false
     } catch {
       _ => true
     }
     assert_true(failed)
     assert_false(texture.raw().is_null())
-    assert_true(physical_equal(state.texture, texture))
-    assert_eq((state.texture_width, state.texture_height), capacity)
+    assert_true(physical_equal(surface.texture, texture))
+    assert_eq((surface.texture_width, surface.texture_height), capacity)
     assert_true(state.has_frame)
     state.present_cached_frame()
     assert_eq(state.root.frame_stats().present_count, before.present_count + 1)
@@ -345,7 +358,7 @@ test "failed raster resize preserves the working frame and permits a later resiz
     window.set_size(width=180, height=90)
     state.sync_frame()
     assert_true(texture.raw().is_null())
-    assert_false(state.texture.raw().is_null())
+    assert_false(surface.texture.raw().is_null())
     assert_true(state.has_frame)
     assert_eq(state.root.frame_stats().paint_count, before.paint_count + 1)
     assert_eq(state.root.frame_stats().present_count, before.present_count + 2)
@@ -378,7 +391,7 @@ test "window resize during painting schedules the next frame" {
         }),
       )
     },
-    (state, window) => {
+    (state, window, _) => {
       state.sync_frame()
       let listeners = state.watch_window(window)
       defer (fn() {

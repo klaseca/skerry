@@ -1,11 +1,26 @@
 ///|
-const TEXTURE_CAPACITY_STEP : Int32 = 256
-
-///|
-pub fn run(app : @runtime.App, renderer : &@backend.Renderer) -> Unit raise {
-  let options = app.options()
+pub fn run(
+  app : @runtime.App,
+  create_renderer : @backend.RendererFactory,
+) -> Unit raise {
   @sdl_lib.init_lib(@sdl_lib.INIT_VIDEO)
   defer @sdl_lib.quit()
+  let factory = SurfaceFactory(app.options())
+  defer factory.dispose()
+  let renderer = create_renderer(factory)
+  defer renderer.dispose()
+  guard factory.window is Some(window) else {
+    raise @sdl_lib.SdlError(
+      "Renderer did not request an SDL presentation surface",
+    )
+  }
+  run_on_surface(app, window, renderer)
+}
+
+///|
+/// Create the hidden, HiDPI-aware window used by the native host. The caller
+/// owns it and must initialize SDL first.
+fn create_window(options : @runtime.WindowOptions) -> @sdl_lib.Window raise {
   let window = @sdl_lib.Window(
     title=options.title,
     width=options.width,
@@ -14,7 +29,7 @@ pub fn run(app : @runtime.App, renderer : &@backend.Renderer) -> Unit raise {
     high_pixel_density=true,
     hidden=true,
   )
-  defer window.destroy()
+  errdefer window.destroy()
   let initial_scale = window.display_scale().to_double()
   let density = window.pixel_density().to_double()
   let width = initial_window_dimension(options.width, initial_scale, density)
@@ -22,17 +37,28 @@ pub fn run(app : @runtime.App, renderer : &@backend.Renderer) -> Unit raise {
   if width != options.width || height != options.height {
     window.set_size(width~, height~)
   }
+  window
+}
+
+///|
+/// Mount once after a complete rendering surface has been selected. Resources
+/// are borrowed; application and rendering errors propagate to the caller.
+fn run_on_surface(
+  app : @runtime.App,
+  window : @sdl_lib.Window,
+  renderer : &@backend.Renderer,
+) -> Unit raise {
+  let options = app.options()
   window.start_text_input()
   defer (fn() { window.stop_text_input() catch { _ => () } })()
-  let sdl_renderer = @sdl_lib.Renderer(window, name="software")
-  defer sdl_renderer.destroy()
   let root = app.mount(
     text_layout_system=renderer.text_layout_system(),
     system_theme?=system_theme(),
+    rendering={ backend: "SDL", renderer: renderer.name(), },
   )
   defer root.dispose()
   guard !root.is_disposed() else { return }
-  let state = SdlAppState(root, sdl_renderer, renderer, options.clear, display_scale=() => {
+  let state = SdlAppState(root, renderer, options.clear, display_scale=() => {
     window.display_scale().to_double()
   })
   defer state.destroy()
@@ -49,7 +75,7 @@ pub fn run(app : @runtime.App, renderer : &@backend.Renderer) -> Unit raise {
   guard !root.is_disposed() else { return }
   window.show()
   let dispatcher = EventDispatcher(root, window_id=window.id(), geometry=() => {
-    input_geometry(sdl_renderer, window)
+    input_geometry(renderer.surface(), window)
   })
   let event = @sdl_sys.Event()
   for running = true; running && !root.is_disposed(); {
@@ -83,19 +109,16 @@ pub fn run(app : @runtime.App, renderer : &@backend.Renderer) -> Unit raise {
 ///|
 priv struct SdlAppState {
   root : @runtime.UiRoot
-  sdl_renderer : @sdl_lib.Renderer
   renderer : &@backend.Renderer
+  surface : &@backend.Surface
   clear : @foundation.Color?
   display_scale : () -> Double raise
-  mut texture_width : Int32
-  mut texture_height : Int32
   mut frame_width : Int32
   mut frame_height : Int32
   mut frame_scale : Double
   mut has_frame : Bool
   mut frame_revision : Int32
   mut pending_error : Error?
-  mut texture : @sdl_lib.Texture
   mut drawing : Bool
   mut redraw_pending : Bool
   wakeup_event_type : UInt32
@@ -104,12 +127,12 @@ priv struct SdlAppState {
 ///|
 fn SdlAppState::SdlAppState(
   root : @runtime.UiRoot,
-  sdl_renderer : @sdl_lib.Renderer,
   renderer : &@backend.Renderer,
   clear : @foundation.Color?,
   display_scale~ : () -> Double raise,
 ) -> SdlAppState raise {
-  let size = sdl_renderer.output_size()
+  let surface = renderer.surface()
+  let size = surface.output_size()
   let width = size.width.max(1)
   let height = size.height.max(1)
   let wakeup_event_type = @sdl_sys.register_events(1)
@@ -118,19 +141,16 @@ fn SdlAppState::SdlAppState(
   }
   {
     root,
-    sdl_renderer,
+    surface,
     renderer,
     clear,
     display_scale,
-    texture_width: width,
-    texture_height: height,
     frame_width: width,
     frame_height: height,
     frame_scale: 1.0,
     has_frame: false,
     frame_revision: 0,
     pending_error: None,
-    texture: create_texture(sdl_renderer, width, height),
     drawing: false,
     redraw_pending: false,
     wakeup_event_type,
@@ -240,25 +260,23 @@ fn SdlAppState::sync_frame(
   }
   self.drawing = true
   defer self.finish_drawing()
-  let size = self.sdl_renderer.output_size()
+  let size = self.surface.output_size()
   let width = size.width.max(1)
   let height = size.height.max(1)
   let scale = (self.display_scale)()
-  let resized = self.sync_texture_size(width, height, allow_shrink)
+  let resized = self.surface.resize(width, height, allow_shrink)
   if resized ||
     !self.has_frame ||
     width != self.frame_width ||
     height != self.frame_height ||
     scale != self.frame_scale ||
     self.root.dirty() != Clean {
-    render_root_to_texture(
-      self.renderer,
+    self.renderer.render(
       self.root,
-      self.texture,
       width,
       height,
+      scale,
       self.clear.unwrap_or(self.root.theme().resolve(@style.surface_token)),
-      scale~,
     )
     guard !self.root.is_disposed() else { return }
     self.frame_width = width
@@ -266,14 +284,7 @@ fn SdlAppState::sync_frame(
     self.frame_scale = scale
     self.frame_revision = self.root.paint_revision()
     self.has_frame = true
-    present_texture(
-      self.sdl_renderer,
-      self.texture,
-      source_width=width,
-      source_height=height,
-      width~,
-      height~,
-    )
+    self.surface.present(width, height)
     self.root.record_present(self.frame_revision)
   }
 }
@@ -296,22 +307,29 @@ fn SdlAppState::present_cached_frame(self : SdlAppState) -> Unit raise {
   if !self.has_frame || self.drawing || self.root.is_disposed() {
     return
   }
-  if (self.display_scale)() != self.frame_scale {
+  let size = self.surface.output_size()
+  let width = size.width.max(1)
+  let height = size.height.max(1)
+  if (self.display_scale)() != self.frame_scale ||
+    width != self.frame_width ||
+    height != self.frame_height {
     self.sync_frame()
     return
   }
-  self.drawing = true
-  defer self.finish_drawing()
-  let size = self.sdl_renderer.output_size()
-  present_texture(
-    self.sdl_renderer,
-    self.texture,
-    source_width=self.frame_width,
-    source_height=self.frame_height,
-    width=size.width.max(1),
-    height=size.height.max(1),
-  )
-  self.root.record_present(self.frame_revision)
+  let restored = {
+    self.drawing = true
+    defer self.finish_drawing()
+    let restored = self.surface.restore(width, height)
+    if restored {
+      self.root.record_present(self.frame_revision)
+    }
+    restored
+  }
+  if !restored {
+    // Reuse the layout when the surface cannot restore the previous frame.
+    self.root.mark_paint_dirty()
+    self.sync_frame()
+  }
 }
 
 ///|
@@ -324,133 +342,9 @@ fn SdlAppState::finish_drawing(self : SdlAppState) -> Unit {
 }
 
 ///|
-fn SdlAppState::sync_texture_size(
-  self : SdlAppState,
-  width : Int32,
-  height : Int32,
-  allow_shrink : Bool,
-) -> Bool raise {
-  let shrink = allow_shrink &&
-    (
-      self.texture_width - width >= TEXTURE_CAPACITY_STEP ||
-      self.texture_height - height >= TEXTURE_CAPACITY_STEP
-    )
-  let texture_width = if shrink {
-    width
-  } else {
-    grow_capacity(self.texture_width, width)
-  }
-  let texture_height = if shrink {
-    height
-  } else {
-    grow_capacity(self.texture_height, height)
-  }
-  if texture_width == self.texture_width &&
-    texture_height == self.texture_height {
-    false
-  } else {
-    // Keep the current frame intact if allocating its replacement fails.
-    let texture = create_texture(
-      self.sdl_renderer,
-      texture_width,
-      texture_height,
-    )
-    let old_texture = self.texture
-    self.texture = texture
-    self.texture_width = texture_width
-    self.texture_height = texture_height
-    self.has_frame = false
-    old_texture.destroy()
-    true
-  }
-}
-
-///|
-fn grow_capacity(current : Int32, required : Int32) -> Int32 {
-  if required <= current {
-    current
-  } else {
-    let remainder = required % TEXTURE_CAPACITY_STEP
-    if remainder == 0 {
-      required
-    } else {
-      let extra = TEXTURE_CAPACITY_STEP - remainder
-      if required > @int.MAX_VALUE - extra {
-        required
-      } else {
-        required + extra
-      }
-    }
-  }
-}
-
-///|
 fn SdlAppState::destroy(self : SdlAppState) -> Unit {
   self.root.set_wakeup(fn() { () })
   self.has_frame = false
-  self.texture.destroy()
-}
-
-///|
-fn create_texture(
-  renderer : @sdl_lib.Renderer,
-  width : Int32,
-  height : Int32,
-) -> @sdl_lib.Texture raise {
-  let texture = renderer.create_texture(
-    width~,
-    height~,
-    format=Bgra32,
-    access=Streaming,
-  )
-  texture.set_blend_mode(NoBlend)
-  texture
-}
-
-///|
-fn render_root_to_texture(
-  renderer : &@backend.Renderer,
-  root : @runtime.UiRoot,
-  texture : @sdl_lib.Texture,
-  width : Int32,
-  height : Int32,
-  clear : @foundation.Color,
-  scale~ : Double = 1.0,
-) -> Unit raise {
-  let pixels = Ref(@sdl_sys.Pointer::null())
-  let pitch = Ref(0)
-  if !@sdl_sys.lock_texture(
-      texture.raw(),
-      // The capacity can exceed the visible frame during resize. Lock only
-      // the pixels we paint so SDL need not stage/upload the unused capacity.
-      Rect(0, 0, width, height),
-      true,
-      pixels,
-      pitch,
-    ) {
-    let message = @utf8.decode_lossy(@sdl_sys.get_error())
-    if message == "" {
-      raise @sdl_lib.SdlError("SDL_LockTexture failed")
-    } else {
-      raise @sdl_lib.SdlError("SDL_LockTexture failed: \{message}")
-    }
-  }
-  defer @sdl_sys.unlock_texture(texture.raw())
-  if pixels.val.is_null() {
-    raise InvalidTextureMemory(width~, height~, row_bytes=pitch.val)
-  }
-  renderer.render(
-    root,
-    RasterTarget(
-      memory=to_raster_memory(pixels.val),
-      width~,
-      height~,
-      row_bytes=pitch.val,
-      format=Bgra8888Premultiplied,
-      scale~,
-    ),
-    clear,
-  )
 }
 
 ///|
@@ -464,30 +358,3 @@ pub extend SdlBackendError with Debug::{to_repr}
 
 ///|
 pub extend SdlBackendError with Eq::{not_equal, equal}
-
-///|
-fn to_raster_memory(pointer : @sdl_sys.Pointer) -> @backend.RasterMemory = "%identity"
-
-///|
-fn present_texture(
-  renderer : @sdl_lib.Renderer,
-  texture : @sdl_lib.Texture,
-  source_width~ : Int32,
-  source_height~ : Int32,
-  width~ : Int32,
-  height~ : Int32,
-) -> Unit raise {
-  renderer.set_draw_color(@sdl_lib.Color::rgb(r=18, g=20, b=24))
-  renderer.clear()
-  renderer.render_texture(
-    texture,
-    src=FRect(
-      x=0.0,
-      y=0.0,
-      w=Float::from_int(source_width),
-      h=Float::from_int(source_height),
-    ),
-    dst=FRect(x=0.0, y=0.0, w=Float::from_int(width), h=Float::from_int(height)),
-  )
-  renderer.present()
-}

@@ -89,7 +89,7 @@ pub fn[T : Eq, L : @klaseca/skerry/reactive/value.StringValue] radio_group(@reac
 
 pub fn row(style? : @view.FlexStyle, Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
 
-pub fn run(@runtime.App, backend? : (@runtime.App, &@backend.Renderer) -> Unit raise, renderer? : ((&@backend.Renderer) -> Unit raise) -> Unit raise) -> Unit raise
+pub fn run(@runtime.App, backend? : (@runtime.App, (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> Unit raise, renderer? : (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> Unit raise
 
 pub fn scroll_view(@view.View, axis? : @foundation.Axis, offset? : @reactive.Signal[Double], style? : @style.BoxStyle, disabled? : &@klaseca/skerry/reactive/value.BoolValue, scrollbar? : Bool, scrollbar_style? : @style.ScrollbarStyle, scrollbar_gutter? : Bool) -> @view.View
 
@@ -263,6 +263,8 @@ pub using @controls {type RadioStyle}
 pub using @view {type Reactivity}
 
 pub using @foundation {type Rect}
+
+pub using @runtime {type RenderingInfo}
 
 pub using @foundation {type RoundedRect}
 

@@ -125,6 +125,7 @@ pub using @runtime {
   type DirtyState,
   type FrameEvent,
   type FrameStats,
+  type RenderingInfo,
   type UiRoot,
   type UiSnapshot,
   type WindowOptions,
@@ -192,12 +193,14 @@ pub using @view {
 pub using @skia_backend {decode_image, load_image}
 
 ///|
+/// The backend supplies presentation surfaces; the renderer selects a supported
+/// protocol. These choices are independent and complete before App::mount.
 pub fn run(
   app : @runtime.App,
   backend~ : @backend.AppBackend = @sdl_backend.run,
-  renderer~ : @backend.RendererProvider = @skia_backend.with_renderer,
+  renderer~ : @backend.RendererFactory = @skia_backend.raster_renderer,
 ) -> Unit raise {
-  renderer(active_renderer => backend(app, active_renderer))
+  backend(app, renderer)
 }
 
 ///|

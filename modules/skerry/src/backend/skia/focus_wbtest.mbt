@@ -26,7 +26,7 @@ test "focus outline retains an even gap and separate border at fractional scales
       )
     },
     theme=@style.Theme().token(@style.accent_token, blue),
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   assert_true(root.key_down(@foundation.KeyEvent(key=KeyTab)))
@@ -34,8 +34,7 @@ test "focus outline retains an even gap and separate border at fractional scales
     let width = (160.0 * scale).to_int()
     let height = (100.0 * scale).to_int()
     let pixels = Bytes::make(width * height * 4, b'\x00')
-    @backend.Renderer::render(
-      renderer,
+    renderer.render(
       root,
       @backend.RasterTarget(
         memory=raster_test_memory(pixels),

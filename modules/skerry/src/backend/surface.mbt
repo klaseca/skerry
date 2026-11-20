@@ -1,0 +1,45 @@
+///|
+/// Physical pixel extent, independent of a windowing library.
+pub(all) struct PixelSize {
+  width : Int32
+  height : Int32
+}
+
+///|
+/// Window-system presentation resources. The backend owns their lifetime.
+/// resize returns true if the previous frame was invalidated (for example, when
+/// shrinking a CPU texture). restore returns false if an expose needs repaint.
+pub(open) trait Surface {
+  fn output_size(Self) -> PixelSize raise
+  fn resize(Self, Int32, Int32, Bool) -> Bool raise
+  fn present(Self, Int32, Int32) -> Unit raise
+  fn restore(Self, Int32, Int32) -> Bool raise
+}
+
+///|
+pub(open) trait RasterSurface: Surface {
+  /// Memory is writable only for the duration of the callback.
+  fn with_pixels(Self, Int32, Int32, Double, (RasterTarget) -> Unit raise) -> Unit raise
+}
+
+///|
+/// Renderers request a supported presentation protocol before App::mount.
+/// Returned surfaces are borrowed from the backend until it is disposed or
+/// another surface is requested. Release renderer resources before requesting
+/// a replacement surface.
+pub(open) trait SurfaceFactory {
+  fn raster(Self) -> &RasterSurface raise
+}
+
+///|
+/// A renderer attached to a backend-owned surface. Its drawing resources are
+/// disposed before the backend releases the native context and window.
+pub(open) trait Renderer {
+  fn surface(Self) -> &Surface
+  fn text_layout_system(Self) -> @text.TextLayoutSystem
+  fn render(Self, @runtime.UiRoot, Int32, Int32, Double, @foundation.Color) -> Unit raise
+  /// Release renderer-owned resources while its surface is still alive.
+  fn dispose(Self) -> Unit
+  /// Identifies the renderer in diagnostics.
+  fn name(Self) -> String
+}

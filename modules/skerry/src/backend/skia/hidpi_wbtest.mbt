@@ -32,7 +32,7 @@ test "raster scale preserves logical geometry while Skia draws full resolution i
           .align_items(Start),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   let logical_tree = Ref(root.snapshot().map(snapshot => snapshot.tree))
@@ -50,12 +50,7 @@ test "raster scale preserves logical geometry while Skia draws full resolution i
       scale~,
     )
     assert_eq(target.logical_size(), Size(width=160.0, height=80.0))
-    @backend.Renderer::render(
-      renderer,
-      root,
-      target,
-      @foundation.Color::white(),
-    )
+    renderer.render(root, target, @foundation.Color::white())
     let tree = root.snapshot().unwrap().tree
     match logical_tree.val {
       Some(expected) => assert_eq(tree, expected)
@@ -143,14 +138,13 @@ test "raster scale transforms clips together with paint" {
           .align_items(Start),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (80.0 * scale).to_int()
     let pixels = Bytes::make(width * width * 4, b'\x00')
-    @backend.Renderer::render(
-      renderer,
+    renderer.render(
       root,
       @backend.RasterTarget(
         memory=raster_test_memory(pixels),

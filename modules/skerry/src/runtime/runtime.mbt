@@ -49,6 +49,7 @@ pub struct UiRoot {
   priv mut timers : Array[UiTimer]
   priv mut after_present_actions : Array[UiAction]
   priv clock : () -> Double
+  priv rendering : RenderingInfo?
   priv mut draining_actions : Bool
   priv wakeup_callback : Ref[(() -> Unit)?]
   priv mut overlay_sessions : Array[OverlaySession]
@@ -88,6 +89,7 @@ fn mount_configured(
   providers~ : Array[@reactive.ContextBinding],
   app? : App,
   system_theme? : ColorScheme,
+  rendering? : RenderingInfo,
   clock~ : () -> Double,
 ) -> UiRoot {
   let lifetime = @reactive.Scope::root()
@@ -135,6 +137,7 @@ fn mount_configured(
       theme_environment~,
       system_theme_value~,
       clock~,
+      rendering?,
     )
     pending.val = Some(root)
     root.set_theme_context(theme_environment.peek().context)
@@ -151,6 +154,7 @@ fn mount_owned(
   theme_environment~ : @reactive.Signal[@environment.ThemeEnvironment],
   system_theme_value~ : @reactive.Signal[ColorScheme?],
   clock~ : () -> Double,
+  rendering? : RenderingInfo,
 ) -> UiRoot {
   let root : UiRoot = {
     id: next_root_id(),
@@ -191,6 +195,7 @@ fn mount_owned(
     timers: [],
     after_present_actions: [],
     clock,
+    rendering,
     draining_actions: false,
     wakeup_callback: Ref(None),
     overlay_sessions: [],

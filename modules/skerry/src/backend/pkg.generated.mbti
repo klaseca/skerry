@@ -21,6 +21,11 @@ pub fn RasterTargetError::not_equal(Self, Self) -> Bool
 pub fn RasterTargetError::to_repr(Self) -> @debug.Repr
 
 // Types and methods
+pub(all) struct PixelSize {
+  width : Int32
+  height : Int32
+}
+
 #derive(Eq, @debug.Debug)
 pub(all) enum RasterFormat {
   Bgra8888Premultiplied
@@ -44,12 +49,30 @@ pub fn RasterTarget::RasterTarget(memory~ : RasterMemory, width~ : Int32, height
 pub fn RasterTarget::logical_size(Self) -> @foundation.Size
 
 // Type aliases
-pub type AppBackend = (@runtime.App, &Renderer) -> Unit raise
+pub type AppBackend = (@runtime.App, (&SurfaceFactory) -> &Renderer raise) -> Unit raise
 
-pub type RendererProvider = ((&Renderer) -> Unit raise) -> Unit raise
+pub type RendererFactory = (&SurfaceFactory) -> &Renderer raise
 
 // Traits
+pub(open) trait RasterSurface : Surface {
+  fn with_pixels(Self, Int32, Int32, Double, (RasterTarget) -> Unit raise) -> Unit raise
+}
+
 pub(open) trait Renderer {
+  fn surface(Self) -> &Surface
   fn text_layout_system(Self) -> @text.TextLayoutSystem
-  fn render(Self, @runtime.UiRoot, RasterTarget, @foundation.Color) -> Unit raise
+  fn render(Self, @runtime.UiRoot, Int32, Int32, Double, @foundation.Color) -> Unit raise
+  fn dispose(Self) -> Unit
+  fn name(Self) -> String
+}
+
+pub(open) trait Surface {
+  fn output_size(Self) -> PixelSize raise
+  fn resize(Self, Int32, Int32, Bool) -> Bool raise
+  fn present(Self, Int32, Int32) -> Unit raise
+  fn restore(Self, Int32, Int32) -> Bool raise
+}
+
+pub(open) trait SurfaceFactory {
+  fn raster(Self) -> &RasterSurface raise
 }

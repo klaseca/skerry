@@ -12,7 +12,7 @@ pub fn decode_image(Bytes) -> @foundation.Image raise @foundation.ImageError
 
 pub fn load_image(String) -> @foundation.Image raise @foundation.ImageError
 
-pub fn with_renderer((&@backend.Renderer) -> Unit raise) -> Unit raise
+pub fn raster_renderer(&@backend.SurfaceFactory) -> &@backend.Renderer raise
 
 // Errors
 #derive(Eq, @debug.Debug)

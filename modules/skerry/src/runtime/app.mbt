@@ -69,6 +69,7 @@ pub fn App::mount(
   self : App,
   text_layout_system~ : @text.TextLayoutSystem,
   system_theme? : ColorScheme,
+  rendering? : RenderingInfo,
   clock~ : () -> Double = monotonic_milliseconds,
 ) -> UiRoot {
   let root = mount_configured(
@@ -78,6 +79,7 @@ pub fn App::mount(
     providers=self.providers,
     app=self,
     system_theme?,
+    rendering?,
   )
   if self.on_mount is Some(on_mount) {
     root.scope.run(fn() { on_mount(root) })

@@ -4,6 +4,7 @@ import {
   "klaseca/skerry/backend",
   "klaseca/skerry/foundation",
   "klaseca/skerry/text",
+  "klaseca/skerry/runtime",
   "klaseca/skia" @skia_lib,
   "klaseca/skia-sys" @skia_sys,
 }
@@ -14,7 +15,6 @@ import {
   "moonbitlang/core/bench",
   "klaseca/skerry/view",
   "klaseca/skerry/style",
-  "klaseca/skerry/runtime",
   "klaseca/skerry/reactive",
   "klaseca/skerry/controls",
   "moonbitlang/core/json",

@@ -1,7 +1,7 @@
 # Skerry
 
 `klaseca/skerry` is an experimental native desktop UI framework for MoonBit. The
-initial backend uses SDL 3 for windows and input and Skia for CPU rendering.
+default backend uses SDL 3 for windows and input and Skia for CPU rendering.
 
 Applications are composed declaratively from views. Reactive state updates their
 properties and structure, while typed styles and scoped themes control appearance.
@@ -92,9 +92,20 @@ import {
 }
 ```
 
-`run` uses the SDL application backend and the Skia renderer by default. A
-different backend function or renderer provider can be passed independently.
-The provider owns its renderer for the duration of the run.
+`run(app)` uses the SDL backend and the Skia CPU renderer. The backend owns
+windows, input, presentation resources and the event loop. The renderer factory
+requests a raster surface through `backend.SurfaceFactory` before the app mounts.
+Skia draws into memory borrowed from that surface for the duration of a frame.
+You can supply a backend and renderer factory independently. With imports for
+`backend/sdl` and `backend/skia`, the default is equivalent to:
+
+```mbt nocheck
+@skerry.run(app, backend=@sdl_backend.run, renderer=@skia_backend.raster_renderer)
+```
+
+`root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU`).
+It is available in `App.on_mount` and diagnostic snapshots. Custom
+hosts can supply their own information when mounting a root.
 
 The CPU raster backend explicitly uses SDL's software renderer. Its pixel buffer
 is reused between paints; resizing releases the old buffer after its replacement
@@ -1377,8 +1388,9 @@ An update during measurement or painting requests a following frame. Calling
 `paint` recursively also requests a following frame.
 
 When there is no pending work, the backend waits for an SDL event without a
-periodic polling timeout. Expose presents the cached frame; resize callbacks
-can render synchronously during a platform modal resize loop. Before waiting,
+periodic polling timeout. An expose presents the cached frame when the surface
+retains one. Resize callbacks can render synchronously during a platform modal
+resize loop. Before waiting,
 the backend finishes pending texture shrinking. Disposing the root cancels
 pending frames and stops the application loop.
 

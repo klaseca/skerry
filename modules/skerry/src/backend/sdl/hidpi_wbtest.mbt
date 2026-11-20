@@ -149,12 +149,12 @@ test "display scale events repaint the matching window without remounting or los
       mounts.val += 1
       @controls.text_input(value~)
     },
-    (state, window) => {
+    (state, window, surface) => {
       state.sync_frame()
       assert_true(state.root.key_down(@foundation.KeyEvent(key=KeyTab)))
       state.sync_frame()
       let before = state.root.snapshot().unwrap()
-      let texture = state.texture
+      let texture = surface.texture
       let listeners = state.watch_window(window)
       defer (fn() {
         for listener in listeners {
@@ -176,7 +176,7 @@ test "display scale events repaint the matching window without remounting or los
       assert_eq(after.focused_node_id, before.focused_node_id)
       assert_eq(after.frame.paint_count, before.frame.paint_count + 1)
       assert_eq(mounts.val, 1)
-      assert_true(physical_equal(texture, state.texture))
+      assert_true(physical_equal(texture, surface.texture))
       assert_true(state.root.text_input("!"))
       assert_eq(value.get(), "hello!")
       state.sync_frame()
@@ -191,7 +191,7 @@ test "scaled pixel resize reuses logical layout and cached text measurements" {
   let scale = Ref(1.0)
   with_render_state(
     fn(_) { @view.text("HiDPI") },
-    (state, window) => {
+    (state, window, _) => {
       state.sync_frame()
       let before = state.root.snapshot().unwrap()
       scale.val = 2.0
@@ -217,7 +217,7 @@ test "expose detects a changed scale even when the pixel extent is unchanged" {
   let scale = Ref(1.0)
   with_render_state(
     fn(_) { @view.text("HiDPI") },
-    (state, _) => {
+    (state, _, _) => {
       state.sync_frame()
       let before = state.root.frame_stats()
       scale.val = 1.25

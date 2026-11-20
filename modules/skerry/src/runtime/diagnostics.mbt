@@ -25,6 +25,7 @@ pub(all) struct UiSnapshot {
   tree : @diagnostics.TreeSnapshot
   focused_node_id : Int32?
   captured_node_id : Int32?
+  rendering : RenderingInfo?
 }
 
 ///|
@@ -63,6 +64,7 @@ fn UiRoot::snapshot_now(self : UiRoot) -> UiSnapshot? {
     tree,
     focused_node_id: self.focused_node_id,
     captured_node_id: self.captured_node_id,
+    rendering: self.rendering,
   })
 }
 

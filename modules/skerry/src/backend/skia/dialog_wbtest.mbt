@@ -38,15 +38,14 @@ test "dialog backdrop composites behind its surface at fractional display scales
         ),
       )
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   for scale in [1.0, 1.25, 1.5, 2.0] {
     let width = (240.0 * scale).to_int()
     let height = (180.0 * scale).to_int()
     let pixels = Bytes::make(width * height * 4, b'\x00')
-    @backend.Renderer::render(
-      renderer,
+    renderer.render(
       root,
       @backend.RasterTarget(
         memory=raster_test_memory(pixels),
@@ -121,15 +120,14 @@ test "dialog input focus outline uses padding without clipping at fractional sca
         )
       },
       theme=@style.Theme().token(@style.accent_token, blue),
-      text_layout_system=@backend.Renderer::text_layout_system(renderer),
+      text_layout_system=renderer.text_layout_system(),
     )
     defer root.dispose()
     for scale in [1.0, 1.25, 1.5, 2.0] {
       let width = (400.0 * scale).to_int()
       let height = (300.0 * scale).to_int()
       let pixels = Bytes::make(width * height * 4, b'\x00')
-      @backend.Renderer::render(
-        renderer,
+      renderer.render(
         root,
         @backend.RasterTarget(
           memory=raster_test_memory(pixels),
@@ -228,15 +226,10 @@ test "Skia raster text input with and without a dialog at HiDPI" (
           ],
         )
       },
-      text_layout_system=@backend.Renderer::text_layout_system(renderer),
+      text_layout_system=renderer.text_layout_system(),
     )
     defer root.dispose()
-    try! @backend.Renderer::render(
-      renderer,
-      root,
-      target,
-      @foundation.Color::white(),
-    )
+    try! renderer.render(root, target, @foundation.Color::white())
     if !open {
       assert_true(root.key_down(@foundation.KeyEvent(key=KeyTab)))
     }
@@ -244,12 +237,7 @@ test "Skia raster text input with and without a dialog at HiDPI" (
     assert_true(root.key_down(@foundation.KeyEvent(key=KeyBackspace)))
     bench.bench(name=if open { "dialog" } else { "normal" }, fn() {
       ignore(root.text_input("x"))
-      try! @backend.Renderer::render(
-        renderer,
-        root,
-        target,
-        @foundation.Color::white(),
-      )
+      try! renderer.render(root, target, @foundation.Color::white())
       ignore(root.key_down(@foundation.KeyEvent(key=KeyBackspace)))
     })
   }

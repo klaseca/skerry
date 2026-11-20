@@ -69,7 +69,7 @@ test "native image paint respects contain cover and alpha over the cleared surfa
   defer surface.dispose()
   let root = @runtime.mount(
     fn() { @view.image(image) },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   renderer.draw(surface.canvas(), fn(scene) {
@@ -89,7 +89,7 @@ test "native image paint respects contain cover and alpha over the cleared surfa
     fn() {
       @view.image(image, style=@view.ImageStyle().fit(Cover).align(CenterRight))
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer cover.dispose()
   renderer.draw(surface.canvas(), fn(scene) {
@@ -168,7 +168,7 @@ test "removed and fully clipped image views do not retain native cache entries" 
         )
       })
     },
-    text_layout_system=@backend.Renderer::text_layout_system(renderer),
+    text_layout_system=renderer.text_layout_system(),
   )
   defer root.dispose()
   let draw = fn() raise {
