@@ -20,7 +20,17 @@ pub fn RasterTargetError::equal(Self, Self) -> Bool
 pub fn RasterTargetError::not_equal(Self, Self) -> Bool
 pub fn RasterTargetError::to_repr(Self) -> @debug.Repr
 
+pub(all) suberror SurfaceError {
+  UnsupportedSurface(String)
+}
+
 // Types and methods
+pub(all) struct GlFramebuffer {
+  id : UInt32
+  samples : Int32
+  stencil_bits : Int32
+}
+
 pub(all) struct PixelSize {
   width : Int32
   height : Int32
@@ -54,6 +64,11 @@ pub type AppBackend = (@runtime.App, (&SurfaceFactory) -> &Renderer raise) -> Un
 pub type RendererFactory = (&SurfaceFactory) -> &Renderer raise
 
 // Traits
+pub(open) trait GlSurface : Surface {
+  fn make_current(Self) -> Unit raise
+  fn framebuffer(Self) -> GlFramebuffer
+}
+
 pub(open) trait RasterSurface : Surface {
   fn with_pixels(Self, Int32, Int32, Double, (RasterTarget) -> Unit raise) -> Unit raise
 }
@@ -74,5 +89,6 @@ pub(open) trait Surface {
 }
 
 pub(open) trait SurfaceFactory {
-  fn raster(Self) -> &RasterSurface raise
+  fn raster(Self) -> &RasterSurface raise = _
+  fn opengl(Self) -> &GlSurface raise = _
 }

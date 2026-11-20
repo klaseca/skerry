@@ -2,7 +2,8 @@
 
 Skerry is an experimental native desktop UI framework for MoonBit, built around
 declarative composition and fine-grained reactive updates. The default backend
-uses SDL 3 for windows and input and Skia for CPU rendering.
+uses SDL 3 for windows and input and Skia for CPU rendering. OpenGL rendering
+is available as an opt-in.
 
 ## Getting started
 

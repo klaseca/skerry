@@ -47,3 +47,69 @@ impl @backend.Renderer for RasterFrame with fn dispose(self) {
 impl @backend.Renderer for RasterFrame with fn name(_) {
   "Skia/CPU"
 }
+
+///|
+/// Require OpenGL; report unsupported protocols or context initialization errors.
+pub fn opengl_renderer(
+  factory : &@backend.SurfaceFactory,
+) -> &@backend.Renderer raise {
+  let target = factory.opengl()
+  target.make_current()
+  let size = @backend.Surface::output_size(target)
+  let info = target.framebuffer()
+  let painter = GlRenderer(
+    width=size.width.max(1),
+    height=size.height.max(1),
+    framebuffer=info.id,
+    samples=info.samples,
+    stencil_bits=info.stencil_bits,
+  )
+  GlFrame::{ painter, target, }
+}
+
+///|
+priv struct GlFrame {
+  painter : GlRenderer
+  target : &@backend.GlSurface
+}
+
+///|
+impl @backend.Renderer for GlFrame with fn surface(self) {
+  self.target
+}
+
+///|
+impl @backend.Renderer for GlFrame with fn text_layout_system(self) {
+  self.painter.text_layout_system()
+}
+
+///|
+impl @backend.Renderer for GlFrame with fn render(
+  self,
+  root,
+  width,
+  height,
+  scale,
+  clear,
+) {
+  self.target.make_current()
+  ignore(self.painter.resize(width, height))
+  self.painter.render(root, scale, clear)
+}
+
+///|
+impl @backend.Renderer for GlFrame with fn dispose(self) {
+  // If the native context is lost, abandon Skia before its resources are freed.
+  self.target.make_current() catch {
+    _ => {
+      self.painter.abandon()
+      return
+    }
+  }
+  self.painter.dispose()
+}
+
+///|
+impl @backend.Renderer for GlFrame with fn name(_) {
+  "Skia/OpenGL"
+}

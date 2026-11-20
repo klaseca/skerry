@@ -55,7 +55,7 @@ test "a frame error propagates without rerunning the renderer factory or mountin
     let factories = Ref(0)
     let disposals = Ref(0)
     let failed = try {
-      run(
+      @sdl.run(
         @runtime.App(content=fn() {
           mounts.val += 1
           @view.empty()
@@ -69,11 +69,33 @@ test "a frame error propagates without rerunning the renderer factory or mountin
       false
     } catch {
       FrameFailure => true
-      _ => false
+      error => raise error
     }
     assert_true(failed)
     assert_eq(factories.val, 1)
     assert_eq(mounts.val, 1)
     assert_eq(disposals.val, 1)
+  })
+}
+
+///|
+test "OpenGL initialization failure leaves the app unmounted" {
+  with_dummy_video(fn() raise {
+    let mounted = Ref(false)
+    let failed = try {
+      @sdl.run(
+        @runtime.App(content=@view.empty, on_mount=fn(root) {
+          mounted.val = true
+          root.dispose()
+        }),
+        @skia_backend.opengl_renderer,
+      )
+      false
+    } catch {
+      @sdl_lib.SdlError(_) => true
+      error => raise error
+    }
+    assert_true(failed)
+    assert_false(mounted.val)
   })
 }

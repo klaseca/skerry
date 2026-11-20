@@ -17,10 +17,10 @@ preferred_target = "native"
 supported_targets = "native"
 
 import {
-  "klaseca/sdl@0.3.2",
-  "klaseca/sdl-sys@0.3.3",
-  "klaseca/skia@0.2.2",
-  "klaseca/skia-sys@0.2.1",
+  "klaseca/sdl@0.4.0",
+  "klaseca/sdl-sys@0.4.0",
+  "klaseca/skia@0.3.0",
+  "klaseca/skia-sys@0.3.0",
   "mizchi/css@0.8.2",
   "mizchi/crater-core@0.19.0",
   "mizchi/crater-layout@0.19.1",

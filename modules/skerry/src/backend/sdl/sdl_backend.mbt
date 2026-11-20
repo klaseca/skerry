@@ -19,8 +19,11 @@ pub fn run(
 
 ///|
 /// Create the hidden, HiDPI-aware window used by the native host. The caller
-/// owns it and must initialize SDL first.
-fn create_window(options : @runtime.WindowOptions) -> @sdl_lib.Window raise {
+/// owns it and must initialize SDL first. OpenGL attributes are set by the caller.
+fn create_window(
+  options : @runtime.WindowOptions,
+  opengl~ : Bool = false,
+) -> @sdl_lib.Window raise {
   let window = @sdl_lib.Window(
     title=options.title,
     width=options.width,
@@ -28,6 +31,7 @@ fn create_window(options : @runtime.WindowOptions) -> @sdl_lib.Window raise {
     resizable=true,
     high_pixel_density=true,
     hidden=true,
+    opengl~,
   )
   errdefer window.destroy()
   let initial_scale = window.display_scale().to_double()

@@ -1,5 +1,6 @@
 ///|
-/// Owns the native target independently of the renderer using it.
+/// Owns the native target, independently of the renderer using it. A new
+/// request releases the previous target after failed renderer initialization.
 priv struct SurfaceFactory {
   options : @runtime.WindowOptions
   mut window : @sdl_lib.Window?
@@ -37,5 +38,14 @@ impl @backend.SurfaceFactory for SurfaceFactory with fn raster(self) {
     renderer.destroy()
     window.destroy()
   })
+  surface
+}
+
+///|
+impl @backend.SurfaceFactory for SurfaceFactory with fn opengl(self) {
+  self.dispose()
+  let surface = GlSurface(self.options)
+  self.window = Some(surface.window)
+  self.release = Some(() => surface.destroy())
   surface
 }

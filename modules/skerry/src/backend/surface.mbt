@@ -23,12 +23,42 @@ pub(open) trait RasterSurface: Surface {
 }
 
 ///|
+/// The current RGBA8 OpenGL framebuffer, with its actual native attributes.
+pub(all) struct GlFramebuffer {
+  id : UInt32
+  samples : Int32
+  stencil_bits : Int32
+}
+
+///|
+pub(open) trait GlSurface: Surface {
+  fn make_current(Self) -> Unit raise
+  fn framebuffer(Self) -> GlFramebuffer
+}
+
+///|
 /// Renderers request a supported presentation protocol before App::mount.
 /// Returned surfaces are borrowed from the backend until it is disposed or
-/// another surface is requested. Release renderer resources before requesting
-/// a replacement surface.
+/// another surface is requested. Failed renderer initialization must release
+/// renderer resources before attempting another protocol on this factory.
 pub(open) trait SurfaceFactory {
-  fn raster(Self) -> &RasterSurface raise
+  fn raster(Self) -> &RasterSurface raise = _
+  fn opengl(Self) -> &GlSurface raise = _
+}
+
+///|
+impl SurfaceFactory with fn raster(_) {
+  raise UnsupportedSurface("raster")
+}
+
+///|
+impl SurfaceFactory with fn opengl(_) {
+  raise UnsupportedSurface("OpenGL")
+}
+
+///|
+pub(all) suberror SurfaceError {
+  UnsupportedSurface(String)
 }
 
 ///|

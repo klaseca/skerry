@@ -92,20 +92,25 @@ import {
 }
 ```
 
-`run(app)` uses the SDL backend and the Skia CPU renderer. The backend owns
-windows, input, presentation resources and the event loop. The renderer factory
-requests a raster surface through `backend.SurfaceFactory` before the app mounts.
-Skia draws into memory borrowed from that surface for the duration of a frame.
+`run(app)` uses SDL and the Skia CPU renderer. The backend owns windows, input,
+presentation resources and the event loop. The renderer factory requests a
+compatible surface through `backend.SurfaceFactory` before the app mounts.
 You can supply a backend and renderer factory independently. With imports for
-`backend/sdl` and `backend/skia`, the default is equivalent to:
+`backend/sdl` and `backend/skia`, the first call uses the default settings and
+the second enables OpenGL.
 
 ```mbt nocheck
 @skerry.run(app, backend=@sdl_backend.run, renderer=@skia_backend.raster_renderer)
+@skerry.run(app, renderer=@skia_backend.opengl_renderer)
 ```
 
-`root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU`).
-It is available in `App.on_mount` and diagnostic snapshots. Custom
-hosts can supply their own information when mounting a root.
+With SDL, `opengl_renderer` requires a desktop OpenGL 3.2 core context and a
+Skia build with OpenGL support. Skia draws directly into the window framebuffer
+and SDL swaps buffers. Initialization errors reach the caller before the app mounts.
+
+`root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU` or
+`Skia/OpenGL`). It is available in `App.on_mount` and diagnostic snapshots.
+Custom hosts can supply their own information when mounting a root.
 
 The CPU raster backend explicitly uses SDL's software renderer. Its pixel buffer
 is reused between paints; resizing releases the old buffer after its replacement
@@ -1388,9 +1393,9 @@ An update during measurement or painting requests a following frame. Calling
 `paint` recursively also requests a following frame.
 
 When there is no pending work, the backend waits for an SDL event without a
-periodic polling timeout. An expose presents the cached frame when the surface
-retains one. Resize callbacks can render synchronously during a platform modal
-resize loop. Before waiting,
+periodic polling timeout. On expose, the raster surface presents the cached frame
+and the OpenGL surface repaints using retained layout. Resize callbacks can render
+synchronously during a platform modal resize loop. Before waiting,
 the backend finishes pending texture shrinking. Disposing the root cancels
 pending frames and stops the application loop.
 

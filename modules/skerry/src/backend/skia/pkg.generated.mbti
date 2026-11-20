@@ -12,6 +12,8 @@ pub fn decode_image(Bytes) -> @foundation.Image raise @foundation.ImageError
 
 pub fn load_image(String) -> @foundation.Image raise @foundation.ImageError
 
+pub fn opengl_renderer(&@backend.SurfaceFactory) -> &@backend.Renderer raise
+
 pub fn raster_renderer(&@backend.SurfaceFactory) -> &@backend.Renderer raise
 
 // Errors
