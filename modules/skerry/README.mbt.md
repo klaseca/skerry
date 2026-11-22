@@ -111,16 +111,25 @@ and SDL swaps buffers. Initialization errors reach the caller before the app mou
 On Windows, `renderer=@skia_backend.d3d12_renderer` selects D3D12. It requires a
 hardware adapter and Skia built with `python scripts/build_skia.py --d3d12`.
 The SDL backend owns the DXGI swap chain and Skia paints into its back buffers.
-To fall back to CPU during initialization, pass a renderer factory that tries
-D3D12 first.
+Use `renderers` to select among several renderers during initialization.
 
 ```mbt nocheck
-@skerry.run(app, renderer=factory => {
-  @skia_backend.d3d12_renderer(factory) catch {
-    _ => @skia_backend.raster_renderer(factory)
-  }
-})
+@skerry.run(
+  app,
+  renderer=@skerry.renderers(
+    windows=[@skia_backend.d3d12_renderer, @skia_backend.opengl_renderer],
+    linux=[@skia_backend.opengl_renderer],
+  ),
+)
 ```
+
+The active platform uses its list from `windows`, `macos`, or `linux`, if supplied.
+Otherwise, it uses the shared `preferred` list, which defaults to empty. An
+explicitly empty platform list goes straight to `fallback`. Skerry tries the
+chosen list in order and uses the first renderer that initializes successfully.
+When those attempts fail, it tries `fallback`, which defaults to
+`@skia_backend.raster_renderer`. If that also fails, its error reaches the caller.
+The app mounts after a renderer is selected.
 
 `root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU`,
 `Skia/OpenGL`, or `Skia/D3D12`). It is available in `App.on_mount` and diagnostic snapshots.

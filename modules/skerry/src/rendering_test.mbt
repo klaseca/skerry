@@ -66,6 +66,63 @@ test "explicit backend and renderer factory are used exactly once" {
 }
 
 ///|
+test "renderer selection tries candidates in order until one initializes" {
+  let attempts = []
+  let create_renderer = @skerry.renderers(
+    preferred=[
+      factory => {
+        attempts.push("OpenGL")
+        @skia_backend.opengl_renderer(factory)
+      },
+      factory => {
+        attempts.push("CPU")
+        @skia_backend.raster_renderer(factory)
+      },
+      factory => {
+        attempts.push("extra candidate")
+        @skia_backend.raster_renderer(factory)
+      },
+    ],
+    fallback=factory => {
+      attempts.push("fallback")
+      @skia_backend.raster_renderer(factory)
+    },
+  )
+  let renderer = create_renderer(MemoryFactory::{
+    surface: { pixels: Bytes::make(80 * 60 * 4, b'\x00'), },
+  })
+  defer renderer.dispose()
+  assert_eq(attempts, ["OpenGL", "CPU"])
+  assert_eq(renderer.name(), "Skia/CPU")
+}
+
+///|
+#cfg(platform="windows")
+test "the Windows renderer list takes precedence and falls back to CPU" {
+  let attempts = []
+  let create_renderer = @skerry.renderers(
+    preferred=[
+      factory => {
+        attempts.push("shared")
+        @skia_backend.raster_renderer(factory)
+      },
+    ],
+    windows=[
+      factory => {
+        attempts.push("D3D12")
+        @skia_backend.d3d12_renderer(factory)
+      },
+    ],
+  )
+  let renderer = create_renderer(MemoryFactory::{
+    surface: { pixels: Bytes::make(80 * 60 * 4, b'\x00'), },
+  })
+  defer renderer.dispose()
+  assert_eq(attempts, ["D3D12"])
+  assert_eq(renderer.name(), "Skia/CPU")
+}
+
+///|
 // This backend has no SDL dependency or native window. The same Skia renderer
 // negotiates its raster target through the common protocol.
 struct MemorySurface {

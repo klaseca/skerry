@@ -87,6 +87,8 @@ pub fn radio(selected? : @reactive.Signal[Bool], label? : &@klaseca/skerry/react
 
 pub fn[T : Eq, L : @klaseca/skerry/reactive/value.StringValue] radio_group(@reactive.Signal[T], Array[T], label~ : (T) -> L, style? : @view.FlexStyle, item_style? : @controls.RadioStyle, item_disabled? : (T) -> Bool, on_change? : (@foundation.ChangeEvent[T]) -> Unit, disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
 
+pub fn renderers(preferred? : ArrayView[(&@backend.SurfaceFactory) -> &@backend.Renderer raise], windows? : ArrayView[(&@backend.SurfaceFactory) -> &@backend.Renderer raise], macos? : ArrayView[(&@backend.SurfaceFactory) -> &@backend.Renderer raise], linux? : ArrayView[(&@backend.SurfaceFactory) -> &@backend.Renderer raise], fallback? : (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> (&@backend.SurfaceFactory) -> &@backend.Renderer raise
+
 pub fn row(style? : @view.FlexStyle, Array[@view.View], disabled? : &@klaseca/skerry/reactive/value.BoolValue) -> @view.View
 
 pub fn run(@runtime.App, backend? : (@runtime.App, (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> Unit raise, renderer? : (&@backend.SurfaceFactory) -> &@backend.Renderer raise) -> Unit raise
