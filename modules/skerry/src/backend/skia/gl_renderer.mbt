@@ -79,21 +79,14 @@ fn GlRenderer::render(
   clear : @foundation.Color,
 ) -> Unit raise {
   guard !self.disposed else { raise @skia_lib.GlContextAbandoned }
-  let canvas = self.surface.canvas()
-  ignore(canvas.save())
-  defer canvas.restore()
-  let factor = Float::from_double(scale)
-  canvas.scale(factor, factor)
-  self.renderer.draw(canvas, scene => {
-    root.paint(
-      scene,
-      size=@foundation.Size(
-        width=self.width.to_double() / scale,
-        height=self.height.to_double() / scale,
-      ),
-      clear~,
-    )
-  })
+  self.renderer.paint_gpu_frame(
+    self.surface.canvas(),
+    root,
+    self.width,
+    self.height,
+    scale,
+    clear,
+  )
   self.context.flush()
 }
 

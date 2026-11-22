@@ -49,3 +49,12 @@ impl @backend.SurfaceFactory for SurfaceFactory with fn opengl(self) {
   self.release = Some(() => surface.destroy())
   surface
 }
+
+///|
+impl @backend.SurfaceFactory for SurfaceFactory with fn d3d12(self) {
+  self.dispose()
+  let surface = D3d12Surface(self.options)
+  self.window = Some(surface.window)
+  self.release = Some(() => surface.destroy())
+  surface
+}

@@ -25,6 +25,15 @@ pub(all) suberror SurfaceError {
 }
 
 // Types and methods
+pub(all) struct D3d12Device {
+  adapter : D3d12Handle
+  device : D3d12Handle
+  queue : D3d12Handle
+}
+
+#external
+pub type D3d12Handle
+
 pub(all) struct GlFramebuffer {
   id : UInt32
   samples : Int32
@@ -64,6 +73,12 @@ pub type AppBackend = (@runtime.App, (&SurfaceFactory) -> &Renderer raise) -> Un
 pub type RendererFactory = (&SurfaceFactory) -> &Renderer raise
 
 // Traits
+pub(open) trait D3d12Surface : Surface {
+  fn device(Self) -> D3d12Device
+  fn buffers(Self, Int32, Int32) -> Array[D3d12Handle] raise
+  fn acquire(Self) -> Int32 raise
+}
+
 pub(open) trait GlSurface : Surface {
   fn make_current(Self) -> Unit raise
   fn framebuffer(Self) -> GlFramebuffer
@@ -91,4 +106,5 @@ pub(open) trait Surface {
 pub(open) trait SurfaceFactory {
   fn raster(Self) -> &RasterSurface raise = _
   fn opengl(Self) -> &GlSurface raise = _
+  fn d3d12(Self) -> &D3d12Surface raise = _
 }

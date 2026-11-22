@@ -113,3 +113,29 @@ impl @backend.Renderer for GlFrame with fn dispose(self) {
 impl @backend.Renderer for GlFrame with fn name(_) {
   "Skia/OpenGL"
 }
+
+///|
+fn Renderer::paint_gpu_frame(
+  self : Self,
+  canvas : @skia_lib.Canvas,
+  root : @runtime.UiRoot,
+  width : Int32,
+  height : Int32,
+  scale : Double,
+  clear : @foundation.Color,
+) -> Unit raise {
+  ignore(canvas.save())
+  defer canvas.restore()
+  let factor = Float::from_double(scale)
+  canvas.scale(factor, factor)
+  self.draw(canvas, scene => {
+    root.paint(
+      scene,
+      size=@foundation.Size(
+        width=width.to_double() / scale,
+        height=height.to_double() / scale,
+      ),
+      clear~,
+    )
+  })
+}

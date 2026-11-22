@@ -99,3 +99,36 @@ test "OpenGL initialization failure leaves the app unmounted" {
     assert_false(mounted.val)
   })
 }
+
+///|
+test "an unavailable D3D12 surface can fall back to CPU before mounting" {
+  with_dummy_video(fn() raise {
+    let mounts = Ref(0)
+    let fell_back = Ref(false)
+    let info : Ref[@runtime.RenderingInfo?] = Ref(None)
+    @sdl.run(
+      @runtime.App(
+        content=fn() {
+          mounts.val += 1
+          @view.empty()
+        },
+        on_mount=fn(root) {
+          info.val = root.rendering_info()
+          ignore(root.after_present(fn() { root.dispose() }))
+        },
+      ),
+      factory => {
+        @skia_backend.d3d12_renderer(factory) catch {
+          @backend.UnsupportedSurface("D3D12") => {
+            fell_back.val = true
+            @skia_backend.raster_renderer(factory)
+          }
+          error => raise error
+        }
+      },
+    )
+    assert_true(fell_back.val)
+    assert_eq(mounts.val, 1)
+    assert_eq(info.val, Some({ backend: "SDL", renderer: "Skia/CPU", }))
+  })
+}

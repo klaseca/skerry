@@ -108,8 +108,22 @@ With SDL, `opengl_renderer` requires a desktop OpenGL 3.2 core context and a
 Skia build with OpenGL support. Skia draws directly into the window framebuffer
 and SDL swaps buffers. Initialization errors reach the caller before the app mounts.
 
-`root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU` or
-`Skia/OpenGL`). It is available in `App.on_mount` and diagnostic snapshots.
+On Windows, `renderer=@skia_backend.d3d12_renderer` selects D3D12. It requires a
+hardware adapter and Skia built with `python scripts/build_skia.py --d3d12`.
+The SDL backend owns the DXGI swap chain and Skia paints into its back buffers.
+To fall back to CPU during initialization, pass a renderer factory that tries
+D3D12 first.
+
+```mbt nocheck
+@skerry.run(app, renderer=factory => {
+  @skia_backend.d3d12_renderer(factory) catch {
+    _ => @skia_backend.raster_renderer(factory)
+  }
+})
+```
+
+`root.rendering_info()` reports the backend (`SDL`) and renderer (`Skia/CPU`,
+`Skia/OpenGL`, or `Skia/D3D12`). It is available in `App.on_mount` and diagnostic snapshots.
 Custom hosts can supply their own information when mounting a root.
 
 The CPU raster backend explicitly uses SDL's software renderer. Its pixel buffer
