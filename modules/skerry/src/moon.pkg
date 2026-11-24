@@ -16,6 +16,10 @@ import {
 
 supported_targets = "native"
 
+options(
+  "native-stub": [ "renderer_platform.c" ],
+)
+
 import {
   "klaseca/skerry/backend/skia" @skia_backend,
   "klaseca/skerry/backend",

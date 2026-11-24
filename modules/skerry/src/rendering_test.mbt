@@ -97,9 +97,12 @@ test "renderer selection tries candidates in order until one initializes" {
 }
 
 ///|
-#cfg(platform="windows")
-test "the Windows renderer list takes precedence and falls back to CPU" {
+test "a desktop renderer list takes precedence and falls back to CPU" {
   let attempts = []
+  let candidate : @backend.RendererFactory = factory => {
+    attempts.push("OpenGL")
+    @skia_backend.opengl_renderer(factory)
+  }
   let create_renderer = @skerry.renderers(
     preferred=[
       factory => {
@@ -107,18 +110,15 @@ test "the Windows renderer list takes precedence and falls back to CPU" {
         @skia_backend.raster_renderer(factory)
       },
     ],
-    windows=[
-      factory => {
-        attempts.push("D3D12")
-        @skia_backend.d3d12_renderer(factory)
-      },
-    ],
+    windows=[candidate],
+    macos=[candidate],
+    linux=[candidate],
   )
   let renderer = create_renderer(MemoryFactory::{
     surface: { pixels: Bytes::make(80 * 60 * 4, b'\x00'), },
   })
   defer renderer.dispose()
-  assert_eq(attempts, ["D3D12"])
+  assert_eq(attempts, ["OpenGL"])
   assert_eq(renderer.name(), "Skia/CPU")
 }
 

@@ -47,8 +47,11 @@ Run the basic example from the repository root:
 moon run examples/basic
 ```
 
-Only the native target is supported. The current setup has been verified on
-Windows; Linux and macOS have not yet been verified for Skerry.
+Skerry targets native builds. The setup has been verified on Windows and on
+Debian 13 (x64) under WSL2. The Linux check covered CPU rendering, OpenGL over
+X11 with Mesa llvmpipe, and CPU fallback when OpenGL initialization fails.
+The current Linux Skia build uses GLX for OpenGL. With Wayland the renderer
+chain falls back to CPU. macOS verification is pending.
 
 ## Examples
 

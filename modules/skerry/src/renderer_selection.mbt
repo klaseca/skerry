@@ -1,28 +1,14 @@
 ///|
-// Each build constructs only the variant selected by #cfg.
-#warnings("-unused_constructor")
+// Constructed by the native stub. Values match skerry_platform there.
 priv enum RendererPlatform {
-  Windows
-  MacOS
-  Linux
-  Other
+  Other = 0
+  Windows = 1
+  MacOS = 2
+  Linux = 3
 }
 
 ///|
-#cfg(platform="windows")
-let renderer_platform : RendererPlatform = Windows
-
-///|
-#cfg(platform="macos")
-let renderer_platform : RendererPlatform = MacOS
-
-///|
-#cfg(platform="linux")
-let renderer_platform : RendererPlatform = Linux
-
-///|
-#cfg(not(any(platform="windows", platform="macos", platform="linux")))
-let renderer_platform : RendererPlatform = Other
+extern "c" fn renderer_platform() -> RendererPlatform = "moonbit_skerry_renderer_platform"
 
 ///|
 /// Tries renderer factories in order until one initializes successfully.
@@ -35,7 +21,7 @@ pub fn renderers(
   linux? : ArrayView[@backend.RendererFactory],
   fallback~ : @backend.RendererFactory = @skia_backend.raster_renderer,
 ) -> @backend.RendererFactory {
-  let candidates = match renderer_platform {
+  let candidates = match renderer_platform() {
     Windows => windows.unwrap_or(preferred)
     MacOS => macos.unwrap_or(preferred)
     Linux => linux.unwrap_or(preferred)
