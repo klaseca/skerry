@@ -105,8 +105,11 @@ the second enables OpenGL.
 ```
 
 With SDL, `opengl_renderer` requires a desktop OpenGL 3.2 core context and a
-Skia build with OpenGL support. Skia draws directly into the window framebuffer
-and SDL swaps buffers. Initialization errors reach the caller before the app mounts.
+Skia build with OpenGL support. Skia loads GL functions from the active SDL
+context, which supports both X11 and Wayland on Linux. Set
+`SDL_VIDEO_DRIVER=wayland` to select Wayland explicitly. Skia draws directly into
+the window framebuffer and SDL swaps buffers. Initialization errors reach the
+caller before the app mounts.
 
 On Windows, `renderer=@skia_backend.d3d12_renderer` selects D3D12. It requires a
 hardware adapter and Skia built with `python scripts/build_skia.py --d3d12`.

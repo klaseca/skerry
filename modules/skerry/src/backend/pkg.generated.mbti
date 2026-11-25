@@ -82,6 +82,7 @@ pub(open) trait D3d12Surface : Surface {
 pub(open) trait GlSurface : Surface {
   fn make_current(Self) -> Unit raise
   fn framebuffer(Self) -> GlFramebuffer
+  fn get_proc_address(Self, Bytes) -> FuncRef[() -> Unit]
 }
 
 pub(open) trait RasterSurface : Surface {

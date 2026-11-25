@@ -100,6 +100,16 @@ impl @backend.GlSurface for GlSurface with fn framebuffer(self) {
 }
 
 ///|
+impl @backend.GlSurface for GlSurface with fn get_proc_address(_, name) {
+  if name is [b'e', b'g', b'l', ..] {
+    // GLX can return non-null addresses for unsupported EGL functions.
+    @sdl_sys.egl_get_proc_address(name)
+  } else {
+    @sdl_sys.gl_get_proc_address(name)
+  }
+}
+
+///|
 fn gl_attribute(attribute : Int32) -> Int32 raise {
   let value = Ref(0)
   if !@sdl_sys.gl_get_attribute(attribute, value) {

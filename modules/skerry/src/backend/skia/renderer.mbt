@@ -58,6 +58,7 @@ pub fn opengl_renderer(
   let size = @backend.Surface::output_size(target)
   let info = target.framebuffer()
   let painter = GlRenderer(
+    name => target.get_proc_address(name),
     width=size.width.max(1),
     height=size.height.max(1),
     framebuffer=info.id,

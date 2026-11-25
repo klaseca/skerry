@@ -48,10 +48,10 @@ moon run examples/basic
 ```
 
 Skerry targets native builds. The setup has been verified on Windows and on
-Debian 13 (x64) under WSL2. The Linux check covered CPU rendering, OpenGL over
-X11 with Mesa llvmpipe, and CPU fallback when OpenGL initialization fails.
-The current Linux Skia build uses GLX for OpenGL. With Wayland the renderer
-chain falls back to CPU. macOS verification is pending.
+Debian. The Linux checks covered CPU rendering, OpenGL on X11 and Wayland,
+and CPU fallback when OpenGL initialization fails.
+The Linux OpenGL checks used virtual or software graphics. macOS verification
+is pending.
 
 ## Examples
 

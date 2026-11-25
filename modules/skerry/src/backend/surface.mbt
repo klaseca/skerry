@@ -34,6 +34,7 @@ pub(all) struct GlFramebuffer {
 pub(open) trait GlSurface: Surface {
   fn make_current(Self) -> Unit raise
   fn framebuffer(Self) -> GlFramebuffer
+  fn get_proc_address(Self, Bytes) -> FuncRef[() -> Unit]
 }
 
 ///|

@@ -15,13 +15,14 @@ priv struct GlRenderer {
 
 ///|
 fn GlRenderer::GlRenderer(
+  loader : (Bytes) -> FuncRef[() -> Unit],
   width~ : Int32,
   height~ : Int32,
   framebuffer~ : UInt32 = 0,
   samples~ : Int32 = 0,
   stencil_bits~ : Int32 = 8,
 ) -> GlRenderer raise {
-  let context = @skia_lib.GlContext()
+  let context = @skia_lib.GlContext(loader~)
   errdefer context.dispose()
   let renderer = Renderer()
   errdefer renderer.dispose()
