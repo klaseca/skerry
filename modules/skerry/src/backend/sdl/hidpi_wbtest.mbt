@@ -140,7 +140,7 @@ test "HiDPI wheel and scrollbar drag retain logical scroll distances" {
 }
 
 ///|
-test "display scale events repaint the matching window without remounting or losing focus" {
+test "display scale changes repaint without remounting or losing focus" {
   let scale = Ref(1.0)
   let mounts = Ref(0)
   let value = @reactive.signal("hello")
@@ -149,27 +149,15 @@ test "display scale events repaint the matching window without remounting or los
       mounts.val += 1
       @controls.text_input(value~)
     },
-    (state, window, surface) => {
+    (state, _, surface) => {
       state.sync_frame()
       assert_true(state.root.key_down(@foundation.KeyEvent(key=KeyTab)))
       state.sync_frame()
       let before = state.root.snapshot().unwrap()
       let texture = surface.texture
-      let listeners = state.watch_window(window)
-      defer (fn() {
-        for listener in listeners {
-          listener.dispose()
-        }
-      })()
       scale.val = 2.0
-      let event = @sdl_sys.Event()
-      event.set_event_type(@sdl_sys.EVENT_WINDOW_DISPLAY_SCALE_CHANGED)
-      event.window().set_window_id(window.id() + 1)
-      assert_true(@sdl_sys.push_event(event))
       assert_eq(state.root.frame_stats().paint_count, before.frame.paint_count)
-      event.window().set_window_id(window.id())
-      assert_true(@sdl_sys.push_event(event))
-      state.check_error()
+      state.sync_frame()
       let after = state.root.snapshot().unwrap()
       assert_eq(after.tree.size, Size(width=80.0, height=40.0))
       assert_eq(after.tree.nodes[0].id, before.tree.nodes[0].id)
@@ -205,7 +193,8 @@ test "scaled pixel resize reuses logical layout and cached text measurements" {
       let paints = after.frame.paint_count
       state.sync_frame()
       assert_true(state.prepare_wait())
-      state.present_cached_frame()
+      push_exposure(window.id())
+      state.check_error()
       assert_eq(state.root.frame_stats().paint_count, paints)
     },
     display_scale=() => scale.val,
@@ -217,11 +206,12 @@ test "expose detects a changed scale even when the pixel extent is unchanged" {
   let scale = Ref(1.0)
   with_render_state(
     fn(_) { @view.text("HiDPI") },
-    (state, _, _) => {
+    (state, window, _) => {
       state.sync_frame()
       let before = state.root.frame_stats()
       scale.val = 1.25
-      state.present_cached_frame()
+      push_exposure(window.id())
+      state.check_error()
       assert_eq(
         state.root.snapshot().unwrap().tree.size,
         Size(width=128.0, height=64.0),

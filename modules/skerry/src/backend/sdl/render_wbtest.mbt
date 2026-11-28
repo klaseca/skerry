@@ -93,14 +93,15 @@ test "a callback registered during paint uses that present without an extra fram
         }),
       )
     },
-    (state, _, _) => {
+    (state, window, _) => {
       root_ref.val = Some(state.root)
       state.sync_frame()
       assert_eq(calls.val, 1)
       assert_eq(state.root.frame_stats().paint_count, 1)
       assert_eq(state.root.frame_stats().present_count, 1)
       assert_true(state.prepare_wait())
-      state.present_cached_frame()
+      push_exposure(window.id())
+      state.sync_frame()
       assert_eq(calls.val, 1)
       assert_eq(state.root.frame_stats().paint_count, 1)
       assert_eq(state.root.frame_stats().present_count, 2)
@@ -121,16 +122,13 @@ test "modal resize in a present callback redraws only the final batched state" {
     },
     (state, window, _) => {
       state.sync_frame()
-      let listeners = state.watch_window(window)
-      defer (fn() {
-        for listener in listeners {
-          listener.dispose()
-        }
-      })()
       ignore(
         state.root.after_present(fn() {
           value.set(1)
-          window.set_size(width=180, height=90) catch {
+          (fn() raise {
+            window.set_size(width=180, height=90)
+            push_exposure(window.id(), live_resize=true)
+          })() catch {
             error => state.record_error(error)
           }
           value.set(2)
@@ -160,13 +158,14 @@ test "synchronous resize during an action does not paint intermediate batch stat
       )
     },
     (state, window, _) => {
-      let listener = window.on(Resized, fn(_) { state.redraw_now() })
-      defer listener.dispose()
       state.sync_frame()
       ignore(
         state.root.post(fn() {
           value.set(1)
-          window.set_size(width=180, height=90) catch {
+          (fn() raise {
+            window.set_size(width=180, height=90)
+            push_exposure(window.id(), live_resize=true)
+          })() catch {
             error => state.record_error(error)
           }
         }),
@@ -227,7 +226,18 @@ fn with_render_state(
   defer root.dispose()
   let state = SdlAppState(root, recorder, clear, display_scale~)
   defer state.destroy()
+  let watch = state.watch_window(window.id())
+  defer @sdl_sys.remove_event_watch(watch)
   check(state, window, surface)
+}
+
+///|
+fn push_exposure(window_id : UInt32, live_resize~ : Bool = false) -> Unit raise {
+  let event = @sdl_sys.Event()
+  event.set_event_type(@sdl_sys.EVENT_WINDOW_EXPOSED)
+  event.window().set_window_id(window_id)
+  event.window().set_data1(if live_resize { 1 } else { 0 })
+  assert_true(@sdl_sys.push_event(event))
 }
 
 ///|
@@ -272,7 +282,8 @@ test "SDL backend paints each output size and reuses a clean frame" {
       assert_eq(state.root.frame_stats().present_count, 3)
       assert_true(state.prepare_wait())
       assert_true(state.prepare_wait())
-      state.present_cached_frame()
+      push_exposure(window.id())
+      state.sync_frame()
       assert_eq(frames.length(), 3)
       assert_eq(state.root.frame_stats().present_count, 4)
       assert_eq(state.root.frame_stats().presented_frame, 3)
@@ -282,25 +293,102 @@ test "SDL backend paints each output size and reuses a clean frame" {
 }
 
 ///|
-test "repeated resize notifications reuse a clean frame and preserve pending paint" {
+test "clean iterations reuse a frame and preserve pending paint" {
   with_render_state(fn(_) { @view.text("cached") }, (state, _, _) => {
     state.sync_frame()
     let before = state.root.frame_stats()
-    state.redraw_now()
-    state.redraw_now()
+    state.sync_frame()
+    state.sync_frame()
     state.check_error()
     let unchanged = state.root.frame_stats()
     assert_eq(unchanged.paint_count, before.paint_count)
     assert_eq(unchanged.present_count, before.present_count)
     assert_eq(unchanged.layout_count, before.layout_count)
     state.root.mark_paint_dirty()
-    state.redraw_now()
+    state.sync_frame()
     state.check_error()
     let updated = state.root.frame_stats()
     assert_eq(updated.paint_count, before.paint_count + 1)
     assert_eq(updated.present_count, before.present_count + 1)
     assert_eq(updated.layout_count, before.layout_count)
     assert_eq(state.root.dirty(), Clean)
+  })
+}
+
+///|
+test "early size notifications leave pending paint to the main loop" {
+  with_render_state(fn(_) { @view.text("cached") }, (state, window, _) => {
+    state.sync_frame()
+    let before = state.root.frame_stats()
+    let window_id = window.id()
+    state.root.mark_paint_dirty()
+    let event = @sdl_sys.Event()
+    event.window().set_window_id(window_id)
+    for
+      event_type in [
+        @sdl_sys.EVENT_WINDOW_RESIZED,
+        @sdl_sys.EVENT_WINDOW_PIXEL_SIZE_CHANGED,
+      ] {
+      event.set_event_type(event_type)
+      assert_true(@sdl_sys.push_event(event))
+    }
+    event.set_event_type(@sdl_sys.EVENT_WINDOW_SAFE_AREA_CHANGED)
+    event.window().set_window_id(window_id + 1)
+    assert_true(@sdl_sys.push_event(event))
+    state.check_error()
+    assert_eq(state.root.frame_stats(), before)
+    state.sync_frame()
+    state.sync_frame()
+    let after = state.root.frame_stats()
+    assert_eq(after.paint_count, before.paint_count + 1)
+    assert_eq(after.present_count, before.present_count + 1)
+    push_exposure(window_id + 1)
+    assert_true(state.prepare_wait())
+    assert_eq(state.root.frame_stats(), after)
+    push_exposure(window_id)
+    push_exposure(window_id)
+    assert_eq(state.root.frame_stats().paint_count, after.paint_count)
+    assert_eq(state.root.frame_stats().present_count, after.present_count + 2)
+  })
+}
+
+///|
+test "a live-resize tick presents during the event callback for its window" {
+  with_render_state(fn(_) { @view.text("resize") }, (state, window, _) => {
+    state.sync_frame()
+    let before = state.root.frame_stats()
+    state.root.mark_paint_dirty()
+    push_exposure(window.id() + 1, live_resize=true)
+    assert_eq(state.root.frame_stats(), before)
+    push_exposure(window.id(), live_resize=true)
+    state.check_error()
+    let after = state.root.frame_stats()
+    assert_eq(after.paint_count, before.paint_count + 1)
+    assert_eq(after.present_count, before.present_count + 1)
+    state.sync_frame()
+    assert_eq(state.root.frame_stats(), after)
+  })
+}
+
+///|
+test "shrinking the window lays out and presents each width before the next expose" {
+  with_render_state(fn(_) { @view.empty() }, (state, window, _) => {
+    state.sync_frame()
+    let before = state.root.frame_stats()
+    for step, width in [150, 140, 130] {
+      window.set_size(width~, height=80)
+      state.check_error()
+      let snapshot = state.root.snapshot().unwrap()
+      assert_eq(snapshot.tree.size, Size(width=width.to_double(), height=80.0))
+      assert_eq(snapshot.frame.paint_count, before.paint_count + step + 1)
+      assert_eq(snapshot.frame.present_count, before.present_count + step + 1)
+    }
+    let resized = state.root.frame_stats()
+    push_exposure(window.id())
+    state.check_error()
+    let exposed = state.root.frame_stats()
+    assert_eq(exposed.paint_count, resized.paint_count)
+    assert_eq(exposed.present_count, resized.present_count + 1)
   })
 }
 
@@ -326,7 +414,8 @@ test "CPU paints and idle keep one raster texture until capacity changes" {
     assert_true(texture.raw().is_null())
     assert_false(surface.texture.raw().is_null())
     assert_true(state.prepare_wait())
-    state.present_cached_frame()
+    push_exposure(window.id())
+    state.sync_frame()
     assert_eq(state.root.dirty(), Clean)
   })
 }
@@ -349,7 +438,8 @@ test "failed raster resize preserves the working frame and permits a later resiz
     assert_true(physical_equal(surface.texture, texture))
     assert_eq((surface.texture_width, surface.texture_height), capacity)
     assert_true(state.has_frame)
-    state.present_cached_frame()
+    push_exposure(window.id())
+    state.sync_frame()
     assert_eq(state.root.frame_stats().present_count, before.present_count + 1)
     state.sync_frame()
     assert_eq(state.root.frame_stats().paint_count, before.paint_count)
@@ -365,7 +455,9 @@ test "failed raster resize preserves the working frame and permits a later resiz
     assert_true(state.prepare_wait())
     state.destroy()
     state.destroy()
-    state.present_cached_frame()
+    state.root.dispose()
+    push_exposure(window.id())
+    state.sync_frame()
     assert_eq(state.root.frame_stats().present_count, before.present_count + 2)
   })
 }
@@ -391,22 +483,17 @@ test "window resize during painting schedules the next frame" {
         }),
       )
     },
-    (state, window, _) => {
+    (state, _, _) => {
       state.sync_frame()
-      let listeners = state.watch_window(window)
-      defer (fn() {
-        for listener in listeners {
-          listener.dispose()
-        }
-      })()
       resize.val = true
       state.root.mark_paint_dirty()
       state.sync_frame()
       assert_eq(errors.length(), 0)
       assert_true(state.pending_error is None)
       assert_eq(frames.length(), 2)
-      assert_eq(state.root.dirty(), @runtime.NeedsPaint)
+      assert_false(state.prepare_wait())
       state.sync_frame()
+      assert_true(state.prepare_wait())
       assert_eq(frames, [
         @foundation.Size(width=160.0, height=80.0),
         @foundation.Size(width=160.0, height=80.0),

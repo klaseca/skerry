@@ -70,12 +70,8 @@ fn run_on_surface(
   state.drain_actions()
   state.check_error()
   state.sync_frame()
-  let listeners = state.watch_window(window)
-  defer (fn() {
-    for listener in listeners {
-      listener.dispose()
-    }
-  })()
+  let watch = state.watch_window(window.id())
+  defer @sdl_sys.remove_event_watch(watch)
   guard !root.is_disposed() else { return }
   window.show()
   let dispatcher = EventDispatcher(root, window_id=window.id(), geometry=() => {
@@ -164,25 +160,29 @@ fn SdlAppState::SdlAppState(
 ///|
 fn SdlAppState::watch_window(
   self : SdlAppState,
-  window : @sdl_lib.Window,
-) -> Array[@sdl_lib.EventListener] raise {
-  let listeners : Array[@sdl_lib.EventListener] = []
-  errdefer (fn() {
-    for listener in listeners {
-      listener.dispose()
+  window_id : UInt32,
+) -> @sdl_sys.EventWatch raise {
+  let watch = @sdl_sys.add_event_watch((f, bytes) => f(bytes), bytes => {
+    let event = @sdl_sys.Event::from_bytes(bytes)
+    let exposed = match event.event_type() {
+      @sdl_sys.EVENT_WINDOW_EXPOSED => true
+      // A shrinking window can retain all its visible pixels. SDL 3.4
+      // updates the safe area after processing the new pixel size, giving
+      // us a chance to lay out the frame even without an expose.
+      @sdl_sys.EVENT_WINDOW_SAFE_AREA_CHANGED => false
+      _ => return
     }
-  })()
-  listeners.push(
-    window.on(Exposed, fn(_) {
-      self.present_cached_frame() catch {
-        error => self.record_error(error)
-      }
-    }),
-  )
-  listeners.push(window.on(Resized, fn(_) { self.redraw_now() }))
-  listeners.push(window.on(PixelSizeChanged, fn(_) { self.redraw_now() }))
-  listeners.push(window.on(DisplayScaleChanged, fn(_) { self.redraw_now() }))
-  listeners
+    guard event.window().window_id() == window_id else { return }
+    self.sync_frame(exposed~) catch {
+      error => self.record_error(error)
+    }
+  })
+  guard !watch.is_null() else {
+    raise @sdl_lib.SdlError(
+      "SDL_AddEventWatch failed: \{@utf8.decode_lossy(@sdl_sys.get_error())}",
+    )
+  }
+  watch
 }
 
 ///|
@@ -256,6 +256,7 @@ fn SdlAppState::wait_for_event(
 fn SdlAppState::sync_frame(
   self : SdlAppState,
   allow_shrink~ : Bool = false,
+  exposed~ : Bool = false,
 ) -> Unit raise {
   guard !self.root.is_disposed() else { return }
   guard !self.drawing else {
@@ -269,71 +270,34 @@ fn SdlAppState::sync_frame(
   let height = size.height.max(1)
   let scale = (self.display_scale)()
   let resized = self.surface.resize(width, height, allow_shrink)
-  if resized ||
-    !self.has_frame ||
-    width != self.frame_width ||
-    height != self.frame_height ||
-    scale != self.frame_scale ||
-    self.root.dirty() != Clean {
-    self.renderer.render(
-      self.root,
-      width,
-      height,
-      scale,
-      self.clear.unwrap_or(self.root.theme().resolve(@style.surface_token)),
-    )
-    guard !self.root.is_disposed() else { return }
-    self.frame_width = width
-    self.frame_height = height
-    self.frame_scale = scale
-    self.frame_revision = self.root.paint_revision()
-    self.has_frame = true
-    self.surface.present(width, height)
-    self.root.record_present(self.frame_revision)
-  }
-}
-
-///|
-fn SdlAppState::redraw_now(self : SdlAppState) -> Unit {
-  if self.drawing {
-    self.redraw_pending = true
-    return
-  }
-  // SDL can report both logical and pixel-size changes for one resize.
-  // sync_frame redraws for a new output size or pending UI work.
-  self.sync_frame() catch {
-    error => self.record_error(error)
-  }
-}
-
-///|
-fn SdlAppState::present_cached_frame(self : SdlAppState) -> Unit raise {
-  if !self.has_frame || self.drawing || self.root.is_disposed() {
-    return
-  }
-  let size = self.surface.output_size()
-  let width = size.width.max(1)
-  let height = size.height.max(1)
-  if (self.display_scale)() != self.frame_scale ||
-    width != self.frame_width ||
-    height != self.frame_height {
-    self.sync_frame()
-    return
-  }
-  let restored = {
-    self.drawing = true
-    defer self.finish_drawing()
-    let restored = self.surface.restore(width, height)
-    if restored {
+  if !resized &&
+    self.has_frame &&
+    width == self.frame_width &&
+    height == self.frame_height &&
+    scale == self.frame_scale &&
+    self.root.dirty() == Clean {
+    guard exposed else { return }
+    if self.surface.restore(width, height) {
       self.root.record_present(self.frame_revision)
+      return
     }
-    restored
-  }
-  if !restored {
-    // Reuse the layout when the surface cannot restore the previous frame.
     self.root.mark_paint_dirty()
-    self.sync_frame()
   }
+  self.renderer.render(
+    self.root,
+    width,
+    height,
+    scale,
+    self.clear.unwrap_or(self.root.theme().resolve(@style.surface_token)),
+  )
+  guard !self.root.is_disposed() else { return }
+  self.frame_width = width
+  self.frame_height = height
+  self.frame_scale = scale
+  self.frame_revision = self.root.paint_revision()
+  self.has_frame = true
+  self.surface.present(width, height)
+  self.root.record_present(self.frame_revision)
 }
 
 ///|
